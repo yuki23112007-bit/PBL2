@@ -261,9 +261,24 @@ Thuật toán QuickSort, duyệt cây, vun đống (upHeap, downHeap) và tìm k
 ### 10.4. Điểm cần thống nhất trong nhóm
 
 Tài liệu có hai chỗ chưa nhất quán:
-- Mục 1.1 yêu cầu Trie dùng `firstChild` và `nextSibling`, nhưng phần Phân hệ 4 (dòng 538 trong tài liệu) lại mô tả `map<char, TrieNode*>`. Nhóm nên chọn một cách, khuyến nghị dùng `firstChild` và `nextSibling` theo mục 1.1.
+- Phần Phân hệ 4 mô tả Trie bằng `map<char, TrieNode*>`, trong khi mục 1.1 yêu cầu `firstChild` và `nextSibling`. **Nhóm đã thống nhất dùng `firstChild` và `nextSibling`**, chi tiết ở mục 11.
 - `HashTable` trong Phân hệ 4 dùng `vector<HashNode*> buckets`. Đây là mảng động để giữ con trỏ đầu danh sách, nên được chấp nhận theo mục 10.2. Nhưng nếu nhóm muốn chặt hơn, dùng mảng cấp phát tay như `new HashNode*[capacity]`.
 
-## 11. Liên hệ
+## 11. Thuộc tính TrieNode (theo mục 1.1)
+
+| Thuộc tính | Kiểu | Ý nghĩa |
+|---|---|---|
+| `kyTu` | `char` | Ký tự mà nút này đại diện |
+| `firstChild` | `TrieNode*` | Nút con đầu tiên |
+| `nextSibling` | `TrieNode*` | Nút anh em kế tiếp, cùng cha với nút này |
+| `isEndOfWord` | `bool` | `true` nếu nút này kết thúc một từ khóa |
+| `metadata` | `std::string` | Thông tin gắn với từ khóa. Với tài khoản: `passwordHash`, phân quyền, mã định danh |
+| `sanPhamRef` | `SanPham*` | Con trỏ mượn từ HashTable sản phẩm, chỉ dùng khi từ khóa là tên sản phẩm |
+
+**Cách tìm con có ký tự `c`:** bắt đầu từ `firstChild`, duyệt `nextSibling` cho đến khi gặp `kyTu == c`. Thao tác này tốn O(k), với k là số ký tự khác nhau ở cùng một cấp, và không cần `std::map`.
+
+**Lưu ý:** thuộc tính `children` dạng `map` không còn dùng. Mọi thao tác trên Trie (chèn, xóa, tra cứu) phải đi qua `firstChild` và `nextSibling`.
+
+## 12. Liên hệ
 
 Mọi thắc mắc về quy tắc làm việc, hỏi trong nhóm chat trước khi tự sửa file của người khác.
