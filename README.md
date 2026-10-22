@@ -125,6 +125,8 @@ Nếu hai người cùng sửa một đoạn code, hãy nói chuyện trong nhó
 - Không đổi tên hàm hoặc cấu trúc dữ liệu dùng chung mà không báo nhóm.
 - Khi thêm chức năng mới, ưu tiên thêm hàm mới thay vì sửa hàm đang chạy của người khác.
 - Trước khi tạo Pull Request, đảm bảo code biên dịch và chạy được.
+- **Không viết `using namespace std;` trong file `.h`.** Dòng này ảnh hưởng mọi file include header, dễ gây trùng tên với lớp hoặc hàm của nhóm.
+- **Trong file `.cpp`, cũng không dùng `using namespace std;`.** Viết tiền tố `std::` (ví dụ `std::string`, `std::cout`). Nếu muốn ngắn hơn, dùng khai báo cụ thể như `using std::string;`.
 
 ## 7. Quy tắc tổ chức file: mỗi file một chức năng
 
@@ -243,7 +245,9 @@ Thuật toán QuickSort, duyệt cây, vun đống (upHeap, downHeap) và tìm k
 ### 10.2. Được phép dùng
 
 - `std::string`, `std::vector` làm mảng động để lưu con trỏ hoặc bộ đệm, không dùng để thay thế cấu trúc đã tự cài đặt.
-- `std::ifstream`, `std::ofstream`, `std::cout`, `std::cin` cho đọc ghi file và giao diện.
+- Thư viện nhập xuất, gồm `<iostream>` và `<fstream>`:
+  - Các kiểu cơ sở `std::ostream`, `std::istream` dùng làm tham số hoặc kiểu trả về, ví dụ `std::ostream& operator<<(std::ostream& os, const SanPham& sp)`.
+  - Các kiểu cụ thể `std::ifstream`, `std::ofstream`, `std::cout`, `std::cin` cho đọc ghi file và giao diện.
 - Thư viện chuẩn cho các việc không phải nghiệp vụ, như `<cstdlib>`, `<ctime>` để lấy thời gian `time(NULL)`.
 
 ### 10.3. Cách kiểm tra
