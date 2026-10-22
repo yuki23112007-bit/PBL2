@@ -30,38 +30,45 @@ Mỗi người phụ trách một module, chỉ sửa các file của module đ�
 
 ```text
 src/
-├── models/          Các lớp thực thể nghiệp vụ
-│   ├── TaiKhoan.h           Lớp trừu tượng tài khoản (Phân hệ 1)
-│   ├── Admin.h              Kế thừa TaiKhoan
-│   ├── NguoiDung.h          Kế thừa TaiKhoan (khách hàng)
-│   ├── SanPham.h            Lớp trừu tượng sản phẩm (Phân hệ 2)
-│   ├── SanPhamThuong.h      Kế thừa SanPham
-│   ├── SanPhamTuoiSong.h    Kế thừa SanPham
-│   ├── DonHang.h            Phân hệ 3
-│   ├── ChiTietDonHang.h
-│   ├── KhoHang.h
-│   ├── NhaCungCap.h
-│   ├── VanChuyen.h
-│   └── DoanhThuNgay.h
-├── core/            Cấu trúc dữ liệu và thuật toán (Phân hệ 4)
-│   ├── HashTable.h          Bảng băm, O(1)
-│   ├── Trie.h               Cây tiền tố, O(L)
-│   ├── BinarySearchTree.h   Cây nhị phân tìm kiếm, O(log N)
-│   ├── OrderQueue.h         Hàng đợi duyệt đơn FIFO, O(1)
-│   ├── MinHeap.h            Min-Heap cảnh báo hết hạn (mục 1.6, tài liệu chưa có phần này trong Phân hệ 4)
-│   └── ThuatToan.h          Lớp tiện ích thuật toán (ví dụ QuickSort)
-└── data/            Đọc, ghi file .txt
-    ├── FileManager.h        Tầng lưu trữ, đọc và ghi 7 file
-    ├── products.txt
-    ├── warehouses.txt
-    ├── suppliers.txt
-    ├── users.txt
-    ├── orders.txt
-    ├── chitietdonhang.txt
-    └── revenues.txt
+├── models/                              Các lớp thực thể nghiệp vụ
+│   ├── TaiKhoan.h / TaiKhoan.cpp        Lớp trừu tượng tài khoản (Phân hệ 1)
+│   ├── Admin.h / Admin.cpp              Kế thừa TaiKhoan
+│   ├── NguoiDung.h / NguoiDung.cpp      Kế thừa TaiKhoan (khách hàng)
+│   ├── SanPham.h / SanPham.cpp          Lớp trừu tượng sản phẩm (Phân hệ 2)
+│   ├── SanPhamThuong.h / .cpp           Kế thừa SanPham
+│   ├── SanPhamTuoiSong.h / .cpp         Kế thừa SanPham
+│   ├── DonHang.h / DonHang.cpp          Phân hệ 3
+│   ├── ChiTietDonHang.h / .cpp
+│   ├── KhoHang.h / KhoHang.cpp
+│   ├── NhaCungCap.h / NhaCungCap.cpp
+│   ├── VanChuyen.h / VanChuyen.cpp
+│   └── DoanhThuNgay.h / DoanhThuNgay.cpp
+├── core/                                Cấu trúc dữ liệu và thuật toán (Phân hệ 4)
+│   ├── HashTable.h / HashTable.cpp      Bảng băm, O(1)
+│   ├── Trie.h / Trie.cpp                Cây tiền tố, O(L)
+│   ├── BinarySearchTree.h / .cpp        Cây nhị phân tìm kiếm, O(log N)
+│   ├── OrderQueue.h / OrderQueue.cpp    Hàng đợi duyệt đơn FIFO, O(1)
+│   ├── MinHeap.h / MinHeap.cpp          Min-Heap cảnh báo hết hạn (mục 1.6, tài liệu chưa có phần này trong Phân hệ 4)
+│   └── ThuatToan.h / ThuatToan.cpp      Lớp tiện ích thuật toán (ví dụ QuickSort)
+├── data/                                Đọc, ghi file .txt
+│   ├── FileManager.h / FileManager.cpp  Tầng lưu trữ, đọc và ghi 7 file
+│   ├── products.txt
+│   ├── warehouses.txt
+│   ├── suppliers.txt
+│   ├── users.txt
+│   ├── orders.txt
+│   ├── chitietdonhang.txt
+│   └── revenues.txt
+└── app/                                 Điểm vào chương trình và giao diện
+    ├── main.cpp                         Hàm main, chỉ khởi tạo và điều phối
+    ├── MenuConsole.h / MenuConsole.cpp  Giao diện console (Tầng 3 trong tài liệu)
+    └── HeThongQuanLy.h / .cpp           Facade, nạp và lưu dữ liệu khi khởi động và thoát
 ```
 
-**Lưu ý:** tài liệu không ghi rõ phần mở rộng `.h` và `.cpp`. Nếu nhóm dùng cặp file, mỗi file `.h` có một file `.cpp` cùng tên. Các lớp quản lý (QuanLySanPham, QuanLyDonHang, ...) và `HeThongQuanLy` thuộc tầng dịch vụ và điều phối, không nằm trong ba thư mục trên. Nếu cần, nhóm có thể thêm `service/` và `app/` cho các phần này.
+**Lưu ý:**
+- Mỗi lớp có một cặp `.h` (khai báo) và `.cpp` (cài đặt), cùng tên.
+- Các lớp quản lý (`QuanLySanPham`, `QuanLyDonHang`, `QuanLyTaiKhoan`, `QuanLyKhoNCC`, `QuanLyDoanhThu`) thuộc tầng dịch vụ, chưa có thư mục riêng trong cấu trúc này. Nếu nhóm tách chúng ra, tạo thêm `src/service/` và cập nhật sơ đồ ở mục 9.2.
+- `HeThongQuanLy` đặt trong `app/` theo đúng vị trí tầng điều phối trong tài liệu. Nếu muốn tách rõ, chuyển sang `service/`.
 
 **File dùng chung** (như định nghĩa cấu trúc dữ liệu, cấu trúc bảng, hàm băm, hàm tiện ích): ai sửa phải báo cả nhóm trước khi push, vì ảnh hưởng nhiều module.
 
@@ -215,6 +222,44 @@ app: $(OBJ)
 
 Lệnh `make` biên dịch từng `.cpp` thành `.o` rồi liên kết thành file chạy `app`. Đường dẫn `src/app/main.cpp` là giả định, nhóm sửa lại cho đúng cấu trúc thật.
 
-## 10. Liên hệ
+## 10. Quy tắc dùng thư viện có sẵn
+
+Mục tiêu của phần `core/` là thể hiện hiểu biết về cấu trúc dữ liệu và thuật toán, nên phải tự cài đặt.
+
+### 10.1. Phải tự cài đặt (không dùng thư viện có sẵn)
+
+| Thành phần | File | Không được dùng |
+|---|---|---|
+| Bảng băm | `core/HashTable.h` | `std::unordered_map`, `std::map` |
+| Cây tiền tố | `core/Trie.h` | `std::map` cho con trỏ con (dùng `firstChild` và `nextSibling`) |
+| Cây nhị phân tìm kiếm | `core/BinarySearchTree.h` | `std::set`, `std::map` |
+| Hàng đợi duyệt đơn | `core/OrderQueue.h` | `std::queue`, `std::deque`, `std::list` |
+| Min-Heap | `core/MinHeap.h` | `std::priority_queue`, `std::make_heap` |
+| Sắp xếp | `core/ThuatToan.h` | `std::sort`, `std::stable_sort`, `std::qsort` |
+| Tìm kiếm | `core/ThuatToan.h` | `std::find`, `std::binary_search`, `std::lower_bound` |
+
+Thuật toán QuickSort, duyệt cây, vun đống (upHeap, downHeap) và tìm kiếm nhị phân phải được viết bằng tay.
+
+### 10.2. Được phép dùng
+
+- `std::string`, `std::vector` làm mảng động để lưu con trỏ hoặc bộ đệm, không dùng để thay thế cấu trúc đã tự cài đặt.
+- `std::ifstream`, `std::ofstream`, `std::cout`, `std::cin` cho đọc ghi file và giao diện.
+- Thư viện chuẩn cho các việc không phải nghiệp vụ, như `<cstdlib>`, `<ctime>` để lấy thời gian `time(NULL)`.
+
+### 10.3. Cách kiểm tra
+
+- Trước khi tạo Pull Request, tìm trong `core/` các từ khóa cấm bằng lệnh:
+  ```bash
+  grep -rn "std::sort\|std::map\|std::unordered_map\|std::queue\|std::priority_queue\|std::set" src/core/
+  ```
+- Nếu có kết quả, sửa lại trước khi merge. Người review có quyền từ chối Pull Request vi phạm.
+
+### 10.4. Điểm cần thống nhất trong nhóm
+
+Tài liệu có hai chỗ chưa nhất quán:
+- Mục 1.1 yêu cầu Trie dùng `firstChild` và `nextSibling`, nhưng phần Phân hệ 4 (dòng 538 trong tài liệu) lại mô tả `map<char, TrieNode*>`. Nhóm nên chọn một cách, khuyến nghị dùng `firstChild` và `nextSibling` theo mục 1.1.
+- `HashTable` trong Phân hệ 4 dùng `vector<HashNode*> buckets`. Đây là mảng động để giữ con trỏ đầu danh sách, nên được chấp nhận theo mục 10.2. Nhưng nếu nhóm muốn chặt hơn, dùng mảng cấp phát tay như `new HashNode*[capacity]`.
+
+## 11. Liên hệ
 
 Mọi thắc mắc về quy tắc làm việc, hỏi trong nhóm chat trước khi tự sửa file của người khác.
