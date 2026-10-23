@@ -154,3 +154,61 @@ data/*.tmp
 | Định dạng 5 file thiếu trong tài liệu | **Dùng thứ tự trường của lược đồ mục I** như mục 2 | Lược đồ là nguồn chính thức duy nhất cho các bảng này |
 | `KhoHang` chỉ có một `maSanPham` | **Giữ theo lược đồ**: mỗi kho chứa một sản phẩm | Đúng với thiết kế trong tài liệu. Nếu một kho cần chứa nhiều sản phẩm, đổi khóa thành cặp `(maKho, maSanPham)` |
 
+### 5.1. Ảnh hưởng đến `models/`
+
+Các thay đổi trên làm thay đổi các lớp sau:
+
+- **`SanPham`** (lớp trừu tượng, `models/SanPham.h`): thêm thuộc tính `ngaySanXuat` (`time_t`) và `hanDungSoNgay` (`int`), và thêm phương thức `ngayHetHan()` trả về `ngaySanXuat + hanDungSoNgay * 86400`. Phương thức này được `core/MinHeap` dùng làm khóa.
+- **`SanPhamThuong`** và **`SanPhamTuoiSong`**: hàm tạo nhận thêm hai tham số. Hàm `xuatChuoiFile()` của cả hai xuất thêm hai trường ở cuối dòng.
+- **`DoanhThuNgay`** (`models/DoanhThuNgay.h`): thuộc tính `ngayThongKe` đổi kiểu thành `std::string` để làm khóa.
+- **`KhoHang`** (`models/KhoHang.h`): không đổi, vì giữ theo lược đồ.
+- **`NguoiDung`** (`models/NguoiDung.h`): không lưu danh sách mã đơn trong `users.txt`. Khi khởi động, danh sách này được dựng lại từ `orders.txt` theo trường `IdNguoiDung`.
+
+Các lớp `TaiKhoan`, `Admin`, `DonHang`, `ChiTietDonHang`, `NhaCungCap`, `VanChuyen` không đổi.
+
+**Lưu ý khi làm nhóm:** đổi hàm tạo của `SanPham` và các lớp con là đổi chữ ký hàm, nên phải báo cả nhóm trước khi push (mục 9.3 của README chính).
+
+## 6. Chọn bộ dữ liệu: thật hay test
+
+Có hai thư mục dữ liệu cùng cấu trúc 7 file:
+
+| Thư mục | Dùng khi | Ghi chú |
+|---|---|---|
+| `data/` | Chạy thật, làm báo cáo | Dữ liệu thật. Không dùng để test |
+| `data_test/` | Test, thử chức năng | Bản sao của `data/`, có thể sửa, xóa, nạp sai thoải mái |
+
+Chương trình **không ghi cứng đường dẫn** trong code. `FileManager` nhận đường dẫn gốc qua hàm tạo, và `main.cpp` chọn thư mục theo tham số dòng lệnh:
+
+```cpp
+// src/app/main.cpp
+int main(int argc, char* argv[]) {
+    std::string dataDir = "data";
+    if (argc > 1 && std::string(argv[1]) == "--test") {
+        dataDir = "data_test";
+    }
+    HeThongQuanLy hệThống(dataDir);   // truyền xuống FileManager và WebServer
+    hệThống.chạy();
+    return 0;
+}
+```
+
+Cách chạy:
+
+```text
+./app              # dùng data/ (dữ liệu thật)
+./app --test       # dùng data_test/ (dữ liệu test)
+```
+
+Trong Makefile có hai đích tương ứng:
+
+```makefile
+run:
+	./app
+
+test-run:
+	./app --test
+```
+
+**Thiết lập lần đầu:** chạy `cp -r data data_test` một lần để tạo bộ test. Sau đó nên commit `data_test/` vào Git để cả nhóm dùng chung một bộ test. Không commit `data/` nếu dữ liệu thật không được công khai.
+
+**Quy tắc:** khi test, không chạy `./app` với `data/` đang giữ dữ liệu báo cáo, vì chương trình lưu sau mỗi thay đổi và sẽ ghi trực tiếp vào `data/`. Muốn thử lại bộ test từ đầu thì chép lại từ `data/` hoặc từ bản commit của `data_test/`.
