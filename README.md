@@ -24,7 +24,13 @@ Mỗi người phụ trách một module, chỉ sửa các file của module đ�
 | Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h` của module trên, không sửa) | `Huy` |
 | Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `[điền tên]` |
 | Doanh thu, báo cáo, vận chuyển | Mục 1.5, 1.7, 2.6 | `models/DoanhThuNgay.h`, `models/VanChuyen.h` | `[điền tên]` |
-| Giao diện khách hàng | Mục 2.4, 2.5 | `MenuConsole.h` (tầng giao diện trong tài liệu) | `[điền tên]` |
+| Giao diện web (HTML, CSS) | Mục 2.4, 2.5 | `web/index.html`, `web/style.css`, `web/app.js` (xem `web/README.md`) | `[điền tên]` |
+| Máy chủ web, API JSON | Mục 2.4, 2.5 | `app/WebServer.h`, `app/WebServer.cpp` | `[điền tên]` |
+| Quản lý sản phẩm (nghiệp vụ) | Mục 1.3, 2.2 | `service/QuanLySanPham.h` | `[điền tên]` |
+| Quản lý đơn hàng (nghiệp vụ) | Mục 1.4, 2.3, 2.5, 2.7 | `service/QuanLyDonHang.h` | `[điền tên]` |
+| Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 | `service/QuanLyTaiKhoan.h` | `[điền tên]` |
+| Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 | `service/QuanLyKhoNCC.h` | `[điền tên]` |
+| Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h` | `[điền tên]` |
 
 Mỗi file chỉ xuất hiện ở đúng một dòng. Module khác chỉ `#include` file đó, không sửa.
 
@@ -52,6 +58,12 @@ src/
 │   ├── OrderQueue.h / OrderQueue.cpp    Hàng đợi duyệt đơn FIFO, O(1)
 │   ├── MinHeap.h / MinHeap.cpp          Min-Heap cảnh báo hết hạn (mục 1.6, tài liệu chưa có phần này trong Phân hệ 4)
 │   └── ThuatToan.h / ThuatToan.cpp      Lớp tiện ích thuật toán (ví dụ QuickSort)
+├── service/                             Quản lý nghiệp vụ (Tầng 2 trong tài liệu)
+│   ├── QuanLySanPham.h / .cpp           Thêm, sửa, xóa, tìm và sắp xếp sản phẩm
+│   ├── QuanLyDonHang.h / .cpp           Đặt hàng, duyệt đơn, lịch sử đơn
+│   ├── QuanLyTaiKhoan.h / .cpp          Đăng ký, đăng nhập, quản lý tài khoản
+│   ├── QuanLyKhoNCC.h / .cpp            Kho hàng và nhà cung cấp
+│   └── QuanLyDoanhThu.h / .cpp          Ghi nhận và báo cáo doanh thu
 ├── data/                                Đọc, ghi file .txt
 │   ├── FileManager.h / FileManager.cpp  Tầng lưu trữ, đọc và ghi 7 file
 │   ├── products.txt
@@ -61,16 +73,24 @@ src/
 │   ├── orders.txt
 │   ├── chitietdonhang.txt
 │   └── revenues.txt
-└── app/                                 Điểm vào chương trình và giao diện
+└── app/                                 Điểm vào chương trình và máy chủ web
     ├── main.cpp                         Hàm main, chỉ khởi tạo và điều phối
-    ├── MenuConsole.h / MenuConsole.cpp  Giao diện console (Tầng 3 trong tài liệu)
+    ├── WebServer.h / WebServer.cpp      Máy chủ HTTP (cpp-httplib), trả API JSON cho giao diện web
     └── HeThongQuanLy.h / .cpp           Facade, nạp và lưu dữ liệu khi khởi động và thoát
+
+web/                                     Giao diện HTML và CSS, nằm ngoài src/ (Tầng 3 trong tài liệu)
+├── index.html                           Các màn hình: đăng nhập, khu Admin, khu Customer
+├── style.css                            Kiểu dáng, bố cục, responsive
+├── app.js                               Gọi API và hiển thị dữ liệu (chưa có)
+└── README.md                            Quy ước HTML, CSS và nhiệm vụ giao diện
 ```
 
 **Lưu ý:**
 - Mỗi lớp có một cặp `.h` (khai báo) và `.cpp` (cài đặt), cùng tên.
-- Các lớp quản lý (`QuanLySanPham`, `QuanLyDonHang`, `QuanLyTaiKhoan`, `QuanLyKhoNCC`, `QuanLyDoanhThu`) thuộc tầng dịch vụ, chưa có thư mục riêng trong cấu trúc này. Nếu nhóm tách chúng ra, tạo thêm `src/service/` và cập nhật sơ đồ ở mục 9.2.
-- `HeThongQuanLy` đặt trong `app/` theo đúng vị trí tầng điều phối trong tài liệu. Nếu muốn tách rõ, chuyển sang `service/`.
+- Năm lớp quản lý (`QuanLySanPham`, `QuanLyDonHang`, `QuanLyTaiKhoan`, `QuanLyKhoNCC`, `QuanLyDoanhThu`) nằm trong `service/`. Đây là tầng nghiệp vụ, gọi `core/`, `data/` và `models/`.
+- `HeThongQuanLy` (Facade) nằm trong `app/`, vì nó chỉ điều phối các lớp trong `service/` cho `WebServer`. Không đặt trong `service/` để tránh vòng phụ thuộc với `app/`.
+- Giao diện là HTML và CSS trong `web/`, không có giao diện console. Trình duyệt gọi API của `WebServer` qua `app.js`. Phần C++ không đụng đến HTML hay CSS.
+- `FileManager` nằm trong `data/` (Tầng 1 trong tài liệu).
 
 **File dùng chung** (như định nghĩa cấu trúc dữ liệu, cấu trúc bảng, hàm băm, hàm tiện ích): ai sửa phải báo cả nhóm trước khi push, vì ảnh hưởng nhiều module.
 
