@@ -38,11 +38,13 @@ CUSTOMER|id|username|passwordHash|hoTen|soDienThoai|diaChi
 Ví dụ:
 
 ```text
-ADMIN|1|admin|5f4dcc3b5aa765d61d8327deb882cf99
-CUSTOMER|2|an|e10adc3949ba59abbe56e057f20f883e|Nguyễn Văn An|0901234567|Đà Nẵng
+ADMIN|111001|admin|5f4dcc3b5aa765d61d8327deb882cf99
+CUSTOMER|222001|an|e10adc3949ba59abbe56e057f20f883e|Nguyễn Văn An|0901234567|Đà Nẵng
 ```
 
 `passwordHash` là chuỗi băm của mật khẩu, không lưu mật khẩu gốc. Ví dụ trên dùng giá trị mẫu.
+
+`id` gồm 6 chữ số. Ba chữ số đầu là mã vai trò: `111` là Admin, `222` là khách hàng. Ba chữ số sau là số thứ tự, ví dụ `111001` là Admin đầu tiên, `222001` là khách hàng đầu tiên.
 
 ### 3.2. `products.txt`
 
@@ -97,7 +99,7 @@ maDonHang|tenKhachHang|diaChiKhachHang|soDienThoaiKhachHang|trangThaiDonHang|nga
 Ví dụ:
 
 ```text
-DH001|Nguyễn Văn An|Đà Nẵng|0901234567|Đã duyệt|1761100800|2
+DH001|Nguyễn Văn An|Đà Nẵng|0901234567|Đã duyệt|1761100800|222001
 ```
 
 ### 3.6. `chitietdonhang.txt`
@@ -162,7 +164,11 @@ Các thay đổi trên làm thay đổi các lớp sau:
 - **`SanPhamThuong`** và **`SanPhamTuoiSong`**: hàm tạo nhận thêm hai tham số. Hàm `xuatChuoiFile()` của cả hai xuất thêm hai trường ở cuối dòng.
 - **`DoanhThuNgay`** (`models/DoanhThuNgay.h`): thuộc tính `ngayThongKe` đổi kiểu thành `std::string` để làm khóa.
 - **`KhoHang`** (`models/KhoHang.h`): không đổi, vì giữ theo lược đồ.
-- **`NguoiDung`** (`models/NguoiDung.h`): không lưu danh sách mã đơn trong `users.txt`. Khi khởi động, danh sách này được dựng lại từ `orders.txt` theo trường `IdNguoiDung`.
+- **`NguoiDung`** (`models/NguoiDung.h`, kế thừa `TaiKhoan`): thuộc tính `hoTen`, `soDienThoai`, `diaChi` và `vector<DonHang*> danhSachDonHangCaNhan`. Vector này chứa con trỏ tới các đơn của khách, nên tra cứu đơn của một khách là O(k) thay vì quét toàn bộ đơn O(N).
+  - `users.txt` không lưu danh sách đơn. Dòng khách hàng là `CUSTOMER|id|username|passwordHash|hoTen|soDienThoai|diaChi`, đúng như mục 3.1.
+  - Khi khởi động, `orders.txt` được đọc trước, rồi với mỗi đơn, con trỏ tới đơn đó được thêm vào `danhSachDonHangCaNhan` của khách có `id` bằng trường `IdNguoiDung`.
+  - Hàm `themDonHang(DonHang* dh)` thêm đơn vào danh sách khi khách đặt hàng. Hàm `getDanhSachDonHang()` trả về danh sách dạng `const` tham chiếu.
+  - Đối tượng `DonHang` do lớp quản lý đơn (`QuanLyDonHang`) tạo và sở hữu. `NguoiDung` chỉ giữ con trỏ, không giải phóng bộ nhớ. *(Phân công sở hữu là đề xuất của nhóm, tài liệu không nêu rõ.)*
 
 Các lớp `TaiKhoan`, `Admin`, `DonHang`, `ChiTietDonHang`, `NhaCungCap`, `VanChuyen` không đổi.
 
