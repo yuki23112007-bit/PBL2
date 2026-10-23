@@ -17,14 +17,16 @@ Mỗi người phụ trách một module, chỉ sửa các file của module đ�
 
 | Module | Chức năng trong tài liệu | File phụ trách | Người phụ trách |
 |---|---|---|---|
-| Đăng nhập, đăng ký | Mục 1.1, 2.1 (Trie người dùng) | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h`, `core/Trie.h` | `[điền tên]` |
-| Tra cứu sản phẩm | Mục 1.2, 2.2 (Trie sản phẩm) | `models/SanPham.h`, `models/SanPhamThuong.h`, `models/SanPhamTuoiSong.h`, `core/Trie.h` | `Huy` |
-| Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h` | `Huy` |
+| Đăng nhập, đăng ký | Mục 1.1, 2.1 | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h` | `[điền tên]` |
+| Tra cứu sản phẩm | Mục 1.2, 2.2 (Trie sản phẩm) | `core/Trie.h` | `Huy` |
+| Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h`, `models/SanPhamThuong.h`, `models/SanPhamTuoiSong.h` | `Huy` |
 | Hàng đợi duyệt đơn, Pending List | Mục 1.4, 2.3, 2.7 | `core/OrderQueue.h`, `models/DonHang.h`, `models/ChiTietDonHang.h` | `Huy` |
-| Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h`, `models/DonHang.h` | `Huy` |
+| Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h` của module trên, không sửa) | `Huy` |
 | Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `[điền tên]` |
 | Doanh thu, báo cáo, vận chuyển | Mục 1.5, 1.7, 2.6 | `models/DoanhThuNgay.h`, `models/VanChuyen.h` | `[điền tên]` |
 | Giao diện khách hàng | Mục 2.4, 2.5 | `MenuConsole.h` (tầng giao diện trong tài liệu) | `[điền tên]` |
+
+Mỗi file chỉ xuất hiện ở đúng một dòng. Module khác chỉ `#include` file đó, không sửa.
 
 ### 2.1. Cấu trúc thư mục và tên file
 
