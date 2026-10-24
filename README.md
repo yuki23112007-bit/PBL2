@@ -22,12 +22,12 @@ Mỗi người phụ trách một module, chỉ sửa các file của module đ�
 | Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h`, `models/SanPhamThuong.h`, `models/SanPhamTuoiSong.h` | `Huy` |
 | Hàng đợi duyệt đơn, Pending List | Mục 1.4, 2.3, 2.7 | `core/OrderQueue.h`, `models/DonHang.h`, `models/ChiTietDonHang.h` | `Huy` |
 | Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h` của module trên, không sửa) | `Huy` |
-| Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `[điền tên]` |
+| Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `Huy` |
 | Doanh thu, báo cáo, vận chuyển | Mục 1.5, 1.7, 2.6 | `models/DoanhThuNgay.h`, `models/VanChuyen.h` | `[điền tên]` |
 | Giao diện web (HTML, CSS) | Mục 2.4, 2.5 | `web/index.html`, `web/style.css`, `web/app.js` (xem `web/README.md`) | `[điền tên]` |
 | Máy chủ web, API JSON | Mục 2.4, 2.5 | `app/WebServer.h`, `app/WebServer.cpp` | `[điền tên]` |
-| Quản lý sản phẩm (nghiệp vụ) | Mục 1.3, 2.2 | `service/QuanLySanPham.h` | `[điền tên]` |
-| Quản lý đơn hàng (nghiệp vụ) | Mục 1.4, 2.3, 2.5, 2.7 | `service/QuanLyDonHang.h` | `[điền tên]` |
+| Quản lý sản phẩm (nghiệp vụ) | Mục 1.3, 2.2 | `service/QuanLySanPham.h` | `Huy` |
+| Quản lý đơn hàng (nghiệp vụ) | Mục 1.4, 2.3, 2.5, 2.7 | `service/QuanLyDonHang.h` | `Huy` |
 | Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 | `service/QuanLyTaiKhoan.h` | `[điền tên]` |
 | Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 | `service/QuanLyKhoNCC.h` | `[điền tên]` |
 | Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h` | `[điền tên]` |
