@@ -19,12 +19,15 @@
 #include "../models/TaiKhoan.h"
 #include "../models/Admin.h"
 #include "../models/NguoiDung.h"
+#include "../models/DoanhThuNgay.h"
+#include "../models/VanChuyen.h"
 
 using namespace std;
 
 // Bí danh để tương thích ngược nếu có module cũ gọi tên SanPhamThuong / SanPhamTuoiSong
 using SanPhamThuong = ThucPhamThuong;
 using SanPhamTuoiSong = ThucPhamTuoiSong;
+using DoanhThuRecord = DoanhThuNgay;
 
 // Cấu trúc đại diện cho bản ghi nhà cung cấp (suppliers.txt)
 struct NhaCungCapRecord {
@@ -48,23 +51,7 @@ struct NhaCungCapRecord {
     }
 };
 
-// Cấu trúc đại diện cho bản ghi doanh thu theo ngày (revenues.txt)
-struct DoanhThuRecord {
-    string ngayThongKe;  // Định dạng yyyy-mm-dd
-    double tongDoanhThu;
-    int tongSoDonHang;
 
-    DoanhThuRecord()
-        : ngayThongKe(""), tongDoanhThu(0.0), tongSoDonHang(0) {}
-
-    DoanhThuRecord(const string& ngay, double doanhThu, int soDon)
-        : ngayThongKe(ngay), tongDoanhThu(doanhThu), tongSoDonHang(soDon) {}
-
-    string xuatChuoiFile() const {
-        return ngayThongKe + "|" + to_string(static_cast<long long>(tongDoanhThu)) + "|" +
-               to_string(tongSoDonHang);
-    }
-};
 
 // Cấu trúc DTO cho User (giữ tương thích)
 struct UserRecord {
