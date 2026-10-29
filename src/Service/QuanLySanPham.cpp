@@ -24,9 +24,12 @@ bool QuanLySanPham::themSanPham(SanPham* sp) {
     // Dong bo cay Trie de tim kiem theo ten
     cayTienToSanPham.chen(sp->getTenSP(), sp->getMaSP(), sp);
 
-    // Neu la hang tuoi song, dua vao MinHeap de quan ly han dung
+    // Neu la thuc pham tuoi song, dua vao MinHeap de quan ly han dung
     if (sp->canbaoquanlanh()) {
-        heapTuoiSong.them(sp);
+        ThucPham* tp = dynamic_cast<ThucPham*>(sp);
+        if (tp != nullptr) {
+            heapTuoiSong.them(tp);
+        }
     }
 
     return true;
@@ -183,7 +186,7 @@ void QuanLySanPham::kiemTraCanhBaoHetHang(int nguong) const {
     }
 }
 
-vector<SanPham*> QuanLySanPham::kiemTraCanhBaoHetHan(int soNgay) const {
+vector<ThucPham*> QuanLySanPham::kiemTraCanhBaoHetHan(int soNgay) const {
     return heapTuoiSong.kiemTraSapHetHan(soNgay);
 }
 
