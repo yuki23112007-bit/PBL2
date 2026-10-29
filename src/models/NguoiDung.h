@@ -1,6 +1,4 @@
-#pragma once
-
-#include "TaiKhoan.h"
+#include <string>
 #include <vector>
 
 using namespace std;

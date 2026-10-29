@@ -1,3 +1,4 @@
+#include "TaiKhoan.h"
 #include "Admin.h"
 
 using namespace std;
@@ -16,4 +17,3 @@ void Admin::show() const {
 string Admin::xuatChuoiFile() const {
     return "ADMIN|" + id + "|" + username + "|" + passwordHash;
 }
-
