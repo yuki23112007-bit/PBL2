@@ -1,0 +1,205 @@
+#ifndef FILEMANAGER_H
+#define FILEMANAGER_H
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <ctime>
+
+#include "../models/SanPham.h"
+#include "../models/SanPhamThuong.h"
+#include "../models/SanPhamTuoiSong.h"
+#include "../models/KhoHang.h"
+#include "../models/DonHang.h"
+#include "../models/ChiTietDonHang.h"
+
+using namespace std;
+
+// Lớp sản phẩm công nghệ (được định nghĩa để phục vụ nạp dòng CONG_NGHE từ products.txt)
+#ifndef CONGNGHE_DEFINED
+#define CONGNGHE_DEFINED
+class CongNghe : public SanPham {
+public:
+    CongNghe() : SanPham() {
+        LoaiSP = "CONG_NGHE";
+        HanDungSoNgay = 0;
+    }
+    CongNghe(const string& maSP, const string& tenSP,
+             const string& danhMuc, const double& donGia,
+             const int& soLuongTonKho, const string& maNCC,
+             const time_t& ngaySX)
+        : SanPham(maSP, tenSP, danhMuc, donGia, soLuongTonKho, "CONG_NGHE", maNCC, ngaySX, 0) {}
+    ~CongNghe() override = default;
+
+    bool canbaoquanlanh() const override { return false; }
+    string xuatchuoifile() const override {
+        return "CONG_NGHE|" + ChuoiPhanChung() + "|" + to_string(static_cast<long long>(NgaySX));
+    }
+};
+#endif
+
+// Lớp sản phẩm đồ gia dụng (được định nghĩa để phục vụ nạp dòng DO_GIA_DUNG từ products.txt)
+#ifndef DOGIADUNG_DEFINED
+#define DOGIADUNG_DEFINED
+class DoGiaDung : public SanPham {
+public:
+    DoGiaDung() : SanPham() {
+        LoaiSP = "DO_GIA_DUNG";
+        HanDungSoNgay = 0;
+    }
+    DoGiaDung(const string& maSP, const string& tenSP,
+              const string& danhMuc, const double& donGia,
+              const int& soLuongTonKho, const string& maNCC,
+              const time_t& ngaySX)
+        : SanPham(maSP, tenSP, danhMuc, donGia, soLuongTonKho, "DO_GIA_DUNG", maNCC, ngaySX, 0) {}
+    ~DoGiaDung() override = default;
+
+    bool canbaoquanlanh() const override { return false; }
+    string xuatchuoifile() const override {
+        return "DO_GIA_DUNG|" + ChuoiPhanChung() + "|" + to_string(static_cast<long long>(NgaySX));
+    }
+};
+#endif
+
+// Cấu trúc đại diện cho bản ghi tài khoản người dùng (users.txt)
+struct UserRecord {
+    string loai;         // "ADMIN" hoặc "CUSTOMER"
+    string id;           // 6 chữ số: 111xxx (Admin), 222xxx (Khách hàng)
+    string username;
+    string passwordHash;
+    string hoTen;        // Chỉ có ở CUSTOMER
+    string soDienThoai;  // Chỉ có ở CUSTOMER
+    string diaChi;       // Chỉ có ở CUSTOMER
+
+    UserRecord()
+        : loai("CUSTOMER"), id(""), username(""), passwordHash(""),
+          hoTen(""), soDienThoai(""), diaChi("") {}
+
+    UserRecord(const string& loai, const string& id, const string& username,
+               const string& passwordHash, const string& hoTen = "",
+               const string& sdt = "", const string& diaChi = "")
+        : loai(loai), id(id), username(username), passwordHash(passwordHash),
+          hoTen(hoTen), soDienThoai(sdt), diaChi(diaChi) {}
+
+    bool isAdmin() const { return loai == "ADMIN"; }
+    bool isCustomer() const { return loai == "CUSTOMER"; }
+
+    string xuatChuoiFile() const {
+        if (loai == "ADMIN") {
+            return "ADMIN|" + id + "|" + username + "|" + passwordHash;
+        } else {
+            return "CUSTOMER|" + id + "|" + username + "|" + passwordHash + "|" +
+                   hoTen + "|" + soDienThoai + "|" + diaChi;
+        }
+    }
+};
+
+// Cấu trúc đại diện cho bản ghi nhà cung cấp (suppliers.txt)
+struct NhaCungCapRecord {
+    string maNhaCungCap;
+    string tenCongTy;
+    string diaChi;
+    string soDienThoai;
+    string danhMucCungCap;
+
+    NhaCungCapRecord()
+        : maNhaCungCap(""), tenCongTy(""), diaChi(""), soDienThoai(""), danhMucCungCap("") {}
+
+    NhaCungCapRecord(const string& ma, const string& ten, const string& diaChi,
+                     const string& sdt, const string& danhMuc)
+        : maNhaCungCap(ma), tenCongTy(ten), diaChi(diaChi),
+          soDienThoai(sdt), danhMucCungCap(danhMuc) {}
+
+    string xuatChuoiFile() const {
+        return maNhaCungCap + "|" + tenCongTy + "|" + diaChi + "|" +
+               soDienThoai + "|" + danhMucCungCap;
+    }
+};
+
+// Cấu trúc đại diện cho bản ghi doanh thu theo ngày (revenues.txt)
+struct DoanhThuRecord {
+    string ngayThongKe;  // Định dạng yyyy-mm-dd
+    double tongDoanhThu;
+    int tongSoDonHang;
+
+    DoanhThuRecord()
+        : ngayThongKe(""), tongDoanhThu(0.0), tongSoDonHang(0) {}
+
+    DoanhThuRecord(const string& ngay, double doanhThu, int soDon)
+        : ngayThongKe(ngay), tongDoanhThu(doanhThu), tongSoDonHang(soDon) {}
+
+    string xuatChuoiFile() const {
+        return ngayThongKe + "|" + to_string(static_cast<long long>(tongDoanhThu)) + "|" +
+               to_string(tongSoDonHang);
+    }
+};
+
+class FileManager {
+private:
+    string dataDir;
+
+    // Đường dẫn đầy đủ của file
+    string layDuongDan(const string& tenFile) const;
+
+    // Tách chuỗi theo dấu phân cách | (loại bỏ \r và khoảng trắng thừa)
+    static vector<string> tachChuoi(const string& dong, char kyTuPhanCach = '|');
+    static string catKhoangTrang(const string& s);
+
+    // Ghi an toàn bằng cách ghi vào file tạm .tmp rồi đổi tên (Mục 4 README)
+    bool ghiFileAnToan(const string& tenFile, const vector<string>& cacDong);
+
+    // Thêm một dòng vào cuối file
+    bool themDongVaoFile(const string& tenFile, const string& dong);
+
+public:
+    explicit FileManager(const string& duongDanThuMuc = "data");
+    ~FileManager() = default;
+
+    // Getter & Setter đường dẫn thư mục dữ liệu
+    const string& getDataDir() const;
+    void setDataDir(const string& duongDanThuMuc);
+
+    // ================= 1. ĐỌC DỮ LIỆU TỪ 7 FILE =================
+    // products.txt
+    vector<SanPham*> docSanPham();
+
+    // warehouses.txt
+    vector<KhoHang> docKhoHang();
+
+    // orders.txt
+    vector<DonHang> docDonHang();
+
+    // chitietdonhang.txt
+    vector<ChiTietDonHang> docChiTietDonHang();
+
+    // suppliers.txt
+    vector<NhaCungCapRecord> docNhaCungCap();
+
+    // users.txt
+    vector<UserRecord> docNguoiDung();
+
+    // revenues.txt
+    vector<DoanhThuRecord> docDoanhThu();
+
+    // ================= 2. GHI DỮ LIỆU VÀO 7 FILE (AN TOÀN QUA FILE TẠM) =================
+    bool ghiSanPham(const vector<SanPham*>& danhSach);
+    bool ghiKhoHang(const vector<KhoHang>& danhSach);
+    bool ghiDonHang(const vector<DonHang>& danhSach);
+    bool ghiChiTietDonHang(const vector<ChiTietDonHang>& danhSach);
+    bool ghiNhaCungCap(const vector<NhaCungCapRecord>& danhSach);
+    bool ghiNguoiDung(const vector<UserRecord>& danhSach);
+    bool ghiDoanhThu(const vector<DoanhThuRecord>& danhSach);
+
+    // ================= 3. THÊM BẢN GHI MỚI VÀO CUỐI FILE (APPEND) =================
+    bool themSanPham(const SanPham* sp);
+    bool themKhoHang(const KhoHang& kho);
+    bool themDonHang(const DonHang& dh);
+    bool themChiTietDonHang(const ChiTietDonHang& ctdh);
+    bool themNhaCungCap(const NhaCungCapRecord& ncc);
+    bool themNguoiDung(const UserRecord& user);
+    bool themDoanhThu(const DoanhThuRecord& dt);
+};
+
+#endif // FILEMANAGER_H
