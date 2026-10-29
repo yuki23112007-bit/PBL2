@@ -1,0 +1,8 @@
+NCC01|Công ty Gạo & Nông sản Việt|Hà Nội|0241234567|Lương thực
+NCC02|Công ty Thực phẩm Acecook Việt Nam|TP. Hồ Chí Minh|0283845678|Mì ăn liền & Bánh kẹo
+NCC03|Công ty Cổ phần Hàng tiêu dùng Masan|TP. Hồ Chí Minh|0283912345|Gia vị & Nước chấm
+NCC04|Công ty Cổ phần Sữa Việt Nam (Vinamilk)|TP. Hồ Chí Minh|0285416127|Sữa & Sản phẩm từ sữa
+NCC05|Tập đoàn Trung Nguyên Legend|Đắk Lắk|0262395678|Đồ uống & Cà phê
+NCC06|Công ty Thủy hải sản Biển Đông|Đà Nẵng|0236382345|Hải sản & Thịt đông lạnh
+NCC07|Công ty Cổ phần Chăn nuôi C.P. Việt Nam|Đồng Nai|0251383625|Thịt tươi sống & Gia cầm
+NCC08|Hợp tác xã Rau sạch Đà Lạt Farm|Lâm Đồng|0263384567|Rau củ quả tươi

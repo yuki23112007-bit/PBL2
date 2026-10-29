@@ -19,7 +19,7 @@ Mỗi người phụ trách một module, chỉ sửa các file của module đ�
 |---|---|---|---|
 | Đăng nhập, đăng ký | Mục 1.1, 2.1 | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h` | `[điền tên]` |
 | Tra cứu sản phẩm | Mục 1.2, 2.2 (Trie sản phẩm) | `core/Trie.h` | `Huy` |
-| Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h`, `models/SanPhamThuong.h`, `models/SanPhamTuoiSong.h` | `Huy` |
+| Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h`, `models/ThucPham.h`, `models/SanPhamThuong.h`, `models/SanPhamTuoiSong.h`, `models/CongNghe.h`, `models/DoGiaDung.h` | `Huy` |
 | Hàng đợi duyệt đơn, Pending List | Mục 1.4, 2.3, 2.7 | `core/OrderQueue.h`, `models/DonHang.h`, `models/ChiTietDonHang.h` | `Huy` |
 | Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h` của module trên, không sửa) | `Huy` |
 | Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `Huy` |
@@ -43,8 +43,11 @@ src/
 │   ├── Admin.h / Admin.cpp              Kế thừa TaiKhoan
 │   ├── NguoiDung.h / NguoiDung.cpp      Kế thừa TaiKhoan (khách hàng)
 │   ├── SanPham.h / SanPham.cpp          Lớp trừu tượng sản phẩm (Phân hệ 2)
-│   ├── SanPhamThuong.h / .cpp           Kế thừa SanPham
-│   ├── SanPhamTuoiSong.h / .cpp         Kế thừa SanPham
+│   ├── ThucPham.h / ThucPham.cpp        Kế thừa SanPham (nhóm thực phẩm)
+│   ├── ThucPhamThuong.h / .cpp           Kế thừa ThucPham
+│   ├── ThucPhamTuoiSong.h / .cpp         Kế thừa ThucPham
+│   ├── CongNghe.h / CongNghe.cpp        Kế thừa SanPham
+│   ├── DoGiaDung.h / DoGiaDung.cpp      Kế thừa SanPham
 │   ├── DonHang.h / DonHang.cpp          Phân hệ 3
 │   ├── ChiTietDonHang.h / .cpp
 │   ├── KhoHang.h / KhoHang.cpp
