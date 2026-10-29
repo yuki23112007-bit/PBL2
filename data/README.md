@@ -17,7 +17,7 @@ Thư mục này chứa 7 file `.txt` làm nơi lưu trữ dữ liệu của hệ
 | File | Thứ tự trường | Nguồn |
 |---|---|---|
 | `users.txt` | Xem mục 3.1 (có hai loại dòng: `ADMIN` và `CUSTOMER`) | Tài liệu mục 1, Phân hệ 1 |
-| `products.txt` | Xem mục 3.2 (có hai loại dòng: `THUONG` và `TUOI_SONG`) | Tài liệu mục 1, Phân hệ 2, cộng thêm hai trường theo mục 5 |
+| `products.txt` | Xem mục 3.2 (có bốn loại dòng: `THUONG`, `TUOI_SONG`, `CONG_NGHE`, `DO_GIA_DUNG`) | Tài liệu mục 1, Phân hệ 2, cộng thêm trường ngày theo mục 5 |
 | `warehouses.txt` | `maKho\|viTri\|sucChuaToiDa\|maSanPham` | Lược đồ mục I, bảng KhoHang |
 | `suppliers.txt` | `maNhaCungCap\|tenCongTy\|diaChi\|soDienThoai\|danhMucCungCap` | Lược đồ mục I, bảng NhaCungCap |
 | `orders.txt` | `maDonHang\|tenKhachHang\|diaChiKhachHang\|soDienThoaiKhachHang\|trangThaiDonHang\|ngayDatHang\|IdNguoiDung` | Lược đồ mục I, bảng DonHang |
@@ -48,11 +48,13 @@ CUSTOMER|222001|an|e10adc3949ba59abbe56e057f20f883e|Nguyễn Văn An|0901234567|
 
 ### 3.2. `products.txt`
 
-Hai loại dòng. Cả hai đều có `ngaySanXuat` và `hanDungSoNgay` ở cuối (quyết định ở mục 5):
+Bốn loại dòng, phân biệt bằng trường đầu tiên. Mọi sản phẩm đều có `ngaySanXuat`. Chỉ thực phẩm (`THUONG`, `TUOI_SONG`) có thêm `hanDungSoNgay` (quyết định ở mục 5):
 
 ```text
 THUONG|maSP|tenSP|danhMuc|donGia|soLuongTon|maNCC|quyCachDongGoi|ngaySanXuat|hanDungSoNgay
 TUOI_SONG|maSP|tenSP|danhMuc|donGia|soLuongTon|maNCC|nhietDoBaoQuan|ngaySanXuat|hanDungSoNgay
+CONG_NGHE|maSP|tenSP|danhMuc|donGia|soLuongTon|maNCC|ngaySanXuat
+DO_GIA_DUNG|maSP|tenSP|danhMuc|donGia|soLuongTon|maNCC|ngaySanXuat
 ```
 
 Ví dụ (`ngaySanXuat` là `time_t`, `hanDungSoNgay` là số ngày):
@@ -60,9 +62,11 @@ Ví dụ (`ngaySanXuat` là `time_t`, `hanDungSoNgay` là số ngày):
 ```text
 THUONG|SP001|Gạo ST25|Lương thực|25000|100|NCC01|Bao 5kg|1760000000|365
 TUOI_SONG|SP002|Cá hồi|Hải sản|250000|20|NCC02|-18|1760400000|7
+CONG_NGHE|SP003|Tai nghe|Điện tử|450000|30|NCC03|1760000000
+DO_GIA_DUNG|SP004|Nồi cơm điện|Gia dụng|890000|15|NCC04|1758000000
 ```
 
-`nhietDoBaoQuan` chỉ có ở dòng `TUOI_SONG`. Hàng khô không có trường này.
+`quyCachDongGoi` chỉ có ở dòng `THUONG`. `nhietDoBaoQuan` chỉ có ở dòng `TUOI_SONG`. Dòng `CONG_NGHE` và `DO_GIA_DUNG` không có `hanDungSoNgay`, vì hai nhóm này không có hạn dùng.
 
 ### 3.3. `warehouses.txt`
 
@@ -151,7 +155,7 @@ data/*.tmp
 
 | Vấn đề | Quyết định | Lý do |
 |---|---|---|
-| Thiếu `ngaySanXuat` và `hanDungSoNgay` trong `products.txt` | **Thêm vào cả hai loại dòng**, ở cuối dòng | Mục 1.6 của tài liệu tính `NgayHetHan = ngaySanXuat + hanDungSoNgay × 86400` để xếp Min-Heap cảnh báo hết hạn. Thiếu hai trường này thì tính năng đó không chạy được |
+| Thiếu `ngaySanXuat` và `hanDungSoNgay` trong `products.txt` | **`ngaySanXuat` cho mọi sản phẩm. `hanDungSoNgay` chỉ cho thực phẩm** (`THUONG`, `TUOI_SONG`), ở cuối dòng | Mục 1.6 của tài liệu tính `NgayHetHan = ngaySanXuat + hanDungSoNgay × 86400` để xếp Min-Heap cảnh báo hết hạn. Công nghệ và đồ gia dụng không có hạn dùng, nên không có trường này |
 | Định dạng ngày | **Mọi mốc thời gian và khoảng thời gian dùng `time_t`** (giây). Riêng `ngayThongKe` dùng `yyyy-mm-dd` vì nó là khóa theo ngày, dễ đọc và dễ tra cứu trong bảng băm | Tài liệu dùng `time_t` cho `ngayDatHang`, `ngayTao`, `thoiGianGiaoDuKien` và công thức hết hạn. Một ngày là một khóa, không cần giây |
 | Định dạng 5 file thiếu trong tài liệu | **Dùng thứ tự trường của lược đồ mục I** như mục 2 | Lược đồ là nguồn chính thức duy nhất cho các bảng này |
 | `KhoHang` chỉ có một `maSanPham` | **Giữ theo lược đồ**: mỗi kho chứa một sản phẩm | Đúng với thiết kế trong tài liệu. Nếu một kho cần chứa nhiều sản phẩm, đổi khóa thành cặp `(maKho, maSanPham)` |
@@ -160,8 +164,10 @@ data/*.tmp
 
 Các thay đổi trên làm thay đổi các lớp sau:
 
-- **`SanPham`** (lớp trừu tượng, `models/SanPham.h`): thêm thuộc tính `ngaySanXuat` (`time_t`) và `hanDungSoNgay` (`int`), và thêm phương thức `ngayHetHan()` trả về `ngaySanXuat + hanDungSoNgay * 86400`. Phương thức này được `core/MinHeap` dùng làm khóa.
-- **`SanPhamThuong`** và **`SanPhamTuoiSong`**: hàm tạo nhận thêm hai tham số. Hàm `xuatChuoiFile()` của cả hai xuất thêm hai trường ở cuối dòng.
+- **`SanPham`** (lớp trừu tượng, `models/SanPham.h`): thêm thuộc tính `ngaySanXuat` (`time_t`). Mọi sản phẩm đều có.
+- **`ThucPham`** (kế thừa `SanPham`, `models/ThucPham.h`): thêm thuộc tính `hanDungSoNgay` (`int`) và phương thức `ngayHetHan()` trả về `ngaySanXuat + hanDungSoNgay * 86400`. Phương thức này được `core/MinHeap` dùng làm khóa.
+- **`SanPhamThuong`** và **`SanPhamTuoiSong`** (kế thừa `ThucPham`): hàm tạo nhận thêm `hanDungSoNgay`. Hàm `xuatChuoiFile()` của cả hai xuất hai trường ngày ở cuối dòng.
+- **`CongNghe`** và **`DoGiaDung`** (kế thừa `SanPham`, `models/CongNghe.h`, `models/DoGiaDung.h`): không có `hanDungSoNgay` và không có `ngayHetHan()`. Hàm `xuatChuoiFile()` chỉ xuất `ngaySanXuat` ở cuối dòng.
 - **`DoanhThuNgay`** (`models/DoanhThuNgay.h`): thuộc tính `ngayThongKe` đổi kiểu thành `std::string` để làm khóa.
 - **`KhoHang`** (`models/KhoHang.h`): không đổi, vì giữ theo lược đồ.
 - **`NguoiDung`** (`models/NguoiDung.h`, kế thừa `TaiKhoan`): thuộc tính `hoTen`, `soDienThoai`, `diaChi` và `vector<DonHang*> danhSachDonHangCaNhan`. Vector này chứa con trỏ tới các đơn của khách, nên tra cứu đơn của một khách là O(k) thay vì quét toàn bộ đơn O(N).

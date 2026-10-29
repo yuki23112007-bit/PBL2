@@ -1,0 +1,5 @@
+KHO01|Kệ A3, tầng 2 - Kho Tổng Hà Nội|10000|SP01
+KHO02|Khu đông lạnh B1 - Kho Lạnh Đà Nẵng|5000|SP12
+KHO03|Kệ C1, tầng 1 - Kho Nông Sản Cần Thơ|8000|SP06
+KHO04|Khu bảo quản âm sâu - Kho Lạnh TP. Hồ Chí Minh|12000|SP13
+KHO05|Kệ cảng D2 - Kho Cảng Hải Phòng|7000|SP14

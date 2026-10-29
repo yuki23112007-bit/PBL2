@@ -44,8 +44,10 @@ src/
 │   ├── NguoiDung.h / NguoiDung.cpp      Kế thừa TaiKhoan (khách hàng)
 │   ├── SanPham.h / SanPham.cpp          Lớp trừu tượng sản phẩm (Phân hệ 2)
 │   ├── ThucPham.h / ThucPham.cpp        Kế thừa SanPham (nhóm thực phẩm)
-│   ├── SanPhamThuong.h / .cpp           Kế thừa ThucPham
-│   ├── SanPhamTuoiSong.h / .cpp         Kế thừa ThucPham
+data
+│   ├── ThucPhamThuong.h / .cpp           Kế thừa ThucPham
+│   ├── ThucPhamTuoiSong.h / .cpp         Kế thừa ThucPham
+ main
 │   ├── CongNghe.h / CongNghe.cpp        Kế thừa SanPham
 │   ├── DoGiaDung.h / DoGiaDung.cpp      Kế thừa SanPham
 │   ├── DonHang.h / DonHang.cpp          Phân hệ 3
