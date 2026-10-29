@@ -75,14 +75,16 @@ vector<string> FileManager::tachChuoi(const string& dong, char kyTuPhanCach) {
         return ketQua;
     }
 
-    stringstream ss(dongDaCat);
-    string token;
-    while (getline(ss, token, kyTuPhanCach)) {
-        ketQua.push_back(catKhoangTrang(token));
+    string token = "";
+    for (char c : dongDaCat) {
+        if (c == kyTuPhanCach) {
+            ketQua.push_back(catKhoangTrang(token));
+            token.clear();
+        } else {
+            token += c;
+        }
     }
-    if (!dongDaCat.empty() && dongDaCat.back() == kyTuPhanCach) {
-        ketQua.push_back("");
-    }
+    ketQua.push_back(catKhoangTrang(token));
     return ketQua;
 }
 
