@@ -6,3 +6,5 @@ NCC05|Tập đoàn Trung Nguyên Legend|Đắk Lắk|0262395678|Đồ uống & C
 NCC06|Công ty Thủy hải sản Biển Đông|Đà Nẵng|0236382345|Hải sản & Thịt đông lạnh
 NCC07|Công ty Cổ phần Chăn nuôi C.P. Việt Nam|Đồng Nai|0251383625|Thịt tươi sống & Gia cầm
 NCC08|Hợp tác xã Rau sạch Đà Lạt Farm|Lâm Đồng|0263384567|Rau củ quả tươi
+NCC09|Công ty Cổ phần Bán lẻ Kỹ thuật số FPT|Hà Nội|02473006600|Điện tử & Thiết bị công nghệ
+NCC10|Tập đoàn Sunhouse Việt Nam|Hà Nội|02437366677|Đồ gia dụng & Thiết bị nhà bếp

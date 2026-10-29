@@ -3,3 +3,5 @@ KHO02|Khu đông lạnh B1 - Kho Lạnh Đà Nẵng|5000|SP12
 KHO03|Kệ C1, tầng 1 - Kho Nông Sản Cần Thơ|8000|SP06
 KHO04|Khu bảo quản âm sâu - Kho Lạnh TP. Hồ Chí Minh|12000|SP13
 KHO05|Kệ cảng D2 - Kho Cảng Hải Phòng|7000|SP14
+KHO06|Kệ E1, tầng 3 - Kho Thiết Bị Công Nghệ Hà Nội|6000|SP22
+KHO07|Kệ F2, tầng 1 - Kho Gia Dụng TP. Hồ Chí Minh|8000|SP26
