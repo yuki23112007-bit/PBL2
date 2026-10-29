@@ -1,27 +1,13 @@
-#ifndef ADMIN_H
-#define ADMIN_H
+#include <string>
 
-#include "TaiKhoan.h"
+using namespace std;
 
 class Admin : public TaiKhoan {
 public:
-    Admin()
-        : TaiKhoan("", "", "", "ADMIN") {}
-
-    Admin(const string& id, const string& username, const string& passwordHash)
-        : TaiKhoan(id, username, passwordHash, "ADMIN") {}
-
+    Admin();
+    Admin(const string& id, const string& username, const string& passwordHash);
     ~Admin() override = default;
 
-    void show() const override {
-        cout << "[ADMIN] ID: " << id
-             << " | Username: " << username << "\n";
-    }
-
-    string xuatChuoiFile() const override {
-        return "ADMIN|" + id + "|" + username + "|" + passwordHash;
-    }
+    void show() const override;
+    string xuatChuoiFile() const override;
 };
-
-#endif 
-

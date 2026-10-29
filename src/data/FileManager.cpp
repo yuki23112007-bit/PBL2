@@ -1,5 +1,20 @@
 #include "FileManager.h"
 
+#include "../models/SanPham.h"
+#include "../models/ThucPham.h"
+#include "../models/ThucPhamThuong.h"
+#include "../models/ThucPhamTuoiSong.h"
+#include "../models/CongNghe.h"
+#include "../models/DoGiaDung.h"
+#include "../models/KhoHang.h"
+#include "../models/DonHang.h"
+#include "../models/ChiTietDonHang.h"
+#include "../models/TaiKhoan.h"
+#include "../models/Admin.h"
+#include "../models/NguoiDung.h"
+#include "../models/DoanhThuNgay.h"
+#include "../models/VanChuyen.h"
+
 #include <cstdio>
 #include <filesystem>
 #include <system_error>
@@ -75,14 +90,16 @@ vector<string> FileManager::tachChuoi(const string& dong, char kyTuPhanCach) {
         return ketQua;
     }
 
-    stringstream ss(dongDaCat);
-    string token;
-    while (getline(ss, token, kyTuPhanCach)) {
-        ketQua.push_back(catKhoangTrang(token));
+    string token = "";
+    for (char c : dongDaCat) {
+        if (c == kyTuPhanCach) {
+            ketQua.push_back(catKhoangTrang(token));
+            token.clear();
+        } else {
+            token += c;
+        }
     }
-    if (!dongDaCat.empty() && dongDaCat.back() == kyTuPhanCach) {
-        ketQua.push_back("");
-    }
+    ketQua.push_back(catKhoangTrang(token));
     return ketQua;
 }
 
