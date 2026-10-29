@@ -167,12 +167,12 @@ vector<SanPham*> FileManager::docSanPham() {
                 string quyCach = tokens[7];
                 time_t ngaySX = static_cast<time_t>(stoll(tokens[8]));
                 int hanDung = stoi(tokens[9]);
-                danhSach.push_back(new SanPhamThuong(maSP, tenSP, danhMuc, donGia, soLuongTon, maNCC, ngaySX, hanDung, quyCach));
+                danhSach.push_back(new ThucPhamThuong(maSP, tenSP, danhMuc, donGia, soLuongTon, maNCC, ngaySX, hanDung, quyCach));
             } else if (loai == "TUOI_SONG" && tokens.size() >= 10) {
                 double nhietDo = stod(tokens[7]);
                 time_t ngaySX = static_cast<time_t>(stoll(tokens[8]));
                 int hanDung = stoi(tokens[9]);
-                danhSach.push_back(new SanPhamTuoiSong(maSP, tenSP, danhMuc, donGia, soLuongTon, maNCC, ngaySX, hanDung, nhietDo));
+                danhSach.push_back(new ThucPhamTuoiSong(maSP, tenSP, danhMuc, donGia, soLuongTon, maNCC, ngaySX, hanDung, nhietDo));
             } else if (loai == "CONG_NGHE") {
                 time_t ngaySX = static_cast<time_t>(stoll(tokens[7]));
                 danhSach.push_back(new CongNghe(maSP, tenSP, danhMuc, donGia, soLuongTon, maNCC, ngaySX));

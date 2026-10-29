@@ -9,8 +9,11 @@
 #include <ctime>
 
 #include "../models/SanPham.h"
-#include "../models/SanPhamThuong.h"
-#include "../models/SanPhamTuoiSong.h"
+#include "../models/ThucPham.h"
+#include "../models/ThucPhamThuong.h"
+#include "../models/ThucPhamTuoiSong.h"
+#include "../models/CongNghe.h"
+#include "../models/DoGiaDung.h"
 #include "../models/KhoHang.h"
 #include "../models/DonHang.h"
 #include "../models/ChiTietDonHang.h"
@@ -20,51 +23,9 @@
 
 using namespace std;
 
-// Lớp sản phẩm công nghệ (được định nghĩa để phục vụ nạp dòng CONG_NGHE từ products.txt)
-#ifndef CONGNGHE_DEFINED
-#define CONGNGHE_DEFINED
-class CongNghe : public SanPham {
-public:
-    CongNghe() : SanPham() {
-        LoaiSP = "CONG_NGHE";
-        HanDungSoNgay = 0;
-    }
-    CongNghe(const string& maSP, const string& tenSP,
-             const string& danhMuc, const double& donGia,
-             const int& soLuongTonKho, const string& maNCC,
-             const time_t& ngaySX)
-        : SanPham(maSP, tenSP, danhMuc, donGia, soLuongTonKho, "CONG_NGHE", maNCC, ngaySX, 0) {}
-    ~CongNghe() override = default;
-
-    bool canbaoquanlanh() const override { return false; }
-    string xuatchuoifile() const override {
-        return "CONG_NGHE|" + ChuoiPhanChung() + "|" + to_string(static_cast<long long>(NgaySX));
-    }
-};
-#endif
-
-// Lớp sản phẩm đồ gia dụng (được định nghĩa để phục vụ nạp dòng DO_GIA_DUNG từ products.txt)
-#ifndef DOGIADUNG_DEFINED
-#define DOGIADUNG_DEFINED
-class DoGiaDung : public SanPham {
-public:
-    DoGiaDung() : SanPham() {
-        LoaiSP = "DO_GIA_DUNG";
-        HanDungSoNgay = 0;
-    }
-    DoGiaDung(const string& maSP, const string& tenSP,
-              const string& danhMuc, const double& donGia,
-              const int& soLuongTonKho, const string& maNCC,
-              const time_t& ngaySX)
-        : SanPham(maSP, tenSP, danhMuc, donGia, soLuongTonKho, "DO_GIA_DUNG", maNCC, ngaySX, 0) {}
-    ~DoGiaDung() override = default;
-
-    bool canbaoquanlanh() const override { return false; }
-    string xuatchuoifile() const override {
-        return "DO_GIA_DUNG|" + ChuoiPhanChung() + "|" + to_string(static_cast<long long>(NgaySX));
-    }
-};
-#endif
+// Bí danh để tương thích ngược nếu có module cũ gọi tên SanPhamThuong / SanPhamTuoiSong
+using SanPhamThuong = ThucPhamThuong;
+using SanPhamTuoiSong = ThucPhamTuoiSong;
 
 // Cấu trúc đại diện cho bản ghi nhà cung cấp (suppliers.txt)
 struct NhaCungCapRecord {
@@ -208,7 +169,6 @@ public:
     bool themDoanhThu(const DoanhThuRecord& dt);
 
     // ================= 4. LIÊN KẾT ĐƠN HÀNG VÀO TÀI KHOẢN KHÁCH HÀNG (Mục 5.1 README) =================
-    // Lặp qua danh sách đơn hàng và nạp con trỏ đơn hàng vào danhSachDonHangCaNhan của NguoiDung tương ứng
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, vector<DonHang>& danhSachDonHang);
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, const vector<DonHang*>& danhSachDonHang);
 };
