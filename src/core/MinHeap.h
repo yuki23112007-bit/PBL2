@@ -1,7 +1,7 @@
 #ifndef MINHEAP_H
 #define MINHEAP_H
 
-#include "../models/SanPham.h"
+#include "../models/ThucPham.h"
 #include <vector>
 #include <ctime>
 
@@ -9,7 +9,7 @@ using namespace std;
 
 class MinHeap {
     private:
-        vector<SanPham*> heap;
+        vector<ThucPham*> heap;
 
         int parent(int i) const { return (i - 1) / 2; }
         int leftChild(int i) const { return 2 * i + 1; }
@@ -22,11 +22,11 @@ class MinHeap {
         MinHeap();
         ~MinHeap();
 
-        void them(SanPham* sp);
-        SanPham* layDinh() const;
-        SanPham* peek() const { return layDinh(); }
-        bool trichXuatDinh(SanPham*& sp);
-        bool pop(SanPham*& sp) { return trichXuatDinh(sp); }
+        void them(ThucPham* sp);
+        ThucPham* layDinh() const;
+        ThucPham* peek() const { return layDinh(); }
+        bool trichXuatDinh(ThucPham*& sp);
+        bool pop(ThucPham*& sp) { return trichXuatDinh(sp); }
 
         bool xoaTheoMa(const string& maSP);
 
@@ -34,8 +34,8 @@ class MinHeap {
         bool isEmpty() const;
         void clear();
 
-        vector<SanPham*> kiemTraSapHetHan(int soNgay = 2) const;
-        const vector<SanPham*>& getHeapData() const { return heap; }
+        vector<ThucPham*> kiemTraSapHetHan(int soNgay = 2) const;
+        const vector<ThucPham*>& getHeapData() const { return heap; }
 };
 
-#endif
+#endif // MINHEAP_H

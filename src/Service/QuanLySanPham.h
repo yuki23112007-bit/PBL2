@@ -2,6 +2,7 @@
 #define QUANLYSANPHAM_H
 
 #include "../models/SanPham.h"
+#include "../models/ThucPham.h"
 #include "../core/HashTable.h"
 #include "../core/Trie.h"
 #include "../core/MinHeap.h"
@@ -37,7 +38,7 @@ class QuanLySanPham {
         vector<SanPham*> layDanhSachSanPham(int tieuChiSapXep = 0);
 
         void kiemTraCanhBaoHetHang(int nguong = 10) const;
-        vector<SanPham*> kiemTraCanhBaoHetHan(int soNgay = 2) const;
+        vector<ThucPham*> kiemTraCanhBaoHetHan(int soNgay = 2) const;
 
         void hienThiToanBo() const;
 
