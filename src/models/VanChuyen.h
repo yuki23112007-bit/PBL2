@@ -1,5 +1,4 @@
-#ifndef VANCHUYEN_H
-#define VANCHUYEN_H
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -7,14 +6,17 @@
 
 using namespace std;
 
+// Khai báo chuyển tiếp (Forward Declaration)
+class DonHang;
+
 class VanChuyen {
 private:
-    string maVanChuyen;      // Khóa chính (PK, ví dụ: "VC001")
-    string maDonHang;        // Khóa ngoại (FK, liên kết với DonHang)
-    time_t ngayTao;          // Thời điểm tạo vận đơn
-    string trangThaiGiao;    // Trạng thái: "Dang Giao", "Giao Thanh Cong", "Hoan tat tu dong"
-    double chiPhiVanChuyen;  // Phí ship: 25.000đ (xe máy) hoặc 45.000đ (xe tải lạnh)
-    string loaiXe;           // "Xe May Giao Nhanh", "Xe Tai", "Xe Tai Lanh"
+    string maVanChuyen;        // Khóa chính (PK, ví dụ: "VC001")
+    string maDonHang;          // Khóa ngoại (FK, liên kết với DonHang)
+    time_t ngayTao;            // Thời điểm tạo vận đơn
+    string trangThaiGiao;      // Trạng thái: "Dang Giao", "Giao Thanh Cong", "Hoan tat tu dong"
+    double chiPhiVanChuyen;    // Phí ship: 25.000đ (xe máy) hoặc 45.000đ (xe tải lạnh)
+    string loaiXe;             // "Xe May Giao Nhanh", "Xe Tai", "Xe Tai Lanh"
     time_t thoiGianGiaoDuKien; // Mốc thời gian dự kiến giao xong
 
 public:
@@ -57,5 +59,3 @@ public:
     friend ostream& operator<<(ostream& os, const VanChuyen& vc);
     friend istream& operator>>(istream& is, VanChuyen& vc);
 };
-
-#endif // VANCHUYEN_H

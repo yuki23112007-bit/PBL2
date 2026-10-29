@@ -16,3 +16,4 @@ void Admin::show() const {
 string Admin::xuatChuoiFile() const {
     return "ADMIN|" + id + "|" + username + "|" + passwordHash;
 }
+

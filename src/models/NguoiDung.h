@@ -1,11 +1,12 @@
-#ifndef NGUOIDUNG_H
-#define NGUOIDUNG_H
+#pragma once
 
 #include "TaiKhoan.h"
-#include "DonHang.h"
 #include <vector>
 
 using namespace std;
+
+// Khai báo chuyển tiếp (Forward Declaration)
+class DonHang;
 
 class NguoiDung : public TaiKhoan {
 private:
@@ -39,5 +40,3 @@ public:
     void show() const override;
     string xuatChuoiFile() const override;
 };
-
-#endif // NGUOIDUNG_H

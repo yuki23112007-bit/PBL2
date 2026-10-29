@@ -1,5 +1,4 @@
-#ifndef TAIKHOAN_H
-#define TAIKHOAN_H
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -41,5 +40,3 @@ public:
     virtual void hienThiThongTin() const;
     virtual string xuatChuoiFile() const = 0;
 };
-
-#endif // TAIKHOAN_H

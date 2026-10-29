@@ -1,5 +1,4 @@
-#ifndef DOANHTHUNGAY_H
-#define DOANHTHUNGAY_H
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -41,5 +40,3 @@ public:
     friend ostream& operator<<(ostream& os, const DoanhThuNgay& dt);
     friend istream& operator>>(istream& is, DoanhThuNgay& dt);
 };
-
-#endif // DOANHTHUNGAY_H

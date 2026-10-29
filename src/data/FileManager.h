@@ -1,5 +1,4 @@
-#ifndef FILEMANAGER_H
-#define FILEMANAGER_H
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -7,22 +6,20 @@
 #include <vector>
 #include <ctime>
 
-#include "../models/SanPham.h"
-#include "../models/ThucPham.h"
-#include "../models/ThucPhamThuong.h"
-#include "../models/ThucPhamTuoiSong.h"
-#include "../models/CongNghe.h"
-#include "../models/DoGiaDung.h"
-#include "../models/KhoHang.h"
-#include "../models/DonHang.h"
-#include "../models/ChiTietDonHang.h"
-#include "../models/TaiKhoan.h"
-#include "../models/Admin.h"
-#include "../models/NguoiDung.h"
-#include "../models/DoanhThuNgay.h"
-#include "../models/VanChuyen.h"
-
 using namespace std;
+
+// Khai báo chuyển tiếp (Forward Declarations)
+class SanPham;
+class ThucPhamThuong;
+class ThucPhamTuoiSong;
+class KhoHang;
+class DonHang;
+class ChiTietDonHang;
+class TaiKhoan;
+class Admin;
+class NguoiDung;
+class DoanhThuNgay;
+class VanChuyen;
 
 // Bí danh để tương thích ngược nếu có module cũ gọi tên SanPhamThuong / SanPhamTuoiSong
 using SanPhamThuong = ThucPhamThuong;
@@ -50,8 +47,6 @@ struct NhaCungCapRecord {
                soDienThoai + "|" + danhMucCungCap;
     }
 };
-
-
 
 // Cấu trúc DTO cho User (giữ tương thích)
 struct UserRecord {
@@ -158,5 +153,3 @@ public:
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, vector<DonHang>& danhSachDonHang);
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, const vector<DonHang*>& danhSachDonHang);
 };
-
-#endif // FILEMANAGER_H

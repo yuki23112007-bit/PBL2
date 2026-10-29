@@ -1,5 +1,20 @@
 #include "FileManager.h"
 
+#include "../models/SanPham.h"
+#include "../models/ThucPham.h"
+#include "../models/ThucPhamThuong.h"
+#include "../models/ThucPhamTuoiSong.h"
+#include "../models/CongNghe.h"
+#include "../models/DoGiaDung.h"
+#include "../models/KhoHang.h"
+#include "../models/DonHang.h"
+#include "../models/ChiTietDonHang.h"
+#include "../models/TaiKhoan.h"
+#include "../models/Admin.h"
+#include "../models/NguoiDung.h"
+#include "../models/DoanhThuNgay.h"
+#include "../models/VanChuyen.h"
+
 #include <cstdio>
 #include <filesystem>
 #include <system_error>

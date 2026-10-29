@@ -1,5 +1,4 @@
-#ifndef ADMIN_H
-#define ADMIN_H
+#pragma once
 
 #include "TaiKhoan.h"
 
@@ -14,5 +13,3 @@ public:
     void show() const override;
     string xuatChuoiFile() const override;
 };
-
-#endif // ADMIN_H
