@@ -306,3 +306,4 @@ Tài liệu có hai chỗ chưa nhất quán:
 ## 12. Liên hệ
 
 Mọi thắc mắc về quy tắc làm việc, hỏi trong nhóm chat trước khi tự sửa file của người khác.
+Không được sửa file này.
