@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+
 using namespace std;
 
 class SanPham {
@@ -15,25 +16,25 @@ class SanPham {
         int SoLuongTonKho;
         string LoaiSP;
         string MaNCC;
-        time_t NgaySX;
-        int HanDungSoNgay;
+        time_t NgaySX; // Moi san pham deu co ngay san xuat
 
-        // ham ho tro lop con
-        string ChuoiPhanChung() const;  // "ma|ten|danhMuc|donGia|soLuongTon|maNCC"
-        string HanSuDung() const;       // "ngaySanXuat|hanDungSoNgay" (luon o CUOI dong)
-
+        // Ham ho tro lop con
+        string ChuoiPhanChung() const; // "ma|ten|danhMuc|donGia|soLuongTon|maNCC"
         static string SoThanhChuoi(const double&);
 
         virtual void inra(ostream&) const;
         virtual void docvao(istream&);
+
     public:
-        // constructor & destructor
+        // Constructor & Destructor
         SanPham();
         SanPham(const SanPham&);
-        SanPham(const string&, const string&, const string&, const double&, const int&, const string&, const string&, const time_t&, const int&);
+        SanPham(const string& maSP, const string& tenSP, const string& danhMuc,
+                const double& donGia, const int& soLuongTonKho, const string& loaiSP,
+                const string& maNCC, const time_t& ngaySX);
         virtual ~SanPham();
 
-        // getter
+        // Getter
         const string& getMaSP() const;
         const string& getTenSP() const;
         const string& getDanhMuc() const;
@@ -42,9 +43,8 @@ class SanPham {
         const string  getLoaiSP() const;
         const string  getMaNCC() const;
         time_t        getNgaySX() const;
-        int           getHanDungSoNgay() const;
 
-        // setter
+        // Setter
         void setMaSP(const string&);
         void setTenSP(const string&);
         void setDanhMuc(const string&);
@@ -53,26 +53,23 @@ class SanPham {
         void setLoaiSP(const string&);
         void setMaNCC(const string&);
         void setNgaySX(const time_t&);
-        void setHanDungSoNgay(const int&);
 
-        // nghiep vu
-        bool CapNhatSoLuongTonKho(const int&);    // neu so - se khong doi
+        // Nghiep vu
+        bool CapNhatSoLuongTonKho(const int&);
         bool KiemTranCanhBaoHetHang(const int& = 10) const;
-        time_t ngayhethang() const;    // = ngaysx + hsd * 86400
 
-        // da hinh
+        // Da hinh
         virtual void show() const;
         virtual bool canbaoquanlanh() const;
         virtual string xuatchuoifile() const = 0;
 
-        // Bi danh phu hop voi tai lieu Word
+        // Bi danh phu hop voi tai lieu
         const string& getMaSanPham() const { return getMaSP(); }
         const string& getTenSanPham() const { return getTenSP(); }
         int getSoLuongTon() const { return getSoLuongTonKho(); }
         void setSoLuongTon(int v) { setSoLuongTonKho(v); }
         void capNhatSoLuongTon(int v) { CapNhatSoLuongTonKho(v); }
         bool kiemTraCanhBaoHetHang(int nguong = 10) const { return KiemTranCanhBaoHetHang(nguong); }
-        time_t ngayHetHan() const { return ngayhethang(); }
         bool canBaoQuanLanh() const { return canbaoquanlanh(); }
         string xuatChuoiFile() const { return xuatchuoifile(); }
         void hienThiThongTin() const { show(); }

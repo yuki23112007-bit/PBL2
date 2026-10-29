@@ -2,8 +2,8 @@
 
 using namespace std;
 
-static void hoanDoi(SanPham*& a, SanPham*& b) {
-    SanPham* temp = a;
+static void hoanDoi(ThucPham*& a, ThucPham*& b) {
+    ThucPham* temp = a;
     a = b;
     b = temp;
 }
@@ -49,18 +49,18 @@ void MinHeap::downHeap(int index) {
     }
 }
 
-void MinHeap::them(SanPham* sp) {
+void MinHeap::them(ThucPham* sp) {
     if (sp == nullptr) return;
     heap.push_back(sp);
     upHeap(static_cast<int>(heap.size()) - 1);
 }
 
-SanPham* MinHeap::layDinh() const {
+ThucPham* MinHeap::layDinh() const {
     if (heap.empty()) return nullptr;
     return heap[0];
 }
 
-bool MinHeap::trichXuatDinh(SanPham*& sp) {
+bool MinHeap::trichXuatDinh(ThucPham*& sp) {
     if (heap.empty()) {
         sp = nullptr;
         return false;
@@ -111,12 +111,12 @@ void MinHeap::clear() {
     heap.clear();
 }
 
-vector<SanPham*> MinHeap::kiemTraSapHetHan(int soNgay) const {
-    vector<SanPham*> danhSach;
+vector<ThucPham*> MinHeap::kiemTraSapHetHan(int soNgay) const {
+    vector<ThucPham*> danhSach;
     time_t now = time(nullptr);
     time_t nguongGiay = static_cast<time_t>(soNgay) * 86400;
 
-    for (SanPham* sp : heap) {
+    for (ThucPham* sp : heap) {
         if (sp != nullptr) {
             time_t thoiGianConLai = sp->ngayhethang() - now;
             if (thoiGianConLai <= nguongGiay) {

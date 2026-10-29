@@ -6,8 +6,11 @@
 #include <limits>
 
 #include "../models/SanPham.h"
-#include "../models/SanPhamThuong.h"
-#include "../models/SanPhamTuoiSong.h"
+#include "../models/ThucPham.h"
+#include "../models/ThucPhamThuong.h"
+#include "../models/ThucPhamTuoiSong.h"
+#include "../models/CongNghe.h"
+#include "../models/DoGiaDung.h"
 #include "../models/KhoHang.h"
 #include "../models/DonHang.h"
 #include "../models/ChiTietDonHang.h"
@@ -31,43 +34,53 @@ void xoaBoDem() {
 void khoiTaoKhoHang(vector<KhoHang>& danhSachKho) {
     danhSachKho.push_back(KhoHang("KHO01", "Kho Tong Ha Noi", 10000, "SP01"));
     danhSachKho.push_back(KhoHang("KHO02", "Kho Lanh Da Nang", 5000, "SP12"));
-    danhSachKho.push_back(KhoHang("KHO03", "Kho Nông San Can Tho", 8000, "SP06"));
+    danhSachKho.push_back(KhoHang("KHO03", "Kho Nong San Can Tho", 8000, "SP06"));
     danhSachKho.push_back(KhoHang("KHO04", "Kho Lanh TP. Ho Chi Minh", 12000, "SP13"));
     danhSachKho.push_back(KhoHang("KHO05", "Kho Cang Hai Phong", 7000, "SP14"));
 }
 
-// 2. Khoi tao tren 20 san pham mau (gom ca SanPhamThuong va SanPhamTuoiSong)
+// 2. Khoi tao tren 25 san pham mau day du cac phan he
 void khoiTaoSanPham(QuanLySanPham& qlSP) {
     time_t now = time(nullptr);
 
-    // --- 11 San pham thuong (Do kho, gia dung, luong thuc) ---
-    qlSP.themSanPham(new SanPhamThuong("SP01", "Gao ST25 Ong Cua", "Luong thuc", 35000, 150, "NCC01", now - 15 * 86400, 365, "Bao 5kg"));
-    qlSP.themSanPham(new SanPhamThuong("SP02", "Mi Hao Hao Tom Chua Cay", "Mi an lien", 4500, 800, "NCC02", now - 20 * 86400, 180, "Thung 30 goi"));
-    qlSP.themSanPham(new SanPhamThuong("SP03", "Dau An Neptune Light", "Gia vi", 58000, 90, "NCC01", now - 30 * 86400, 720, "Chai 1L"));
-    qlSP.themSanPham(new SanPhamThuong("SP04", "Nuoc Mam Nam Ngu De Nhi", "Gia vi", 32000, 120, "NCC03", now - 25 * 86400, 365, "Chai 750ml"));
-    qlSP.themSanPham(new SanPhamThuong("SP05", "Duong Tinh Luyen Bien Hoa", "Gia vi", 28000, 60, "NCC01", now - 40 * 86400, 540, "Goi 1kg"));
-    qlSP.themSanPham(new SanPhamThuong("SP06", "Sua Tuoi Vinamilk Khong Duong", "Sua", 36000, 40, "NCC04", now - 10 * 86400, 180, "Loc 4 hop"));
-    qlSP.themSanPham(new SanPhamThuong("SP07", "Ca Phe Hoa Tan G7", "Do uong", 62000, 75, "NCC05", now - 12 * 86400, 730, "Hop 21 goi"));
-    qlSP.themSanPham(new SanPhamThuong("SP08", "Banh Quy Cosy Marie", "Banh keo", 42000, 85, "NCC02", now - 18 * 86400, 365, "Hop 336g"));
-    qlSP.themSanPham(new SanPhamThuong("SP09", "Tra Xanh Khong Do Chai", "Do uong", 10000, 200, "NCC05", now - 10 * 86400, 365, "Chai 455ml"));
+    // --- 11 Thuc pham thuong (Gao, mi, do hop, gia vi) ---
+    qlSP.themSanPham(new ThucPhamThuong("SP01", "Gao ST25 Ong Cua", "Luong thuc", 35000, 150, "NCC01", now - 15 * 86400, 365, "Bao 5kg"));
+    qlSP.themSanPham(new ThucPhamThuong("SP02", "Mi Hao Hao Tom Chua Cay", "Mi an lien", 4500, 800, "NCC02", now - 20 * 86400, 180, "Thung 30 goi"));
+    qlSP.themSanPham(new ThucPhamThuong("SP03", "Dau An Neptune Light", "Gia vi", 58000, 90, "NCC01", now - 30 * 86400, 720, "Chai 1L"));
+    qlSP.themSanPham(new ThucPhamThuong("SP04", "Nuoc Mam Nam Ngu De Nhi", "Gia vi", 32000, 120, "NCC03", now - 25 * 86400, 365, "Chai 750ml"));
+    qlSP.themSanPham(new ThucPhamThuong("SP05", "Duong Tinh Luyen Bien Hoa", "Gia vi", 28000, 60, "NCC01", now - 40 * 86400, 540, "Goi 1kg"));
+    qlSP.themSanPham(new ThucPhamThuong("SP06", "Sua Tuoi Vinamilk Khong Duong", "Sua", 36000, 40, "NCC04", now - 10 * 86400, 180, "Loc 4 hop"));
+    qlSP.themSanPham(new ThucPhamThuong("SP07", "Ca Phe Hoa Tan G7", "Do uong", 62000, 75, "NCC05", now - 12 * 86400, 730, "Hop 21 goi"));
+    qlSP.themSanPham(new ThucPhamThuong("SP08", "Banh Quy Cosy Marie", "Banh keo", 42000, 85, "NCC02", now - 18 * 86400, 365, "Hop 336g"));
+    qlSP.themSanPham(new ThucPhamThuong("SP09", "Tra Xanh Khong Do Chai", "Do uong", 10000, 200, "NCC05", now - 10 * 86400, 365, "Chai 455ml"));
     // San pham it hang de test canh bao ton kho (<= 10)
-    qlSP.themSanPham(new SanPhamThuong("SP10", "Tuong Ot Chin-su Chai", "Gia vi", 16000, 9, "NCC03", now - 45 * 86400, 270, "Chai 250g"));
-    qlSP.themSanPham(new SanPhamThuong("SP11", "Gao Jasmine Thom Thuong Hang", "Luong thuc", 24000, 5, "NCC01", now - 50 * 86400, 365, "Bao 5kg"));
+    qlSP.themSanPham(new ThucPhamThuong("SP10", "Tuong Ot Chin-su Chai", "Gia vi", 16000, 9, "NCC03", now - 45 * 86400, 270, "Chai 250g"));
+    qlSP.themSanPham(new ThucPhamThuong("SP11", "Gao Jasmine Thom Thuong Hang", "Luong thuc", 24000, 5, "NCC01", now - 50 * 86400, 365, "Bao 5kg"));
 
-    // --- 10 San pham tuoi song (Thit, ca, hai san, sua lanh) ---
+    // --- 10 Thuc pham tuoi song (Thit, ca, hai san, sua lanh) ---
     // SP12: Han dung con 1 ngay nua -> Test MinHeap canh bao het han
-    qlSP.themSanPham(new SanPhamTuoiSong("SP12", "Ca Hoi Nauy Fillet Tuoi", "Hai san", 135000, 25, "NCC06", now - 4 * 86400, 5, -2.5));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP13", "Thit Ba Chi Bo My Dong Lanh", "Thit tuoi", 185000, 30, "NCC06", now - 5 * 86400, 30, -18.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP12", "Ca Hoi Nauy Fillet Tuoi", "Hai san", 135000, 25, "NCC06", now - 4 * 86400, 5, -2.5));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP13", "Thit Ba Chi Bo My Dong Lanh", "Thit tuoi", 185000, 30, "NCC06", now - 5 * 86400, 30, -18.0));
     // SP14: Con 2 ngay nua het han -> Test MinHeap
-    qlSP.themSanPham(new SanPhamTuoiSong("SP14", "Tom Su Bien Tuoi Song", "Hai san", 220000, 18, "NCC06", now - 2 * 86400, 4, -1.0));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP15", "Thit Nac Dam Heo CP", "Thit tuoi", 95000, 45, "NCC07", now - 1 * 86400, 4, 2.0));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP16", "Muc Ong Phu Quoc Tuoi", "Hai san", 160000, 8, "NCC06", now - 2 * 86400, 6, -4.0));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP17", "Sua Chua Vinamilk Co Duong", "Sua lanh", 28000, 50, "NCC04", now - 10 * 86400, 45, 4.0));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP18", "Ga Ta Tha Vuon Lam Dong", "Thit gia cam", 115000, 22, "NCC07", now - 1 * 86400, 4, 0.0));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP19", "Rau Cai Ngot Da Lat", "Rau cu", 18000, 35, "NCC08", now - 1 * 86400, 5, 5.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP14", "Tom Su Bien Tuoi Song", "Hai san", 220000, 18, "NCC06", now - 2 * 86400, 4, -1.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP15", "Thit Nac Dam Heo CP", "Thit tuoi", 95000, 45, "NCC07", now - 1 * 86400, 4, 2.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP16", "Muc Ong Phu Quoc Tuoi", "Hai san", 160000, 8, "NCC06", now - 2 * 86400, 6, -4.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP17", "Sua Chua Vinamilk Co Duong", "Sua lanh", 28000, 50, "NCC04", now - 10 * 86400, 45, 4.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP18", "Ga Ta Tha Vuon Lam Dong", "Thit gia cam", 115000, 22, "NCC07", now - 1 * 86400, 4, 0.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP19", "Rau Cai Ngot Da Lat", "Rau cu", 18000, 35, "NCC08", now - 1 * 86400, 5, 5.0));
     // SP20: Vua sap het han (con 1 ngay) vua ton kho = 4 (test ca 2 canh bao!)
-    qlSP.themSanPham(new SanPhamTuoiSong("SP20", "Dau Phu Sach Vissan", "Thuc pham mat", 12000, 4, "NCC07", now - 2 * 86400, 3, 4.0));
-    qlSP.themSanPham(new SanPhamTuoiSong("SP21", "Cua Bien Ca Mau Tuoi Song", "Hai san", 350000, 12, "NCC06", now - 1 * 86400, 3, 2.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP20", "Dau Phu Sach Vissan", "Thuc pham mat", 12000, 4, "NCC07", now - 2 * 86400, 3, 4.0));
+    qlSP.themSanPham(new ThucPhamTuoiSong("SP21", "Cua Bien Ca Mau Tuoi Song", "Hai san", 350000, 12, "NCC06", now - 1 * 86400, 3, 2.0));
+
+    // --- 3 San pham cong nghe (Dien tu, phu kien, khong han dung) ---
+    qlSP.themSanPham(new CongNghe("SP22", "Tai nghe Bluetooth Sony WH-1000", "Dien tu", 1250000, 45, "NCC03", now - 60 * 86400, 12, true));
+    qlSP.themSanPham(new CongNghe("SP23", "Chuot khong day Logitech M331", "Phu kien", 350000, 60, "NCC03", now - 45 * 86400, 24, false));
+    qlSP.themSanPham(new CongNghe("SP24", "Ban phim co Gaming RGB", "Phu kien", 890000, 20, "NCC03", now - 30 * 86400, 24, true));
+
+    // --- 3 San pham do gia dung (Do dung gia dinh, khong han dung) ---
+    qlSP.themSanPham(new DoGiaDung("SP25", "Noi com dien Sunhouse 1.8L", "Gia dung", 650000, 25, "NCC04", now - 90 * 86400, "Inox & Nhua chiu nhiet"));
+    qlSP.themSanPham(new DoGiaDung("SP26", "Chao chong dinh Tefal 28cm", "Gia dung", 420000, 35, "NCC04", now - 75 * 86400, "Hop kim nhom Inox"));
+    qlSP.themSanPham(new DoGiaDung("SP27", "Binh giu nhiet LocknLock 800ml", "Gia dung", 290000, 50, "NCC04", now - 60 * 86400, "Inox 304 khong gi"));
 }
 
 // 3. Khoi tao don hang mau de test Hieu nang Queue, BST va Pending List
@@ -79,7 +92,7 @@ void khoiTaoDonHang(QuanLyDonHang& qlDH, QuanLySanPham& qlSP) {
     // Don 2: Mua SP12 (so luong 1, du kho)
     qlDH.datHang("KH02", qlSP, "SP12", 1, "Tran Thi Binh", "45 Le Duan, Da Nang", "0987654321", maMoi);
 
-    // Don 3: Mua SP11 (so luong 20, trong khi ton kho chi co 5 -> Thieu kho de test Pending List chống nghẽn!)
+    // Don 3: Mua SP11 (so luong 20, trong khi ton kho chi co 5 -> Thieu kho de test Pending List chong nghen!)
     qlDH.datHang("KH03", qlSP, "SP11", 20, "Le Van Cuong", "88 Nguyen Hue, TP.HCM", "0905112233", maMoi);
 
     // Don 4: Mua SP02 (so luong 5, du kho -> dung sau don 3 de chung minh khong bi nghen!)
@@ -101,7 +114,7 @@ int main() {
     QuanLyDonHang qlDH;
     khoiTaoDonHang(qlDH, qlSP);
 
-    cout << "-> Khoi tao thanh cong: 5 Kho hang, 21 San pham, 4 Don hang mau!\n";
+    cout << "-> Khoi tao thanh cong: 5 Kho hang, 27 San pham (4 nhom), 4 Don hang mau!\n";
 
     int luaChon = -1;
     while (luaChon != 0) {
@@ -112,7 +125,7 @@ int main() {
         cout << " 3. Tra cuu san pham theo Ma SP (HashTable - O(1))\n";
         cout << " 4. Tim kiem goi y san pham theo Ten (Trie Autocomplete - O(L))\n";
         cout << " 5. Sap xep danh sach san pham bang QuickSort (Gia, Ton kho, Ten)\n";
-        cout << " 6. Them san pham moi (SanPhamThuong / SanPhamTuoiSong)\n";
+        cout << " 6. Them san pham moi (ThucPhamThuong, TuoiSong, CongNghe, DoGiaDung)\n";
         cout << " 7. Cap nhat so luong ton kho san pham (Nhap / Xuat kho)\n";
         cout << " 8. Xoa san pham (Dong bo giua Trie, MinHeap va HashTable)\n";
         cout << " 9. Kiem tra canh bao het hang (Ton kho <= nguong toi thieu)\n";
@@ -156,7 +169,7 @@ int main() {
             }
 
             case 3: {
-                cout << "\nNhap Ma san pham can tra cuu (vi du: SP01, SP12): ";
+                cout << "\nNhap Ma san pham can tra cuu (vi du: SP01, SP12, SP22, SP25): ";
                 string maSP;
                 cin >> maSP;
                 SanPham* sp = qlSP.timSanPhamTheoMa(maSP);
@@ -171,7 +184,7 @@ int main() {
             }
 
             case 4: {
-                cout << "\nNhap tu khoa hoac tien to ten san pham (vi du: 'Gao', 'Thit', 'Mi'): ";
+                cout << "\nNhap tu khoa hoac tien to ten san pham (vi du: 'Gao', 'Thit', 'Tai nghe', 'Noi'): ";
                 xoaBoDem();
                 string tuKhoa;
                 getline(cin, tuKhoa);
@@ -191,7 +204,8 @@ int main() {
                     for (SanPham* sp : dsSP) {
                         cout << " - [" << sp->getMaSP() << "] " << sp->getTenSP()
                              << " | Don gia: " << sp->getDonGia()
-                             << " | Ton kho: " << sp->getSoLuongTonKho() << "\n";
+                             << " | Ton kho: " << sp->getSoLuongTonKho()
+                             << " | Loai: " << sp->getLoaiSP() << "\n";
                     }
                 }
                 break;
@@ -229,35 +243,52 @@ int main() {
 
             case 6: {
                 cout << "\nChon loai san pham can them:\n";
-                cout << " 1. San pham thuong (hang kho, bao bi, gia dung)\n";
-                cout << " 2. San pham tuoi song (can bao quan lanh)\n";
-                cout << "Nhap lua chon: ";
+                cout << " 1. Thuc pham thuong (hang kho, bao bi, gia vi)\n";
+                cout << " 2. Thuc pham tuoi song (can bao quan lanh)\n";
+                cout << " 3. Hang cong nghe (dien tu, phu kien, bao hanh)\n";
+                cout << " 4. Do gia dung (vat dung, noi nieu, chat lieu)\n";
+                cout << "Nhap lua chon (1 - 4): ";
                 int loai;
                 cin >> loai;
 
                 string maSP, tenSP, danhMuc, maNCC;
                 double donGia;
-                int soLuong, hanDung;
-                cout << "Nhap Ma SP (vi du: SP22): "; cin >> maSP;
+                int soLuong;
+                cout << "Nhap Ma SP (vi du: SP30): "; cin >> maSP;
                 cout << "Nhap Ten SP: "; xoaBoDem(); getline(cin, tenSP);
                 cout << "Nhap Danh muc: "; getline(cin, danhMuc);
                 cout << "Nhap Don gia: "; cin >> donGia;
                 cout << "Nhap So luong ton kho: "; cin >> soLuong;
                 cout << "Nhap Ma NCC: "; cin >> maNCC;
-                cout << "Nhap Han dung (so ngay): "; cin >> hanDung;
 
                 time_t nowTime = time(nullptr);
                 bool ok = false;
                 if (loai == 1) {
+                    int hanDung;
+                    cout << "Nhap Han dung (so ngay): "; cin >> hanDung;
                     string quyCach;
                     cout << "Nhap Quy cach dong goi (vi du: Thung 24 lon, Goi 500g): ";
                     xoaBoDem(); getline(cin, quyCach);
-                    ok = qlSP.themSanPham(new SanPhamThuong(maSP, tenSP, danhMuc, donGia, soLuong, maNCC, nowTime, hanDung, quyCach));
+                    ok = qlSP.themSanPham(new ThucPhamThuong(maSP, tenSP, danhMuc, donGia, soLuong, maNCC, nowTime, hanDung, quyCach));
                 } else if (loai == 2) {
+                    int hanDung;
+                    cout << "Nhap Han dung (so ngay): "; cin >> hanDung;
                     double nhietDo;
                     cout << "Nhap Nhiet do bao quan (do C, vi du: -2.5 hoac 4.0): ";
                     cin >> nhietDo;
-                    ok = qlSP.themSanPham(new SanPhamTuoiSong(maSP, tenSP, danhMuc, donGia, soLuong, maNCC, nowTime, hanDung, nhietDo));
+                    ok = qlSP.themSanPham(new ThucPhamTuoiSong(maSP, tenSP, danhMuc, donGia, soLuong, maNCC, nowTime, hanDung, nhietDo));
+                } else if (loai == 3) {
+                    int baoHanh;
+                    cout << "Nhap Thoi gian bao hanh (so thang, vi du: 12, 24): "; cin >> baoHanh;
+                    int canThanChoice;
+                    cout << "Hang co yeu cau bao quan can than chong va dap khong? (1: Co, 0: Khong): ";
+                    cin >> canThanChoice;
+                    ok = qlSP.themSanPham(new CongNghe(maSP, tenSP, danhMuc, donGia, soLuong, maNCC, nowTime, baoHanh, canThanChoice == 1));
+                } else if (loai == 4) {
+                    string chatLieu;
+                    cout << "Nhap Chat lieu san pham (vi du: Inox 304, Gom su, Thuy tinh chiu nhiet): ";
+                    xoaBoDem(); getline(cin, chatLieu);
+                    ok = qlSP.themSanPham(new DoGiaDung(maSP, tenSP, danhMuc, donGia, soLuong, maNCC, nowTime, chatLieu));
                 }
 
                 if (ok) {
@@ -306,13 +337,13 @@ int main() {
             case 10: {
                 cout << "\nNhap so ngay toi han de canh bao (vi du nhap 2): ";
                 int soNgay; cin >> soNgay;
-                vector<SanPham*> sapHetHan = qlSP.kiemTraCanhBaoHetHan(soNgay);
+                vector<ThucPham*> sapHetHan = qlSP.kiemTraCanhBaoHetHan(soNgay);
                 cout << "\n--- [CANH BAO MIN-HEAP] HANG TUOI SONG SAP HET HAN (trong " << soNgay << " ngay toi) ---\n";
                 if (sapHetHan.empty()) {
                     cout << "-> An toan: Khong co mat hang tuoi song nao can ngay het han.\n";
                 } else {
                     time_t hienTai = time(nullptr);
-                    for (SanPham* sp : sapHetHan) {
+                    for (ThucPham* sp : sapHetHan) {
                         double soNgayConLai = difftime(sp->ngayhethang(), hienTai) / 86400.0;
                         cout << " [!] CANH BAO: [" << sp->getMaSP() << "] " << sp->getTenSP()
                              << " | Con lai: " << fixed << setprecision(1) << soNgayConLai << " ngay"
@@ -327,30 +358,28 @@ int main() {
                 string maND, maSP, tenKH, diaChi, sdt;
                 int soLuong;
                 cout << "Nhap Ma khach hang (vi du: KH01, KH02): "; cin >> maND;
-                cout << "Nhap Ma san pham muon mua (vi du: SP01, SP12): "; cin >> maSP;
-                cout << "Nhap So luong mua: "; cin >> soLuong;
-                cout << "Nhap Ten khach hang: "; xoaBoDem(); getline(cin, tenKH);
+                cout << "Nhap Ma san pham muon mua (vi du: SP01, SP12, SP22, SP25): "; cin >> maSP;
+                cout << "Nhap So luong muon mua: "; cin >> soLuong;
+                cout << "Nhap Ho ten nguoi nhan: "; xoaBoDem(); getline(cin, tenKH);
                 cout << "Nhap Dia chi giao hang: "; getline(cin, diaChi);
-                cout << "Nhap So dien thoai: "; cin >> sdt;
+                cout << "Nhap So dien thoai: "; getline(cin, sdt);
 
-                string maDHMoi;
-                if (qlDH.datHang(maND, qlSP, maSP, soLuong, tenKH, diaChi, sdt, maDHMoi)) {
-                    cout << "-> Dat hang thanh cong! Ma don hang vua tao: " << maDHMoi << "\n";
-                    cout << "   Don da duoc xep vao cuoi Hang doi (OrderQueue) va Cay nhi phan (BST).\n";
+                string maDonMoi;
+                if (qlDH.datHang(maND, qlSP, maSP, soLuong, tenKH, diaChi, sdt, maDonMoi)) {
+                    cout << "-> Dat hang thanh cong! Ma don cua ban la: " << maDonMoi
+                         << " (Da xep vao Hang doi OrderQueue va cay BST de quan ly).\n";
                 } else {
-                    cout << "-> Dat hang that bai! (So luong khong hop le hoac san pham khong ton tai).\n";
+                    cout << "-> Dat hang that bai! (Khong tim thay san pham hoac so luong khong hop le).\n";
                 }
                 break;
             }
 
             case 12: {
-                cout << "\n--- TIEN HANH DUYET DON HANG O DAU HANG DOI ---\n";
+                cout << "\n-> Tien hanh duyet don hang o dau OrderQueue FIFO...\n";
                 string thongBao;
                 bool kq = qlDH.duyetDonHangTiepTheo(qlSP, thongBao);
-                cout << "Ket qua: " << thongBao << "\n";
-                if (!kq) {
-                    cout << "(*) Chu y: Don da duoc bop tach sang Pending List de khong can tro don phia sau (Chong nghen Head-of-Line Blocking)!\n";
-                }
+                cout << "Ket qua: " << (kq ? "THANH CONG" : "LUU Y / THAT BAI") << "\n";
+                cout << "Thong bao: " << thongBao << "\n";
                 break;
             }
 
@@ -365,48 +394,46 @@ int main() {
             }
 
             case 15: {
-                cout << "\nNhap Ma don hang can khoi phuc tu Pending List (vi du: DH003): ";
+                cout << "\nNhap Ma don hang bi treo trong Pending List can khoi phuc: ";
                 string maDH; cin >> maDH;
                 if (qlDH.phucHoiDonPending(maDH, qlSP)) {
-                    cout << "-> Khoi phuc thanh cong! Kho da du hang, don " << maDH
-                         << " da duoc dua tro lai Hang doi chinh (Queue) de cho duyet.\n";
+                    cout << "-> Khoi phuc thanh cong! Don hang da duoc dua lai vao Hang doi uu tien duyet.\n";
                 } else {
-                    cout << "-> Khoi phuc that bai! (Kho van chua du hang de dap ung hoac khong tim thay ma don trong Pending List).\n";
+                    cout << "-> Khong the khoi phuc don hang tu Danh sach Pending!\n";
                 }
                 break;
             }
 
             case 16: {
-                cout << "\n--- KIEM TRA VA TU DONG HUY DON HANG TREO QUA 5 PHUT ---\n";
+                cout << "\n-> Dang kiem tra va don dep don hang treo qua han...\n";
                 qlDH.kiemTraVaHuyDonTimeout();
-                cout << "-> Da kiem tra xong Pending List!\n";
+                cout << "-> Hoan tat kiem tra timeout.\n";
                 break;
             }
 
             case 17: {
-                cout << "\nNhap Ma don hang muon huy: ";
+                cout << "\nNhap Ma don hang can huy: ";
                 string maDH; cin >> maDH;
-                cout << "Nhap Ma khach hang (neu Admin huy thi de trong hoac go KH tuong ung): ";
-                xoaBoDem();
+                cout << "Nhap Ma nguoi dung huy (de trong neu la quan tri vien): "; xoaBoDem();
                 string maND; getline(cin, maND);
 
                 if (qlDH.huyDonHang(maDH, maND)) {
-                    cout << "-> Huy don hang " << maDH << " thanh cong (Don dang o trang thai cho duyet)!\n";
+                    cout << "-> Huy don hang thanh cong! Trang thai da cap nhat tren BST.\n";
                 } else {
-                    cout << "-> Huy don hang that bai! (Don khong ton tai, sai ma khach hang, hoac da xuat kho van chuyen).\n";
+                    cout << "-> Khong the huy don hang! (Don khong ton tai hoac da duyet / dang giao hang).\n";
                 }
                 break;
             }
 
             case 18: {
-                cout << "\nNhap Ma don hang can tim tren cay BST (vi du: DH001, DH002): ";
+                cout << "\nNhap Ma don hang can tra cuu tren Cay BST (vi du: DH000001): ";
                 string maDH; cin >> maDH;
                 DonHang* dh = qlDH.timDonHangTheoMa(maDH);
                 if (dh != nullptr) {
-                    cout << "\n[KET QUA TRA CUU NHI PHAN CAY BST - O(log N)]:\n";
+                    cout << "\n[TIM THAY DON HANG QUA CAY BST - O(log N)]:\n";
                     dh->show();
                 } else {
-                    cout << "-> Khong tim thay don hang: " << maDH << " tren cay BST!\n";
+                    cout << "Khong tim thay don hang: " << maDH << "\n";
                 }
                 break;
             }
@@ -417,19 +444,19 @@ int main() {
             }
 
             case 20: {
-                cout << "\nNhap Ma nguoi dung can xem lich su (vi du: KH01, KH02, KH03): ";
-                string maND; cin >> maND;
-                qlDH.xemLichSuDonHang(maND);
+                cout << "\nNhap Ma khach hang can xem lich su (vi du: KH01, KH02): ";
+                string maKH; cin >> maKH;
+                qlDH.xemLichSuDonHang(maKH);
                 break;
             }
 
             case 0: {
-                cout << "\nTam biet! Cam on ban da su dung chuong trinh test he thong PBL2!\n";
+                cout << "\nTam biet! Cam on ban da su dung He thong Quan ly PBL2.\n";
                 break;
             }
 
             default: {
-                cout << "Lua chon khong hop le! Vui long nhap lai tu 0 den 20.\n";
+                cout << "Lua chon khong hop le! Vui long nhap tu 0 den 20.\n";
                 break;
             }
         }
@@ -437,4 +464,3 @@ int main() {
 
     return 0;
 }
-
