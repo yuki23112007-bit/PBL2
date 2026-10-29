@@ -8,7 +8,7 @@ using namespace std;
 
 namespace {
 
-// Chuyen time_t sang chuoi "yyyy-mm-dd HH:MM:SS" (dinh dang QuanLyDonHang dang dung trong bo nho)
+// Chuyển time_t sang chuỗi "yyyy-mm-dd HH:MM:SS" (định dạng QuanLyDonHang đang dùng trong bộ nhớ)
 string thoiGianThanhChuoi(time_t t) {
     char buf[30];
     tm* thoiGian = localtime(&t);
@@ -19,10 +19,9 @@ string thoiGianThanhChuoi(time_t t) {
     return string(buf);
 }
 
-// Dong orders.txt dung 7 truong theo muc 3.5 README:
+// Dòng orders.txt đúng 7 trường theo mục 3.5 README:
 // maDonHang|tenKhachHang|diaChiKhachHang|soDienThoaiKhachHang|trangThaiDonHang|ngayDatHang|IdNguoiDung
-// ngayDatHang luu duoi dang time_t (lay tu thoiGianTao cua DonHang).
-// Khong dung DonHang::xuatChuoiFile() vi ham do xuat 8 truong.
+// ngayDatHang lưu dưới dạng time_t (lấy từ thoiGianTao của DonHang).
 string chuoiDonHang(const DonHang& dh) {
     return dh.getMaDonHang() + "|" + dh.getTenKhachHang() + "|" + dh.getDiaChiKhachHang() + "|" +
            dh.getSoDienThoaiKhachHang() + "|" + dh.getTrangThaiDonHang() + "|" +
@@ -104,15 +103,14 @@ bool FileManager::ghiFileAnToan(const string& tenFile, const vector<string>& cac
     bool ghiLoi = fileTam.fail();
     fileTam.close();
 
-    // Ghi file tam bi loi giua chung: giu nguyen file chinh, xoa file tam
-    if (ghiLoi || fileTam.fail()) {
+    // Nếu ghi lỗi giữa chừng: giữ nguyên file chính, xóa file tạm
+    if (ghiLoi) {
         cerr << "[FileManager] Loi khi ghi file tam: " << duongDanTam << "\n";
         remove(duongDanTam.c_str());
         return false;
     }
 
-    // Doi ten bang MOT thao tac (muc 4 README): std::filesystem::rename thay the file dich neu da ton tai,
-    // nen file chinh luon la ban cu hoan chinh hoac ban moi hoan chinh.
+    // Đổi tên file tạm thành file chính bằng một thao tác nguyên tử (Mục 4 README)
     error_code ec;
     filesystem::rename(duongDanTam, duongDanChinh, ec);
     if (ec) {
@@ -244,8 +242,7 @@ vector<DonHang> FileManager::docDonHang() {
             string trangThai = tokens[4];
             string maND = tokens[6];
 
-            // ngayDatHang trong file la time_t (muc 3.5 README) -> dung lam thoiGianTao cua don,
-            // de don cu khong bi coi la vua tao luc khoi dong (sai logic huy don qua 5 phut).
+            // ngayDatHang trong file là time_t (mục 3.5 README) -> gán làm thoiGianTao
             time_t thoiGianTao = static_cast<time_t>(stoll(tokens[5]));
             string ngayDat = thoiGianThanhChuoi(thoiGianTao);
 
@@ -313,8 +310,8 @@ vector<NhaCungCapRecord> FileManager::docNhaCungCap() {
     return danhSach;
 }
 
-vector<UserRecord> FileManager::docNguoiDung() {
-    vector<UserRecord> danhSach;
+vector<TaiKhoan*> FileManager::docTaiKhoan() {
+    vector<TaiKhoan*> danhSach;
     string duongDan = layDuongDan("users.txt");
     ifstream file(duongDan);
     if (!file.is_open()) {
@@ -335,12 +332,12 @@ vector<UserRecord> FileManager::docNguoiDung() {
         string pass = tokens[3];
 
         if (loai == "ADMIN") {
-            danhSach.push_back(UserRecord("ADMIN", id, username, pass));
+            danhSach.push_back(new Admin(id, username, pass));
         } else if (loai == "CUSTOMER" && tokens.size() >= 7) {
             string hoTen = tokens[4];
             string sdt = tokens[5];
             string diaChi = tokens[6];
-            danhSach.push_back(UserRecord("CUSTOMER", id, username, pass, hoTen, sdt, diaChi));
+            danhSach.push_back(new NguoiDung(id, username, pass, hoTen, sdt, diaChi));
         }
     }
     file.close();
@@ -427,11 +424,13 @@ bool FileManager::ghiNhaCungCap(const vector<NhaCungCapRecord>& danhSach) {
     return ghiFileAnToan("suppliers.txt", cacDong);
 }
 
-bool FileManager::ghiNguoiDung(const vector<UserRecord>& danhSach) {
+bool FileManager::ghiTaiKhoan(const vector<TaiKhoan*>& danhSach) {
     vector<string> cacDong;
     cacDong.reserve(danhSach.size());
-    for (const auto& u : danhSach) {
-        cacDong.push_back(u.xuatChuoiFile());
+    for (const auto* tk : danhSach) {
+        if (tk != nullptr) {
+            cacDong.push_back(tk->xuatChuoiFile());
+        }
     }
     return ghiFileAnToan("users.txt", cacDong);
 }
@@ -470,10 +469,46 @@ bool FileManager::themNhaCungCap(const NhaCungCapRecord& ncc) {
     return themDongVaoFile("suppliers.txt", ncc.xuatChuoiFile());
 }
 
-bool FileManager::themNguoiDung(const UserRecord& user) {
-    return themDongVaoFile("users.txt", user.xuatChuoiFile());
+bool FileManager::themTaiKhoan(const TaiKhoan* tk) {
+    if (tk == nullptr) return false;
+    return themDongVaoFile("users.txt", tk->xuatChuoiFile());
 }
 
 bool FileManager::themDoanhThu(const DoanhThuRecord& dt) {
     return themDongVaoFile("revenues.txt", dt.xuatChuoiFile());
+}
+
+// =========================================================================
+// 4. LIÊN KẾT ĐƠN HÀNG VÀO TÀI KHOẢN KHÁCH HÀNG (Mục 5.1 README)
+// =========================================================================
+
+void FileManager::lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, vector<DonHang>& danhSachDonHang) {
+    for (auto& dh : danhSachDonHang) {
+        string maND = dh.getMaNguoiDung();
+        for (auto* tk : danhSachTaiKhoan) {
+            if (tk != nullptr && tk->isCustomer() && tk->getId() == maND) {
+                NguoiDung* nd = dynamic_cast<NguoiDung*>(tk);
+                if (nd != nullptr) {
+                    nd->themDonHang(&dh);
+                }
+                break;
+            }
+        }
+    }
+}
+
+void FileManager::lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, const vector<DonHang*>& danhSachDonHang) {
+    for (auto* dh : danhSachDonHang) {
+        if (dh == nullptr) continue;
+        string maND = dh->getMaNguoiDung();
+        for (auto* tk : danhSachTaiKhoan) {
+            if (tk != nullptr && tk->isCustomer() && tk->getId() == maND) {
+                NguoiDung* nd = dynamic_cast<NguoiDung*>(tk);
+                if (nd != nullptr) {
+                    nd->themDonHang(dh);
+                }
+                break;
+            }
+        }
+    }
 }

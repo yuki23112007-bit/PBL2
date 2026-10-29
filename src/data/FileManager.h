@@ -14,6 +14,9 @@
 #include "../models/KhoHang.h"
 #include "../models/DonHang.h"
 #include "../models/ChiTietDonHang.h"
+#include "../models/TaiKhoan.h"
+#include "../models/Admin.h"
+#include "../models/NguoiDung.h"
 
 using namespace std;
 
@@ -63,39 +66,6 @@ public:
 };
 #endif
 
-// Cấu trúc đại diện cho bản ghi tài khoản người dùng (users.txt)
-struct UserRecord {
-    string loai;         // "ADMIN" hoặc "CUSTOMER"
-    string id;           // 6 chữ số: 111xxx (Admin), 222xxx (Khách hàng)
-    string username;
-    string passwordHash;
-    string hoTen;        // Chỉ có ở CUSTOMER
-    string soDienThoai;  // Chỉ có ở CUSTOMER
-    string diaChi;       // Chỉ có ở CUSTOMER
-
-    UserRecord()
-        : loai("CUSTOMER"), id(""), username(""), passwordHash(""),
-          hoTen(""), soDienThoai(""), diaChi("") {}
-
-    UserRecord(const string& loai, const string& id, const string& username,
-               const string& passwordHash, const string& hoTen = "",
-               const string& sdt = "", const string& diaChi = "")
-        : loai(loai), id(id), username(username), passwordHash(passwordHash),
-          hoTen(hoTen), soDienThoai(sdt), diaChi(diaChi) {}
-
-    bool isAdmin() const { return loai == "ADMIN"; }
-    bool isCustomer() const { return loai == "CUSTOMER"; }
-
-    string xuatChuoiFile() const {
-        if (loai == "ADMIN") {
-            return "ADMIN|" + id + "|" + username + "|" + passwordHash;
-        } else {
-            return "CUSTOMER|" + id + "|" + username + "|" + passwordHash + "|" +
-                   hoTen + "|" + soDienThoai + "|" + diaChi;
-        }
-    }
-};
-
 // Cấu trúc đại diện cho bản ghi nhà cung cấp (suppliers.txt)
 struct NhaCungCapRecord {
     string maNhaCungCap;
@@ -136,6 +106,39 @@ struct DoanhThuRecord {
     }
 };
 
+// Cấu trúc DTO cho User (giữ tương thích)
+struct UserRecord {
+    string loai;
+    string id;
+    string username;
+    string passwordHash;
+    string hoTen;
+    string soDienThoai;
+    string diaChi;
+
+    UserRecord()
+        : loai("CUSTOMER"), id(""), username(""), passwordHash(""),
+          hoTen(""), soDienThoai(""), diaChi("") {}
+
+    UserRecord(const string& loai, const string& id, const string& username,
+               const string& passwordHash, const string& hoTen = "",
+               const string& sdt = "", const string& diaChi = "")
+        : loai(loai), id(id), username(username), passwordHash(passwordHash),
+          hoTen(hoTen), soDienThoai(sdt), diaChi(diaChi) {}
+
+    bool isAdmin() const { return loai == "ADMIN"; }
+    bool isCustomer() const { return loai == "CUSTOMER"; }
+
+    string xuatChuoiFile() const {
+        if (loai == "ADMIN") {
+            return "ADMIN|" + id + "|" + username + "|" + passwordHash;
+        } else {
+            return "CUSTOMER|" + id + "|" + username + "|" + passwordHash + "|" +
+                   hoTen + "|" + soDienThoai + "|" + diaChi;
+        }
+    }
+};
+
 class FileManager {
 private:
     string dataDir;
@@ -143,7 +146,7 @@ private:
     // Đường dẫn đầy đủ của file
     string layDuongDan(const string& tenFile) const;
 
-    // Tách chuỗi theo dấu phân cách | (loại bỏ \r và khoảng trắng thừa)
+    // Tách chuỗi theo dấu phân cách | (loại bỏ khoảng trắng thừa)
     static vector<string> tachChuoi(const string& dong, char kyTuPhanCach = '|');
     static string catKhoangTrang(const string& s);
 
@@ -177,8 +180,9 @@ public:
     // suppliers.txt
     vector<NhaCungCapRecord> docNhaCungCap();
 
-    // users.txt
-    vector<UserRecord> docNguoiDung();
+    // users.txt (Trả về danh sách con trỏ đa hình TaiKhoan* gồm Admin* và NguoiDung*)
+    vector<TaiKhoan*> docTaiKhoan();
+    vector<TaiKhoan*> docNguoiDung() { return docTaiKhoan(); }
 
     // revenues.txt
     vector<DoanhThuRecord> docDoanhThu();
@@ -189,7 +193,8 @@ public:
     bool ghiDonHang(const vector<DonHang>& danhSach);
     bool ghiChiTietDonHang(const vector<ChiTietDonHang>& danhSach);
     bool ghiNhaCungCap(const vector<NhaCungCapRecord>& danhSach);
-    bool ghiNguoiDung(const vector<UserRecord>& danhSach);
+    bool ghiTaiKhoan(const vector<TaiKhoan*>& danhSach);
+    bool ghiNguoiDung(const vector<TaiKhoan*>& danhSach) { return ghiTaiKhoan(danhSach); }
     bool ghiDoanhThu(const vector<DoanhThuRecord>& danhSach);
 
     // ================= 3. THÊM BẢN GHI MỚI VÀO CUỐI FILE (APPEND) =================
@@ -198,8 +203,14 @@ public:
     bool themDonHang(const DonHang& dh);
     bool themChiTietDonHang(const ChiTietDonHang& ctdh);
     bool themNhaCungCap(const NhaCungCapRecord& ncc);
-    bool themNguoiDung(const UserRecord& user);
+    bool themTaiKhoan(const TaiKhoan* tk);
+    bool themNguoiDung(const TaiKhoan* tk) { return themTaiKhoan(tk); }
     bool themDoanhThu(const DoanhThuRecord& dt);
+
+    // ================= 4. LIÊN KẾT ĐƠN HÀNG VÀO TÀI KHOẢN KHÁCH HÀNG (Mục 5.1 README) =================
+    // Lặp qua danh sách đơn hàng và nạp con trỏ đơn hàng vào danhSachDonHangCaNhan của NguoiDung tương ứng
+    static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, vector<DonHang>& danhSachDonHang);
+    static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, const vector<DonHang*>& danhSachDonHang);
 };
 
 #endif // FILEMANAGER_H
