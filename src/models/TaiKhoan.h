@@ -14,45 +14,32 @@ protected:
     string vaiTro;       // "ADMIN" hoặc "CUSTOMER"
 
 public:
-    TaiKhoan()
-        : id(""), username(""), passwordHash(""), vaiTro("") {}
-
+    TaiKhoan();
     TaiKhoan(const string& id, const string& username,
-             const string& passwordHash, const string& vaiTro)
-        : id(id), username(username), passwordHash(passwordHash), vaiTro(vaiTro) {}
-
+             const string& passwordHash, const string& vaiTro);
     virtual ~TaiKhoan() = default;
 
     // Getter
-    const string& getId() const { return id; }
-    const string& getUsername() const { return username; }
-    const string& getPasswordHash() const { return passwordHash; }
-    const string& getVaiTro() const { return vaiTro; }
+    const string& getId() const;
+    const string& getUsername() const;
+    const string& getPasswordHash() const;
+    const string& getVaiTro() const;
 
     // Setter
-    void setId(const string& v) { id = v; }
-    void setUsername(const string& v) { username = v; }
-    void setPasswordHash(const string& v) { passwordHash = v; }
-    void setVaiTro(const string& v) { vaiTro = v; }
+    void setId(const string& v);
+    void setUsername(const string& v);
+    void setPasswordHash(const string& v);
+    void setVaiTro(const string& v);
 
     // Nghiệp vụ
-    bool kiemTraMatKhau(const string& hash) const {
-        return passwordHash == hash;
-    }
-
-    bool isAdmin() const {
-        return vaiTro == "ADMIN";
-    }
-
-    bool isCustomer() const {
-        return vaiTro == "CUSTOMER";
-    }
+    bool kiemTraMatKhau(const string& hash) const;
+    bool isAdmin() const;
+    bool isCustomer() const;
 
     // Đa hình
     virtual void show() const = 0;
-    virtual void hienThiThongTin() const { show(); }
+    virtual void hienThiThongTin() const;
     virtual string xuatChuoiFile() const = 0;
 };
 
 #endif // TAIKHOAN_H
-
