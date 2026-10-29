@@ -150,8 +150,7 @@ Nếu hai người cùng sửa một đoạn code, hãy nói chuyện trong nhó
 - Không đổi tên hàm hoặc cấu trúc dữ liệu dùng chung mà không báo nhóm.
 - Khi thêm chức năng mới, ưu tiên thêm hàm mới thay vì sửa hàm đang chạy của người khác.
 - Trước khi tạo Pull Request, đảm bảo code biên dịch và chạy được.
-- **Không viết `using namespace std;` trong file `.h`.** Dòng này ảnh hưởng mọi file include header, dễ gây trùng tên với lớp hoặc hàm của nhóm.
-- **Trong file `.cpp`, cũng không dùng `using namespace std;`.** Viết tiền tố `std::` (ví dụ `std::string`, `std::cout`). Nếu muốn ngắn hơn, dùng khai báo cụ thể như `using std::string;`.
+- **Trong file `.cpp`, dùng `using namespace std;`.** Không viết tiền tố `std::` (ví dụ `std::string`, `std::cout`).
 
 ## 7. Quy tắc tổ chức file: mỗi file một chức năng
 
