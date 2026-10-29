@@ -17,20 +17,20 @@ Mỗi người phụ trách một module, chỉ sửa các file của module đ�
 
 | Module | Chức năng trong tài liệu | File phụ trách | Người phụ trách |
 |---|---|---|---|
-| Đăng nhập, đăng ký | Mục 1.1, 2.1 | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h` | `[điền tên]` |
+| Đăng nhập, đăng ký | Mục 1.1, 2.1 | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h` | `Quỳnh` |
 | Tra cứu sản phẩm | Mục 1.2, 2.2 (Trie sản phẩm) | `core/Trie.h` | `Huy` |
 | Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h`, `models/ThucPham.h`, `models/ThucPhamThuong.h`, `models/ThucPhamTuoiSong.h`, `models/CongNghe.h`, `models/DoGiaDung.h` | `Huy` |
 | Hàng đợi duyệt đơn, Pending List | Mục 1.4, 2.3, 2.7 | `core/OrderQueue.h`, `models/DonHang.h`, `models/ChiTietDonHang.h` | `Huy` |
 | Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h` của module trên, không sửa) | `Huy` |
 | Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `Huy` |
-| Doanh thu, báo cáo, vận chuyển | Mục 1.5, 1.7, 2.6 | `models/DoanhThuNgay.h`, `models/VanChuyen.h` | `[điền tên]` |
-| Giao diện web (HTML, CSS) | Mục 2.4, 2.5 | `web/index.html`, `web/style.css`, `web/app.js` (xem `web/README.md`) | `[điền tên]` |
-| Máy chủ web, API JSON | Mục 2.4, 2.5 | `app/WebServer.h`, `app/WebServer.cpp` | `[điền tên]` |
+| Doanh thu, báo cáo, vận chuyển | Mục 1.5, 1.7, 2.6 | `models/DoanhThuNgay.h`, `models/VanChuyen.h` | `Quỳnh` |
+| Giao diện web (HTML, CSS) | Mục 2.4, 2.5 | `web/index.html`, `web/style.css`, `web/app.js` (xem `web/README.md`) | `Quỳnh` |
+| Máy chủ web, API JSON | Mục 2.4, 2.5 | `app/WebServer.h`, `app/WebServer.cpp` | `Quỳnh` |
 | Quản lý sản phẩm (nghiệp vụ) | Mục 1.3, 2.2 | `service/QuanLySanPham.h` | `Huy` |
 | Quản lý đơn hàng (nghiệp vụ) | Mục 1.4, 2.3, 2.5, 2.7 | `service/QuanLyDonHang.h` | `Huy` |
-| Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 | `service/QuanLyTaiKhoan.h` | `[điền tên]` |
-| Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 | `service/QuanLyKhoNCC.h` | `[điền tên]` |
-| Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h` | `[điền tên]` |
+| Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 | `service/QuanLyTaiKhoan.h` | `Quỳnh` |
+| Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 | `service/QuanLyKhoNCC.h` | `Quỳnh` |
+| Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h` | `Quỳnh` |
 
 Mỗi file chỉ xuất hiện ở đúng một dòng. Module khác chỉ `#include` file đó, không sửa.
 
