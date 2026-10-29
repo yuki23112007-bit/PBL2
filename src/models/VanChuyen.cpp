@@ -1,24 +1,26 @@
 #include "VanChuyen.h"
 #include <iomanip>
 
+using namespace std;
+
 VanChuyen::VanChuyen()
     : maVanChuyen(""), maDonHang(""), ngayTao(time(nullptr)),
       trangThaiGiao("Dang Giao"), chiPhiVanChuyen(0.0), loaiXe(""),
       thoiGianGiaoDuKien(ngayTao + 2 * 86400) {}
 
-VanChuyen::VanChuyen(const std::string& maVC, const std::string& maDH,
-                     time_t tao, const std::string& trangThai,
-                     double chiPhi, const std::string& xe,
+VanChuyen::VanChuyen(const string& maVC, const string& maDH,
+                     time_t tao, const string& trangThai,
+                     double chiPhi, const string& xe,
                      time_t duKien)
     : maVanChuyen(maVC), maDonHang(maDH), ngayTao(tao),
       trangThaiGiao(trangThai), chiPhiVanChuyen(chiPhi), loaiXe(xe),
       thoiGianGiaoDuKien(duKien == 0 ? tao + 2 * 86400 : duKien) {}
 
-const std::string& VanChuyen::getMaVanChuyen() const {
+const string& VanChuyen::getMaVanChuyen() const {
     return maVanChuyen;
 }
 
-const std::string& VanChuyen::getMaDonHang() const {
+const string& VanChuyen::getMaDonHang() const {
     return maDonHang;
 }
 
@@ -26,7 +28,7 @@ time_t VanChuyen::getNgayTao() const {
     return ngayTao;
 }
 
-const std::string& VanChuyen::getTrangThaiGiao() const {
+const string& VanChuyen::getTrangThaiGiao() const {
     return trangThaiGiao;
 }
 
@@ -34,7 +36,7 @@ double VanChuyen::getChiPhiVanChuyen() const {
     return chiPhiVanChuyen;
 }
 
-const std::string& VanChuyen::getLoaiXe() const {
+const string& VanChuyen::getLoaiXe() const {
     return loaiXe;
 }
 
@@ -42,11 +44,11 @@ time_t VanChuyen::getThoiGianGiaoDuKien() const {
     return thoiGianGiaoDuKien;
 }
 
-void VanChuyen::setMaVanChuyen(const std::string& maVC) {
+void VanChuyen::setMaVanChuyen(const string& maVC) {
     maVanChuyen = maVC;
 }
 
-void VanChuyen::setMaDonHang(const std::string& maDH) {
+void VanChuyen::setMaDonHang(const string& maDH) {
     maDonHang = maDH;
 }
 
@@ -54,7 +56,7 @@ void VanChuyen::setNgayTao(time_t tao) {
     ngayTao = tao;
 }
 
-void VanChuyen::setTrangThaiGiao(const std::string& trangThai) {
+void VanChuyen::setTrangThaiGiao(const string& trangThai) {
     trangThaiGiao = trangThai;
 }
 
@@ -62,7 +64,7 @@ void VanChuyen::setChiPhiVanChuyen(double chiPhi) {
     chiPhiVanChuyen = chiPhi;
 }
 
-void VanChuyen::setLoaiXe(const std::string& xe) {
+void VanChuyen::setLoaiXe(const string& xe) {
     loaiXe = xe;
 }
 
@@ -70,7 +72,7 @@ void VanChuyen::setThoiGianGiaoDuKien(time_t duKien) {
     thoiGianGiaoDuKien = duKien;
 }
 
-void VanChuyen::capNhatTrangThaiGiao(const std::string& trangThaiMoi) {
+void VanChuyen::capNhatTrangThaiGiao(const string& trangThaiMoi) {
     trangThaiGiao = trangThaiMoi;
 }
 
@@ -84,27 +86,27 @@ double VanChuyen::tinhChiPhiVanChuyen() const {
 }
 
 void VanChuyen::hienThiThongTin() const {
-    std::cout << "[VAN DON: " << maVanChuyen << "]\n";
-    std::cout << "  - Ma don hang     : " << maDonHang << "\n";
-    std::cout << "  - Ngay tao        : " << ngayTao << "\n";
-    std::cout << "  - Loai xe         : " << loaiXe << "\n";
-    std::cout << "  - Phi ship        : " << std::fixed << std::setprecision(0) << chiPhiVanChuyen << " VND\n";
-    std::cout << "  - Trang thai      : " << trangThaiGiao << "\n";
-    std::cout << "  - Giao du kien    : " << thoiGianGiaoDuKien << "\n";
+    cout << "[VAN DON: " << maVanChuyen << "]\n";
+    cout << "  - Ma don hang     : " << maDonHang << "\n";
+    cout << "  - Ngay tao        : " << ngayTao << "\n";
+    cout << "  - Loai xe         : " << loaiXe << "\n";
+    cout << "  - Phi ship        : " << fixed << setprecision(0) << chiPhiVanChuyen << " VND\n";
+    cout << "  - Trang thai      : " << trangThaiGiao << "\n";
+    cout << "  - Giao du kien    : " << thoiGianGiaoDuKien << "\n";
 }
 
-std::string VanChuyen::xuatChuoiFile() const {
-    return maVanChuyen + "|" + maDonHang + "|" + std::to_string(ngayTao) + "|" +
-           trangThaiGiao + "|" + std::to_string(static_cast<long long>(chiPhiVanChuyen)) + "|" +
-           loaiXe + "|" + std::to_string(thoiGianGiaoDuKien);
+string VanChuyen::xuatChuoiFile() const {
+    return maVanChuyen + "|" + maDonHang + "|" + to_string(ngayTao) + "|" +
+           trangThaiGiao + "|" + to_string(static_cast<long long>(chiPhiVanChuyen)) + "|" +
+           loaiXe + "|" + to_string(thoiGianGiaoDuKien);
 }
 
-std::ostream& operator<<(std::ostream& os, const VanChuyen& vc) {
+ostream& operator<<(ostream& os, const VanChuyen& vc) {
     os << vc.xuatChuoiFile();
     return os;
 }
 
-std::istream& operator>>(std::istream& is, VanChuyen& vc) {
+istream& operator>>(istream& is, VanChuyen& vc) {
     is >> vc.maVanChuyen >> vc.maDonHang >> vc.ngayTao >> vc.trangThaiGiao
        >> vc.chiPhiVanChuyen >> vc.loaiXe >> vc.thoiGianGiaoDuKien;
     return is;

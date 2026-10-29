@@ -1,13 +1,15 @@
 #include "DoanhThuNgay.h"
 #include <iomanip>
 
+using namespace std;
+
 DoanhThuNgay::DoanhThuNgay()
     : ngayThongKe(""), tongDoanhThu(0.0), tongSoDonHang(0) {}
 
-DoanhThuNgay::DoanhThuNgay(const std::string& ngay, double doanhThu, int soDon)
+DoanhThuNgay::DoanhThuNgay(const string& ngay, double doanhThu, int soDon)
     : ngayThongKe(ngay), tongDoanhThu(doanhThu), tongSoDonHang(soDon) {}
 
-const std::string& DoanhThuNgay::getNgayThongKe() const {
+const string& DoanhThuNgay::getNgayThongKe() const {
     return ngayThongKe;
 }
 
@@ -19,7 +21,7 @@ int DoanhThuNgay::getTongSoDonHang() const {
     return tongSoDonHang;
 }
 
-void DoanhThuNgay::setNgayThongKe(const std::string& ngay) {
+void DoanhThuNgay::setNgayThongKe(const string& ngay) {
     ngayThongKe = ngay;
 }
 
@@ -41,22 +43,22 @@ void DoanhThuNgay::congDoanhThu(double giaTriDonHang) {
 }
 
 void DoanhThuNgay::hienThiThongTin() const {
-    std::cout << "[DOANH THU NGAY " << ngayThongKe << "]\n";
-    std::cout << "  - Tong doanh thu : " << std::fixed << std::setprecision(0) << tongDoanhThu << " VND\n";
-    std::cout << "  - Tong so don    : " << tongSoDonHang << " don hang\n";
+    cout << "[DOANH THU NGAY " << ngayThongKe << "]\n";
+    cout << "  - Tong doanh thu : " << fixed << setprecision(0) << tongDoanhThu << " VND\n";
+    cout << "  - Tong so don    : " << tongSoDonHang << " don hang\n";
 }
 
-std::string DoanhThuNgay::xuatChuoiFile() const {
-    return ngayThongKe + "|" + std::to_string(static_cast<long long>(tongDoanhThu)) + "|" +
-           std::to_string(tongSoDonHang);
+string DoanhThuNgay::xuatChuoiFile() const {
+    return ngayThongKe + "|" + to_string(static_cast<long long>(tongDoanhThu)) + "|" +
+           to_string(tongSoDonHang);
 }
 
-std::ostream& operator<<(std::ostream& os, const DoanhThuNgay& dt) {
+ostream& operator<<(ostream& os, const DoanhThuNgay& dt) {
     os << dt.xuatChuoiFile();
     return os;
 }
 
-std::istream& operator>>(std::istream& is, DoanhThuNgay& dt) {
+istream& operator>>(istream& is, DoanhThuNgay& dt) {
     is >> dt.ngayThongKe >> dt.tongDoanhThu >> dt.tongSoDonHang;
     return is;
 }
