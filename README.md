@@ -303,7 +303,8 @@ Tài liệu có hai chỗ chưa nhất quán:
 
 **Lưu ý:** thuộc tính `children` dạng `map` không còn dùng. Mọi thao tác trên Trie (chèn, xóa, tra cứu) phải đi qua `firstChild` và `nextSibling`.
 
-## 12. Liên hệ
+## 12. Lưu ý:
 
 Mọi thắc mắc về quy tắc làm việc, hỏi trong nhóm chat trước khi tự sửa file của người khác.
 Không được sửa file này.
+Bắt buộc sử dụng using namespace std.
