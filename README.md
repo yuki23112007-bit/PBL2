@@ -195,13 +195,7 @@ Nếu hai người cùng sửa một đoạn code, hãy nói chuyện trong nhó
 
 - Mỗi file `.h` khai báo lớp và hàm. File `.cpp` cài đặt và `#include` file `.h` của chính nó.
 - Khi cần lớp khác, file đó `#include` header của lớp đó, ví dụ `#include "../models/SanPham.h"`.
-- Mọi header phải có **include guard** để tránh bị include hai lần:
-
-```cpp
-#ifndef SANPHAM_H
-#define SANPHAM_H
-// nội dung
-#endif
+- Để tránh bị gọi 2 lần thì sử dụng Forward declaration và gọi #include trong file .cpp
 ```
 
 ### 9.2. Chiều phụ thuộc (không được vòng lặp)
