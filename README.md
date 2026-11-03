@@ -97,6 +97,31 @@ web/                                     Giao diện HTML và CSS, nằm ngoài 
 
 **File dùng chung** (như định nghĩa cấu trúc dữ liệu, cấu trúc bảng, hàm băm, hàm tiện ích): ai sửa phải báo cả nhóm trước khi push, vì ảnh hưởng nhiều module.
 
+### 2.2. Công nghệ
+
+| Phần | Công nghệ | Vai trò |
+|---|---|---|
+| Frontend | HTML, CSS, JavaScript | Giao diện chạy trên trình duyệt, gọi API để lấy và gửi dữ liệu |
+| Backend | C++17, cpp-httplib | Máy chủ HTTP trả dữ liệu dạng JSON, xử lý nghiệp vụ |
+| Lưu trữ | File `.txt` trong `data/`, đọc ghi qua `FileManager` | Không dùng cơ sở dữ liệu |
+
+Giao diện không chứa logic nghiệp vụ. Mọi tính toán (giá, tồn kho, hạn dùng, duyệt đơn) nằm ở backend C++.
+
+### 2.3. Nhiệm vụ HTML và CSS
+
+Thư mục `web/` do Quỳnh phụ trách. Chi tiết quy ước và yêu cầu nghiệm thu nằm trong `web/README.md`.
+
+| STT | Nhiệm vụ | File | Trạng thái | Người phụ trách |
+|---|---|---|---|---|
+| 1 | Hoàn thiện `index.html`: đủ ba màn hình đăng nhập, khu Admin, khu Customer | `web/index.html` | Đã có khung | Quỳnh |
+| 2 | Viết `style.css`: biến màu trong `:root`, bố cục sidebar và bảng, nút, thẻ trạng thái, form | `web/style.css` | Chưa làm | Quỳnh |
+| 3 | Làm responsive: sidebar thu gọn và lưới sản phẩm đổi số cột trên điện thoại | `web/style.css` | Chưa làm | Quỳnh |
+| 4 | Bảng và form không tràn ra ngoài màn hình trên điện thoại | `web/style.css` | Chưa làm | Quỳnh |
+| 5 | Kiểm tra giao diện trên Chrome và Edge, cả desktop và điện thoại | `web/` | Chưa làm | Quỳnh |
+| 6 | Thống nhất tên lớp CSS và `id` HTML với người viết `app.js` trước khi nối API | `web/` | Chưa làm | Quỳnh, Huy |
+
+Yêu cầu chung: không dùng framework CSS (Bootstrap, Tailwind). Mọi thay đổi `id` hoặc tên lớp phải báo nhóm, vì `app.js` phụ thuộc vào chúng.
+
 ## 3. Quy trình làm việc hằng ngày
 
 1. Cập nhật code mới nhất:
@@ -196,7 +221,6 @@ Nếu hai người cùng sửa một đoạn code, hãy nói chuyện trong nhó
 - Mỗi file `.h` khai báo lớp và hàm. File `.cpp` cài đặt và `#include` file `.h` của chính nó.
 - Khi cần lớp khác, file đó `#include` header của lớp đó, ví dụ `#include "../models/SanPham.h"`.
 - Để tránh bị gọi 2 lần thì sử dụng Forward declaration và gọi #include trong file .cpp
-```
 
 ### 9.2. Chiều phụ thuộc (không được vòng lặp)
 
