@@ -45,6 +45,10 @@ bool TaiKhoan::kiemTraMatKhau(const string& hash) const {
     return passwordHash == hash;
 }
 
+bool TaiKhoan::kiemTraDangNhap(const string& u, const string& pHash) const {
+    return username == u && passwordHash == pHash;
+}
+
 bool TaiKhoan::isAdmin() const {
     return vaiTro == "ADMIN";
 }
@@ -57,3 +61,27 @@ void TaiKhoan::hienThiThongTin() const {
     show();
 }
 
+// =========================================================================
+// ĐA NĂNG HÓA TOÁN TỬ (OPERATOR OVERLOADING)
+// =========================================================================
+
+bool TaiKhoan::operator==(const string& hash) const {
+    return passwordHash == hash;
+}
+
+bool TaiKhoan::operator==(const TaiKhoan& other) const {
+    return this->id == other.id && this->username == other.username;
+}
+
+bool TaiKhoan::operator!=(const TaiKhoan& other) const {
+    return !(*this == other);
+}
+
+bool TaiKhoan::operator<(const TaiKhoan& other) const {
+    return this->id < other.id;
+}
+
+ostream& operator<<(ostream& os, const TaiKhoan& tk) {
+    os << tk.xuatChuoiFile();
+    return os;
+}

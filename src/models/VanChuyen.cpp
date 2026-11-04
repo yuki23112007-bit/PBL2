@@ -1,20 +1,21 @@
 #include "VanChuyen.h"
+#include "PhuongTien.h"
 #include <iomanip>
 
 using namespace std;
 
 VanChuyen::VanChuyen()
     : maVanChuyen(""), maDonHang(""), ngayTao(time(nullptr)),
-      trangThaiGiao("Dang Giao"), chiPhiVanChuyen(0.0), loaiXe(""),
-      thoiGianGiaoDuKien(ngayTao + 2 * 86400) {}
+      trangThaiGiao("Dang Giao"), chiPhiVanChuyen(25000.0), loaiXe("Xe May Giao Nhanh"),
+      thoiGianGiaoDuKien(ngayTao + 2 * 86400), phuongTien(nullptr) {}
 
 VanChuyen::VanChuyen(const string& maVC, const string& maDH,
                      time_t tao, const string& trangThai,
                      double chiPhi, const string& xe,
-                     time_t duKien)
+                     time_t duKien, PhuongTien* pt)
     : maVanChuyen(maVC), maDonHang(maDH), ngayTao(tao),
       trangThaiGiao(trangThai), chiPhiVanChuyen(chiPhi), loaiXe(xe),
-      thoiGianGiaoDuKien(duKien == 0 ? tao + 2 * 86400 : duKien) {}
+      thoiGianGiaoDuKien(duKien == 0 ? tao + 2 * 86400 : duKien), phuongTien(pt) {}
 
 const string& VanChuyen::getMaVanChuyen() const {
     return maVanChuyen;
@@ -42,6 +43,10 @@ const string& VanChuyen::getLoaiXe() const {
 
 time_t VanChuyen::getThoiGianGiaoDuKien() const {
     return thoiGianGiaoDuKien;
+}
+
+PhuongTien* VanChuyen::getPhuongTien() const {
+    return phuongTien;
 }
 
 void VanChuyen::setMaVanChuyen(const string& maVC) {
@@ -72,6 +77,13 @@ void VanChuyen::setThoiGianGiaoDuKien(time_t duKien) {
     thoiGianGiaoDuKien = duKien;
 }
 
+void VanChuyen::ganPhuongTien(PhuongTien* pt) {
+    phuongTien = pt;
+    if (phuongTien != nullptr) {
+        loaiXe = phuongTien->getLoaiPhuongTien();
+    }
+}
+
 void VanChuyen::capNhatTrangThaiGiao(const string& trangThaiMoi) {
     trangThaiGiao = trangThaiMoi;
 }
@@ -81,7 +93,20 @@ bool VanChuyen::daQuaHan3Ngay(time_t thoiGianHienTai) const {
     return thoiGianHienTai > (thoiGianGiaoDuKien + 3 * 86400);
 }
 
-double VanChuyen::tinhChiPhiVanChuyen() const {
+void VanChuyen::dieuPhoiPhuongTien(bool canBaoQuanLanh) {
+    if (canBaoQuanLanh) {
+        loaiXe = "Xe Tai Lanh Chuyen Dung";
+        chiPhiVanChuyen = 45000.0; // Phí ship xe tải lạnh theo tài liệu
+    } else {
+        loaiXe = "Xe May Giao Nhanh";
+        chiPhiVanChuyen = 25000.0; // Phí ship xe máy giao nhanh theo tài liệu
+    }
+}
+
+double VanChuyen::tinhChiPhiVanChuyen(double quangDuongKm) {
+    if (phuongTien != nullptr) {
+        chiPhiVanChuyen = phuongTien->tinhChiPhiVanChuyen(quangDuongKm);
+    }
     return chiPhiVanChuyen;
 }
 
@@ -93,6 +118,10 @@ void VanChuyen::hienThiThongTin() const {
     cout << "  - Phi ship        : " << fixed << setprecision(0) << chiPhiVanChuyen << " VND\n";
     cout << "  - Trang thai      : " << trangThaiGiao << "\n";
     cout << "  - Giao du kien    : " << thoiGianGiaoDuKien << "\n";
+    if (phuongTien != nullptr) {
+        cout << "  - Phuong tien     : ";
+        phuongTien->hienThiThongTin();
+    }
 }
 
 string VanChuyen::xuatChuoiFile() const {

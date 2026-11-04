@@ -42,6 +42,42 @@ void DoanhThuNgay::congDoanhThu(double giaTriDonHang) {
     congDonDoanhThu(giaTriDonHang);
 }
 
+// =========================================================================
+// ĐA NĂNG HÓA TOÁN TỬ (OPERATOR OVERLOADING)
+// =========================================================================
+
+DoanhThuNgay& DoanhThuNgay::operator+=(double giaTriDonHang) {
+    congDonDoanhThu(giaTriDonHang);
+    return *this;
+}
+
+DoanhThuNgay& DoanhThuNgay::operator+=(const DoanhThuNgay& other) {
+    this->tongDoanhThu += other.tongDoanhThu;
+    this->tongSoDonHang += other.tongSoDonHang;
+    return *this;
+}
+
+DoanhThuNgay DoanhThuNgay::operator+(const DoanhThuNgay& other) const {
+    string ngayMoi = (this->ngayThongKe == other.ngayThongKe) ? this->ngayThongKe : (this->ngayThongKe + " ~ " + other.ngayThongKe);
+    return DoanhThuNgay(ngayMoi, this->tongDoanhThu + other.tongDoanhThu, this->tongSoDonHang + other.tongSoDonHang);
+}
+
+bool DoanhThuNgay::operator==(const DoanhThuNgay& other) const {
+    return this->ngayThongKe == other.ngayThongKe;
+}
+
+bool DoanhThuNgay::operator!=(const DoanhThuNgay& other) const {
+    return !(*this == other);
+}
+
+bool DoanhThuNgay::operator<(const DoanhThuNgay& other) const {
+    return this->ngayThongKe < other.ngayThongKe;
+}
+
+bool DoanhThuNgay::operator>(const DoanhThuNgay& other) const {
+    return this->ngayThongKe > other.ngayThongKe;
+}
+
 void DoanhThuNgay::hienThiThongTin() const {
     cout << "[DOANH THU NGAY " << ngayThongKe << "]\n";
     cout << "  - Tong doanh thu : " << fixed << setprecision(0) << tongDoanhThu << " VND\n";

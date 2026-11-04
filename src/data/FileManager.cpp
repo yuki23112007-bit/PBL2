@@ -14,6 +14,8 @@
 #include "../models/NguoiDung.h"
 #include "../models/DoanhThuNgay.h"
 #include "../models/VanChuyen.h"
+#include "../models/PhuongTien.h"
+#include "../models/NhaCungCap.h"
 
 #include <cstdio>
 #include <filesystem>
