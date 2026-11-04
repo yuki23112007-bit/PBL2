@@ -1,5 +1,4 @@
-#ifndef ADMIN_H
-#define ADMIN_H
+#pragma once
 
 #include "TaiKhoan.h"
 #include <string>
@@ -26,5 +25,3 @@ public:
         return os;
     }
 };
-
-#endif // ADMIN_H

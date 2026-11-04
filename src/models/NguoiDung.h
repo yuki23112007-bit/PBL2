@@ -1,5 +1,4 @@
-#ifndef NGUOIDUNG_H
-#define NGUOIDUNG_H
+#pragma once
 
 #include "TaiKhoan.h"
 #include <string>
@@ -51,5 +50,3 @@ public:
         return os;
     }
 };
-
-#endif // NGUOIDUNG_H
