@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeoLogi - Quản Lý Đơn Hàng & Kho Mèo Đen</title>
+  <!-- Nhúng font chữ: Lexend cho toàn bộ nội dung, Alviona/Fraunces cho tiêu đề -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =====================================================================
+       MÀN HÌNH 1: ĐĂNG NHẬP & ĐĂNG KÝ (#view-login)
+       ===================================================================== -->
+  <section id="view-login" class="view active">
+    <div class="login-card glass-panel">
+      
+      <!-- Mascot mèo ngộ nghĩnh trên màn hình đăng nhập -->
+      <div class="login-cat-mascot" id="login-cat-icon">
+        <!-- Nhúng inline icon mèo qua app.js -->
+      </div>
+
+      <h2 class="login-title">MeoLogi</h2>
+      <p class="login-sub">Hệ Thống Kho & Vận Tải Nhanh Mèo Đen</p>
+
+      <!-- Chọn vai trò Admin hoặc Khách hàng -->
+      <div class="role-switcher">
+        <button type="button" class="role-btn active" id="role-btn-cust" onclick="App.setRole('customer')">
+          Khách hàng
+        </button>
+        <button type="button" class="role-btn" id="role-btn-admin" onclick="App.setRole('admin')">
+          Quản trị viên
+        </button>
+      </div>
+
+      <!-- Form đăng nhập -->
+      <form id="form-login" onsubmit="App.handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label" for="login-username">Tên đăng nhập:</label>
+          <input type="text" id="login-username" class="form-input" placeholder="Nhập tên đăng nhập..." required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Mật khẩu:</label>
+          <input type="password" id="login-password" class="form-input" placeholder="Nhập mật khẩu..." required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          Vào Hệ Thống Ngay
+        </button>
+      </form>
+
+      <div class="form-group mt-16 text-center">
+        <button type="button" class="btn btn-outline btn-sm btn-block" onclick="App.openRegisterModal()">
+          Chưa có tài khoản? Đăng ký ngay
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       MÀN HÌNH 2: KHÁCH HÀNG (#view-customer)
+       ===================================================================== -->
+  <section id="view-customer" class="view">
+    
+    <!-- Header khách hàng -->
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand-wrap" onclick="App.showCustTab('store')">
+          <div class="brand-icon" id="cust-brand-cat"></div>
+          <div class="brand-text">
+            <h1>MeoLogi</h1>
+            <span>Kho & Vận Tải Nhanh Mèo Đen</span>
+          </div>
+        </div>
+
+        <!-- Thanh tìm kiếm bo tròn -->
+        <div class="search-wrap">
+          <button type="button" class="search-icon-btn" onclick="App.submitSearch()" aria-label="Tìm kiếm">
+            <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <input type="text" id="cust-search-input" class="search-input" placeholder="Tìm kiếm sản phẩm (Gạo, Mì, Cá hồi, Nồi cơm, Tai nghe)..." oninput="App.handleSearch(event)" onkeydown="App.handleSearchKey(event)" autocomplete="off" />
+          <button type="button" id="cust-search-clear" class="search-clear-btn hidden" onclick="App.clearSearch()">✕</button>
+          <div id="cust-search-dropdown" class="search-suggestions"></div>
+        </div>
+
+        <!-- Điều hướng header -->
+        <div class="header-actions">
+          <button type="button" class="btn btn-outline btn-sm" id="cust-nav-store" onclick="App.showCustTab('store')">
+            Cửa hàng
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" id="cust-nav-orders" onclick="App.showCustTab('orders')">
+            Đơn của tôi (<span id="cust-orders-count">0</span>)
+          </button>
+          <button type="button" class="btn btn-primary btn-sm cart-bubble" onclick="App.openCartModal()">
+            Giỏ hàng <span class="badge-count" id="cart-badge">0</span>
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.logout()">
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Nội dung Tab 1: Cửa hàng sản phẩm -->
+    <main class="main-container" id="cust-tab-store">
+      <div class="filter-sort-bar">
+        <!-- Bộ lọc danh mục -->
+        <div class="category-pills" id="category-pills-container">
+          <button type="button" class="cat-pill active" onclick="App.filterCategory('all', this)">
+            <span class="cat-pill-icon" id="cat-icon-all"></span> Tất cả mặt hàng (<span id="count-all-products">0</span>)
+          </button>
+          <button type="button" class="cat-pill" onclick="App.filterCategory('THUONG', this)">
+            <span class="cat-pill-icon" id="cat-icon-thuong"></span> Thực phẩm thường
+          </button>
+          <button type="button" class="cat-pill" onclick="App.filterCategory('TUOI_SONG', this)">
+            <span class="cat-pill-icon" id="cat-icon-tuoisong"></span> Tươi sống
+          </button>
+          <button type="button" class="cat-pill" onclick="App.filterCategory('CONG_NGHE', this)">
+            <span class="cat-pill-icon" id="cat-icon-congnghe"></span> Công nghệ
+          </button>
+          <button type="button" class="cat-pill" onclick="App.filterCategory('DO_GIA_DUNG', this)">
+            <span class="cat-pill-icon" id="cat-icon-giadung"></span> Đồ gia dụng
+          </button>
+        </div>
+
+        <!-- Dropdown sắp xếp sản phẩm bo tròn mềm mại & khoảng cách mũi tên thoáng -->
+        <div class="sort-select-wrap">
+          <label class="form-label" for="sort-custom-btn">Sắp xếp:</label>
+          <div class="custom-dropdown" id="sort-custom-dropdown">
+            <button type="button" class="custom-dropdown-btn" id="sort-custom-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span id="sort-custom-label">Mặc định</span>
+              <span class="custom-dropdown-arrow">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+            <ul class="custom-dropdown-menu" id="sort-custom-menu" role="listbox" tabindex="-1">
+              <li class="custom-dropdown-item active" data-value="0" role="option" aria-selected="true">Mặc định</li>
+              <li class="custom-dropdown-item" data-value="1" role="option">Giá: Thấp đến Cao</li>
+              <li class="custom-dropdown-item" data-value="2" role="option">Giá: Cao đến Thấp</li>
+              <li class="custom-dropdown-item" data-value="3" role="option">Tồn kho: Ít đến Nhiều</li>
+              <li class="custom-dropdown-item" data-value="4" role="option">Tồn kho: Nhiều đến Ít</li>
+              <li class="custom-dropdown-item" data-value="5" role="option">Tên sản phẩm: A → Z</li>
+            </ul>
+            <select id="sort-products-select" class="visually-hidden" aria-hidden="true" tabindex="-1">
+              <option value="0">Mặc định</option>
+              <option value="1">Giá: Thấp đến Cao</option>
+              <option value="2">Giá: Cao đến Thấp</option>
+              <option value="3">Tồn kho: Ít đến Nhiều</option>
+              <option value="4">Tồn kho: Nhiều đến Ít</option>
+              <option value="5">Tên sản phẩm: A → Z</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lưới sản phẩm -->
+      <div class="product-grid" id="product-grid">
+        <!-- Render từ C++ API -->
+      </div>
+    </main>
+
+    <!-- Nội dung Tab 2: Lịch sử & Tra cứu đơn hàng của tôi -->
+    <main class="main-container hidden" id="cust-tab-orders">
+      <div class="glass-panel p-20 mb-24">
+        <h2 class="panel-main-title">Tra Cứu Đơn Hàng Nhanh</h2>
+        <div class="flex-row-gap-10 max-w-500">
+          <input type="text" id="cust-lookup-input" class="form-input" placeholder="Nhập mã đơn hàng (Ví dụ: DH001)..." onkeydown="if(event.key==='Enter') App.lookupOrder()" />
+          <button type="button" class="btn btn-primary" onclick="App.lookupOrder()">
+            Tra Cứu
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-panel p-20">
+        <h2 class="panel-main-title mb-16">Đơn Hàng Của Bạn</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã Đơn</th>
+                <th>Ngày Đặt</th>
+                <th>Người Nhận & Địa Chỉ</th>
+                <th>Tổng Tiền</th>
+                <th>Trạng Thái</th>
+                <th>Cảnh Báo</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="cust-orders-tbody">
+              <!-- Render động -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+  </section>
+
+  <!-- =====================================================================
+       MÀN HÌNH 3: KHU VỰC QUẢN TRỊ (#view-admin)
+       ===================================================================== -->
+  <section id="view-admin" class="view">
+    <div class="admin-layout">
+      
+      <!-- Sidebar quản trị -->
+      <aside class="admin-sidebar">
+        <div class="admin-brand">
+          <div class="admin-brand-icon" id="admin-brand-cat"></div>
+          <div>
+            <h2 class="text-white panel-section-title m-0">MeoLogi Admin</h2>
+            <span class="text-jasmine text-sub">Quản Trị Logistics</span>
+          </div>
+        </div>
+
+        <nav class="admin-nav">
+          <button type="button" class="admin-nav-item active" id="adm-nav-orders" onclick="App.showAdminTab('orders')">
+            <span id="adm-icon-orders"></span> Duyệt Đơn Hàng
+          </button>
+          <button type="button" class="admin-nav-item" id="adm-nav-products" onclick="App.showAdminTab('products')">
+            <span id="adm-icon-products"></span> Quản Lý Sản Phẩm
+          </button>
+          <button type="button" class="admin-nav-item" id="adm-nav-warehouse" onclick="App.showAdminTab('warehouse')">
+            <span id="adm-icon-warehouse"></span> Kho & Nhà Cung Cấp
+          </button>
+          <button type="button" class="admin-nav-item" id="adm-nav-revenues" onclick="App.showAdminTab('revenues')">
+            <span id="adm-icon-revenues"></span> Doanh Thu & Báo Cáo
+          </button>
+          <button type="button" class="admin-nav-item" id="adm-nav-users" onclick="App.showAdminTab('users')">
+            <span id="adm-icon-users"></span> Quản Lý Tài Khoản
+          </button>
+          <button type="button" class="admin-nav-item" id="adm-nav-reviews" onclick="App.showAdminTab('reviews')">
+            <span id="adm-icon-reviews"></span> Đánh Giá & Khiếu Nại
+          </button>
+        </nav>
+
+        <div class="mt-auto pt-16 border-t-separator">
+          <button type="button" class="btn btn-outline btn-block btn-sm" onclick="App.logout()">
+            Đăng xuất Admin
+          </button>
+        </div>
+      </aside>
+
+      <!-- Nội dung Admin -->
+      <div class="admin-content">
+        
+        <!-- Tab 1: Duyệt đơn hàng -->
+        <div class="admin-tab-pane active" id="adm-pane-orders">
+          <div class="admin-header-row">
+            <div>
+              <h2>Quản Lý & Duyệt Đơn Hàng</h2>
+              <p class="empty-sub">Hàng đợi xử lý đơn, danh sách chờ xuất hàng & cảnh báo quá hạn 3 ngày</p>
+            </div>
+            <div class="flex-row-gap-8">
+              <button type="button" class="btn btn-primary" onclick="App.approveNextOrder()">
+                Duyệt Đơn Kế Tiếp
+              </button>
+              <button type="button" class="btn btn-outline" onclick="App.loadAdminOrders()">
+                Làm Mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Bảng đơn trong hàng đợi FIFO -->
+          <div class="glass-panel p-20 mb-24">
+            <h3 class="panel-section-title">1. Danh Sách Chờ Duyệt</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã Đơn</th>
+                    <th>Ngày Đặt</th>
+                    <th>Khách Hàng</th>
+                    <th>Địa Chỉ</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-queue-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bảng đơn chờ nhập kho (Pending List) -->
+          <div class="glass-panel p-20 mb-24">
+            <h3 class="panel-section-title">2. Danh Sách Đơn Chờ Hàng (Pending List)</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã Đơn</th>
+                    <th>Khách Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Ghi Chú</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-pending-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bảng tất cả đơn hàng & Đơn quá hạn 3 ngày -->
+          <div class="glass-panel p-20">
+            <div class="flex-between-center mb-12">
+              <h3 class="panel-section-title m-0">3. Toàn Bộ Đơn Hàng & Đơn Đang Giao</h3>
+              <div class="flex-row-gap-8">
+                <input type="text" id="adm-order-search" class="form-input w-220" placeholder="Tìm mã đơn..." onkeydown="if(event.key==='Enter') App.adminLookupOrder()" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="App.adminLookupOrder()">Tra Cứu</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã Đơn</th>
+                    <th>Ngày Đặt</th>
+                    <th>Khách Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Cảnh Báo</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-all-orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Quản lý sản phẩm -->
+        <div class="admin-tab-pane" id="adm-pane-products">
+          <div class="admin-header-row">
+            <div>
+              <h2>Quản Lý Danh Mục Sản Phẩm</h2>
+              <p class="empty-sub">Thêm, sửa, xóa sản phẩm và cập nhật tồn kho</p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="App.openAddProductModal()">
+              + Thêm Sản Phẩm Mới
+            </button>
+          </div>
+
+          <div class="glass-panel p-20">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã SP</th>
+                    <th>Tên Sản Phẩm</th>
+                    <th>Danh Mục</th>
+                    <th>Đơn Giá</th>
+                    <th>Tồn Kho</th>
+                    <th>Loại Sản Phẩm</th>
+                    <th>Nhà Cung Cấp</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-products-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Kho & Nhà cung cấp -->
+        <div class="admin-tab-pane" id="adm-pane-warehouse">
+          <div class="admin-header-row">
+            <div>
+              <h2>Kho Hàng & Nhà Cung Cấp</h2>
+              <p class="empty-sub">Cảnh báo hạn dùng và danh mục đối tác</p>
+            </div>
+          </div>
+
+          <!-- Bảng cảnh báo hạn sử dụng & tồn kho thấp -->
+          <div class="glass-panel p-20 mb-24">
+            <h3 class="panel-section-title">Cảnh Báo Hạn Dùng & Tồn Kho Thấp</h3>
+            <div id="adm-alerts-container" class="grid-2-cols">
+              <!-- Render động -->
+            </div>
+          </div>
+
+          <!-- Quản lý kho hàng -->
+          <div class="glass-panel p-20 mb-24">
+            <div class="flex-between-center mb-12">
+              <h3 class="panel-section-title m-0">Danh Sách Kho Hàng</h3>
+              <button type="button" class="btn btn-primary btn-sm" onclick="App.openAddWarehouseModal()">+ Thêm Kho</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã Kho</th>
+                    <th>Vị Trí Lưu Trữ</th>
+                    <th>Sức Chứa</th>
+                    <th>Sản Phẩm Lưu</th>
+                    <th>Tồn Hiện Tại</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-warehouses-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quản lý nhà cung cấp -->
+          <div class="glass-panel p-20">
+            <div class="flex-between-center mb-12">
+              <h3 class="panel-section-title m-0">Danh Sách Nhà Cung Cấp</h3>
+              <button type="button" class="btn btn-primary btn-sm" onclick="App.openAddSupplierModal()">+ Thêm Nhà Cung Cấp</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã NCC</th>
+                    <th>Tên Công Ty</th>
+                    <th>Địa Chỉ</th>
+                    <th>Điện Thoại</th>
+                    <th>Mặt Hàng Cung Cấp</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-suppliers-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Doanh thu & Báo cáo -->
+        <div class="admin-tab-pane" id="adm-pane-revenues">
+          <div class="admin-header-row">
+            <div>
+              <h2>Báo Cáo Thống Kê Doanh Thu</h2>
+              <p class="empty-sub">Tổng hợp doanh thu theo khoảng ngày và biểu đồ</p>
+            </div>
+            <!-- Lọc theo khoảng ngày -->
+            <div class="flex-row-gap-8 flex-between-center">
+              <label class="form-label m-0">Từ:</label>
+              <input type="date" id="rev-start-date" class="form-input w-140" />
+              <label class="form-label m-0">Đến:</label>
+              <input type="date" id="rev-end-date" class="form-input w-140" />
+              <button type="button" class="btn btn-primary btn-sm" onclick="App.filterRevenues()">Lọc</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="App.resetRevenueFilter()">Tất cả</button>
+            </div>
+          </div>
+
+          <!-- Thẻ KPI tổng hợp -->
+          <div class="kpi-row">
+            <div class="kpi-card glass-panel">
+              <div class="kpi-icon" id="kpi-icon-revenue"></div>
+              <div>
+                <div class="kpi-value" id="kpi-total-revenue">0 đ</div>
+                <div class="kpi-label">Tổng Doanh Thu</div>
+              </div>
+            </div>
+            <div class="kpi-card glass-panel">
+              <div class="kpi-icon" id="kpi-icon-orders"></div>
+              <div>
+                <div class="kpi-value" id="kpi-total-orders">0</div>
+                <div class="kpi-label">Tổng Đơn Hoàn Thành</div>
+              </div>
+            </div>
+            <div class="kpi-card glass-panel">
+              <div class="kpi-icon" id="kpi-icon-average"></div>
+              <div>
+                <div class="kpi-value" id="kpi-avg-revenue">0 đ</div>
+                <div class="kpi-label">Trung Bình / Ngày</div>
+              </div>
+            </div>
+            <div class="kpi-card glass-panel">
+              <div class="kpi-icon" id="kpi-icon-days"></div>
+              <div>
+                <div class="kpi-value" id="kpi-total-days">0</div>
+                <div class="kpi-label">Số Ngày Ghi Nhận</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Biểu đồ cột SVG -->
+          <div class="glass-panel chart-container p-20 mb-24">
+            <h3 class="panel-section-title">Biểu Đồ Xu Hướng Doanh Thu (SVG)</h3>
+            <div id="revenue-chart-svg"></div>
+          </div>
+
+          <!-- Bảng chi tiết doanh thu -->
+          <div class="glass-panel p-20">
+            <h3 class="panel-section-title">Chi Tiết Doanh Thu Từng Ngày</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ngày Thống Kê</th>
+                    <th>Doanh Thu Trong Ngày</th>
+                    <th>Số Đơn Hoàn Thành</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-revenues-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Quản lý tài khoản -->
+        <div class="admin-tab-pane" id="adm-pane-users">
+          <div class="admin-header-row">
+            <div>
+              <h2>Quản Lý Tài Khoản Người Dùng</h2>
+              <p class="empty-sub">Danh sách tài khoản quản trị và khách hàng</p>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="App.openAddUserModal()">
+              + Thêm Tài Khoản
+            </button>
+          </div>
+
+          <div class="glass-panel p-20">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Tên Đăng Nhập</th>
+                    <th>Vai Trò</th>
+                    <th>Họ Và Tên</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Địa Chỉ Nhận Hàng</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 6: Đánh giá & Khiếu nại -->
+        <div class="admin-tab-pane" id="adm-pane-reviews">
+          <div class="admin-header-row">
+            <div>
+              <h2>Phản Hồi, Đánh Giá & Khiếu Nại</h2>
+              <p class="empty-sub">Ý kiến khách hàng về đơn hàng và dịch vụ giao vận</p>
+            </div>
+          </div>
+
+          <div class="glass-panel p-20">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã ĐG</th>
+                    <th>Mã Đơn</th>
+                    <th>Khách Hàng</th>
+                    <th>Số Sao</th>
+                    <th>Ý Kiến / Nội Dung Khiếu Nại</th>
+                    <th>Phân Loại</th>
+                    <th>Thời Gian</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-reviews-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CÁC MODAL DIALOG
+       ===================================================================== -->
+  
+  <!-- 1. Modal Giỏ Hàng & Đặt Hàng -->
+  <div class="modal-overlay" id="modal-cart">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3>Giỏ Hàng Của Bạn</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-cart')">✕</button>
+      </div>
+      <div id="cart-items-list" class="mb-16"></div>
+      <form id="form-checkout" onsubmit="App.handleCheckout(event)">
+        <div class="form-group">
+          <label class="form-label">Người nhận hàng:</label>
+          <input type="text" id="ship-name" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số điện thoại:</label>
+          <input type="tel" id="ship-phone" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Địa chỉ giao hàng:</label>
+          <input type="text" id="ship-address" class="form-input" required />
+        </div>
+        <div class="cart-total-row">
+          <span>Tổng thanh toán:</span>
+          <span class="text-highlight" id="cart-total-amount">0 đ</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Xác Nhận Đặt Hàng Ngay</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Modal Chi Tiết Sản Phẩm Đa Hình -->
+  <div class="modal-overlay" id="modal-product-detail">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="detail-product-title">Thông Số Chi Tiết Sản Phẩm</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-product-detail')">✕</button>
+      </div>
+      <div id="detail-product-body"></div>
+    </div>
+  </div>
+
+  <!-- 3. Modal Chi Tiết Đơn Hàng (ChiTietDonHang) -->
+  <div class="modal-overlay" id="modal-order-detail">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="detail-order-title">Chi Tiết Đơn Hàng</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-order-detail')">✕</button>
+      </div>
+      <div id="detail-order-body"></div>
+    </div>
+  </div>
+
+  <!-- 4. Modal Xác Nhận Đã Nhận Hàng / Đánh Giá / Khiếu Nại -->
+  <div class="modal-overlay" id="modal-review">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="review-modal-title">Đánh Giá & Phản Hồi Đơn Hàng</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-review')">✕</button>
+      </div>
+      <form id="form-review" onsubmit="App.submitReview(event)">
+        <input type="hidden" id="review-order-id" />
+        <input type="hidden" id="review-action-type" value="confirm" />
+        <div class="form-group" id="review-star-group">
+          <label class="form-label">Mức độ hài lòng (Số sao):</label>
+          <select id="review-stars" class="form-select">
+            <option value="5">⭐⭐⭐⭐⭐ Tuyệt vời (5 sao)</option>
+            <option value="4">⭐⭐⭐⭐ Hài lòng (4 sao)</option>
+            <option value="3">⭐⭐⭐ Bình thường (3 sao)</option>
+            <option value="2">⭐⭐ Không hài lòng (2 sao)</option>
+            <option value="1">⭐ Rất tệ (1 sao)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="review-comment-label">Ý kiến đóng góp / Chi tiết sự cố:</label>
+          <textarea id="review-content" class="form-textarea" rows="3" placeholder="Nhập ý kiến của bạn..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="review-submit-btn">Gửi Phản Hồi</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Modal Thêm / Sửa Sản Phẩm (Admin) -->
+  <div class="modal-overlay" id="modal-product-form">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="product-form-title">Thêm Sản Phẩm Mới</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-product-form')">✕</button>
+      </div>
+      <form id="form-product" onsubmit="App.saveProduct(event)">
+        <input type="hidden" id="prod-is-edit" value="0" />
+        <div class="form-group">
+          <label class="form-label">Phân loại sản phẩm:</label>
+          <select id="prod-loai" class="form-select" onchange="App.handleProductTypeChange(this.value)">
+            <option value="THUONG">Thực phẩm thường</option>
+            <option value="TUOI_SONG">Thực phẩm tươi sống</option>
+            <option value="CONG_NGHE">Công nghệ & Điện tử</option>
+            <option value="DO_GIA_DUNG">Đồ gia dụng</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã sản phẩm:</label>
+          <input type="text" id="prod-ma" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tên sản phẩm:</label>
+          <input type="text" id="prod-ten" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Danh mục chi tiết:</label>
+          <input type="text" id="prod-dm" class="form-input" required />
+        </div>
+        <div class="grid-2-cols-sm">
+          <div class="form-group">
+            <label class="form-label">Đơn giá (đ):</label>
+            <input type="number" id="prod-gia" class="form-input" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số lượng tồn kho:</label>
+            <input type="number" id="prod-ton" class="form-input" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nhà cung cấp:</label>
+          <select id="prod-ncc" class="form-select"></select>
+        </div>
+
+        <!-- Trường đa hình động -->
+        <div id="prod-poly-fields"></div>
+
+        <button type="submit" class="btn btn-primary btn-block">Lưu Sản Phẩm</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Modal Cập Nhật Tồn Kho (Admin) -->
+  <div class="modal-overlay" id="modal-stock-form">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3>Nhập Hàng Vào Kho</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-stock-form')">✕</button>
+      </div>
+      <form id="form-stock" onsubmit="App.saveStock(event)">
+        <input type="hidden" id="stock-ma-sp" />
+        <p id="stock-sp-name" class="text-bold mb-12"></p>
+        <div class="form-group">
+          <label class="form-label">Số lượng nhập thêm (+):</label>
+          <input type="number" id="stock-delta" class="form-input" value="20" min="1" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Xác Nhận Nhập Kho</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. Modal Kho Hàng (Admin) -->
+  <div class="modal-overlay" id="modal-warehouse-form">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="warehouse-form-title">Kho Hàng</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-warehouse-form')">✕</button>
+      </div>
+      <form id="form-warehouse" onsubmit="App.saveWarehouse(event)">
+        <div class="form-group">
+          <label class="form-label">Mã kho:</label>
+          <input type="text" id="wh-ma" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vị trí lưu trữ:</label>
+          <input type="text" id="wh-vitri" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sức chứa tối đa:</label>
+          <input type="number" id="wh-succhua" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã sản phẩm lưu:</label>
+          <input type="text" id="wh-masp" class="form-input" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Lưu Kho Hàng</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 8. Modal Nhà Cung Cấp (Admin) -->
+  <div class="modal-overlay" id="modal-supplier-form">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="supplier-form-title">Nhà Cung Cấp</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-supplier-form')">✕</button>
+      </div>
+      <form id="form-supplier" onsubmit="App.saveSupplier(event)">
+        <div class="form-group">
+          <label class="form-label">Mã nhà cung cấp:</label>
+          <input type="text" id="ncc-ma" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tên công ty:</label>
+          <input type="text" id="ncc-ten" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Địa chỉ:</label>
+          <input type="text" id="ncc-diachi" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số điện thoại:</label>
+          <input type="tel" id="ncc-sdt" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mặt hàng cung cấp:</label>
+          <input type="text" id="ncc-danhmuc" class="form-input" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Lưu Nhà Cung Cấp</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 9. Modal Tài Khoản Người Dùng (Admin) -->
+  <div class="modal-overlay" id="modal-user-form">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3 id="user-form-title">Tài Khoản Người Dùng</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-user-form')">✕</button>
+      </div>
+      <form id="form-user" onsubmit="App.saveUser(event)">
+        <input type="hidden" id="usr-id" />
+        <div class="form-group">
+          <label class="form-label">Vai trò:</label>
+          <select id="usr-role" class="form-select">
+            <option value="CUSTOMER">Khách hàng</option>
+            <option value="ADMIN">Quản trị viên</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tên đăng nhập (Username):</label>
+          <input type="text" id="usr-username" class="form-input" required />
+        </div>
+        <div class="form-group" id="usr-password-group">
+          <label class="form-label">Mật khẩu:</label>
+          <input type="password" id="usr-password" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Họ và tên:</label>
+          <input type="text" id="usr-hoten" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số điện thoại:</label>
+          <input type="tel" id="usr-sdt" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Địa chỉ nhận hàng:</label>
+          <input type="text" id="usr-diachi" class="form-input" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Lưu Tài Khoản</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 10. Modal Đặt Lại Mật Khẩu (Admin) -->
+  <div class="modal-overlay" id="modal-password-form">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3>Đặt Lại Mật Khẩu</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeModal('modal-password-form')">✕</button>
+      </div>
+      <form id="form-password" onsubmit="App.saveResetPassword(event)">
+        <input type="hidden" id="reset-user-id" />
+        <p id="reset-user-info" class="text-bold mb-12"></p>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu mới:</label>
+          <input type="password" id="reset-new-password" class="form-input" minlength="6" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Xác Nhận Đổi Mật Khẩu</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Container hiển thị thông báo Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Nhúng script chính (tuân thủ mục 2 README: web/app.js) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
