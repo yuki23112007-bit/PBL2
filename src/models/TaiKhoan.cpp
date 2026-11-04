@@ -45,6 +45,10 @@ bool TaiKhoan::kiemTraMatKhau(const string& hash) const {
     return passwordHash == hash;
 }
 
+bool TaiKhoan::kiemTraDangNhap(const string& u, const string& pHash) const {
+    return username == u && passwordHash == pHash;
+}
+
 bool TaiKhoan::isAdmin() const {
     return vaiTro == "ADMIN";
 }
@@ -56,4 +60,3 @@ bool TaiKhoan::isCustomer() const {
 void TaiKhoan::hienThiThongTin() const {
     show();
 }
-

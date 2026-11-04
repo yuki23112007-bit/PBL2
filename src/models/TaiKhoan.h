@@ -1,3 +1,6 @@
+#ifndef TAIKHOAN_H
+#define TAIKHOAN_H
+
 #include <iostream>
 #include <string>
 
@@ -30,6 +33,7 @@ public:
 
     // Nghiệp vụ
     bool kiemTraMatKhau(const string& hash) const;
+    bool kiemTraDangNhap(const string& u, const string& pHash) const;
     bool isAdmin() const;
     bool isCustomer() const;
 
@@ -38,3 +42,5 @@ public:
     virtual void hienThiThongTin() const;
     virtual string xuatChuoiFile() const = 0;
 };
+
+#endif // TAIKHOAN_H

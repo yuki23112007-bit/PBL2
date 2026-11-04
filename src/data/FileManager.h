@@ -1,8 +1,13 @@
+#ifndef FILEMANAGER_H
+#define FILEMANAGER_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <ctime>
+
+#include "../models/NhaCungCap.h"
 
 using namespace std;
 
@@ -18,33 +23,13 @@ class Admin;
 class NguoiDung;
 class DoanhThuNgay;
 class VanChuyen;
+class PhuongTien;
 
 // Bí danh để tương thích ngược nếu có module cũ gọi tên SanPhamThuong / SanPhamTuoiSong
 using SanPhamThuong = ThucPhamThuong;
 using SanPhamTuoiSong = ThucPhamTuoiSong;
 using DoanhThuRecord = DoanhThuNgay;
-
-// Cấu trúc đại diện cho bản ghi nhà cung cấp (suppliers.txt)
-struct NhaCungCapRecord {
-    string maNhaCungCap;
-    string tenCongTy;
-    string diaChi;
-    string soDienThoai;
-    string danhMucCungCap;
-
-    NhaCungCapRecord()
-        : maNhaCungCap(""), tenCongTy(""), diaChi(""), soDienThoai(""), danhMucCungCap("") {}
-
-    NhaCungCapRecord(const string& ma, const string& ten, const string& diaChi,
-                     const string& sdt, const string& danhMuc)
-        : maNhaCungCap(ma), tenCongTy(ten), diaChi(diaChi),
-          soDienThoai(sdt), danhMucCungCap(danhMuc) {}
-
-    string xuatChuoiFile() const {
-        return maNhaCungCap + "|" + tenCongTy + "|" + diaChi + "|" +
-               soDienThoai + "|" + danhMucCungCap;
-    }
-};
+using NhaCungCapRecord = NhaCungCap;
 
 // Cấu trúc DTO cho User (giữ tương thích)
 struct UserRecord {
@@ -118,7 +103,7 @@ public:
     vector<ChiTietDonHang> docChiTietDonHang();
 
     // suppliers.txt
-    vector<NhaCungCapRecord> docNhaCungCap();
+    vector<NhaCungCap> docNhaCungCap();
 
     // users.txt (Trả về danh sách con trỏ đa hình TaiKhoan* gồm Admin* và NguoiDung*)
     vector<TaiKhoan*> docTaiKhoan();
@@ -132,7 +117,7 @@ public:
     bool ghiKhoHang(const vector<KhoHang>& danhSach);
     bool ghiDonHang(const vector<DonHang>& danhSach);
     bool ghiChiTietDonHang(const vector<ChiTietDonHang>& danhSach);
-    bool ghiNhaCungCap(const vector<NhaCungCapRecord>& danhSach);
+    bool ghiNhaCungCap(const vector<NhaCungCap>& danhSach);
     bool ghiTaiKhoan(const vector<TaiKhoan*>& danhSach);
     bool ghiNguoiDung(const vector<TaiKhoan*>& danhSach) { return ghiTaiKhoan(danhSach); }
     bool ghiDoanhThu(const vector<DoanhThuRecord>& danhSach);
@@ -142,7 +127,7 @@ public:
     bool themKhoHang(const KhoHang& kho);
     bool themDonHang(const DonHang& dh);
     bool themChiTietDonHang(const ChiTietDonHang& ctdh);
-    bool themNhaCungCap(const NhaCungCapRecord& ncc);
+    bool themNhaCungCap(const NhaCungCap& ncc);
     bool themTaiKhoan(const TaiKhoan* tk);
     bool themNguoiDung(const TaiKhoan* tk) { return themTaiKhoan(tk); }
     bool themDoanhThu(const DoanhThuRecord& dt);
@@ -151,3 +136,5 @@ public:
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, vector<DonHang>& danhSachDonHang);
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, const vector<DonHang*>& danhSachDonHang);
 };
+
+#endif // FILEMANAGER_H

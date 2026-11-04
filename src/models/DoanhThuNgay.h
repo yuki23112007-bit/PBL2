@@ -1,3 +1,6 @@
+#ifndef DOANHTHUNGAY_H
+#define DOANHTHUNGAY_H
+
 #include <iostream>
 #include <string>
 
@@ -5,7 +8,7 @@ using namespace std;
 
 class DoanhThuNgay {
 private:
-    string ngayThongKe; // Định dạng YYYY-MM-DD (Khóa chính tra cứu trên HashTable)
+    string ngayThongKe;  // Định dạng YYYY-MM-DD (Khóa chính tra cứu trên HashTable)
     double tongDoanhThu; // Tổng doanh thu tích lũy trong ngày
     int tongSoDonHang;   // Tổng số đơn hàng hoàn thành trong ngày
 
@@ -38,3 +41,5 @@ public:
     friend ostream& operator<<(ostream& os, const DoanhThuNgay& dt);
     friend istream& operator>>(istream& is, DoanhThuNgay& dt);
 };
+
+#endif // DOANHTHUNGAY_H

@@ -1,11 +1,15 @@
+#ifndef VANCHUYEN_H
+#define VANCHUYEN_H
+
 #include <iostream>
 #include <string>
 #include <ctime>
 
 using namespace std;
 
-// Khai báo chuyển tiếp (Forward Declaration)
+// Khai báo chuyển tiếp (Forward Declarations)
 class DonHang;
+class PhuongTien;
 
 class VanChuyen {
 private:
@@ -14,15 +18,16 @@ private:
     time_t ngayTao;            // Thời điểm tạo vận đơn
     string trangThaiGiao;      // Trạng thái: "Dang Giao", "Giao Thanh Cong", "Hoan tat tu dong"
     double chiPhiVanChuyen;    // Phí ship: 25.000đ (xe máy) hoặc 45.000đ (xe tải lạnh)
-    string loaiXe;             // "Xe May Giao Nhanh", "Xe Tai", "Xe Tai Lanh"
+    string loaiXe;             // "Xe May Giao Nhanh", "Xe Tai", "Xe Tai Lanh Chuyen Dung"
     time_t thoiGianGiaoDuKien; // Mốc thời gian dự kiến giao xong
+    PhuongTien* phuongTien;    // Con trỏ phương tiện điều phối thực tế (Đa hình OOP)
 
 public:
     VanChuyen();
     VanChuyen(const string& maVC, const string& maDH,
               time_t tao, const string& trangThai,
               double chiPhi, const string& xe,
-              time_t duKien = 0);
+              time_t duKien = 0, PhuongTien* pt = nullptr);
     virtual ~VanChuyen() = default;
 
     // Getter
@@ -33,6 +38,7 @@ public:
     double getChiPhiVanChuyen() const;
     const string& getLoaiXe() const;
     time_t getThoiGianGiaoDuKien() const;
+    PhuongTien* getPhuongTien() const;
 
     // Setter
     void setMaVanChuyen(const string& maVC);
@@ -42,11 +48,13 @@ public:
     void setChiPhiVanChuyen(double chiPhi);
     void setLoaiXe(const string& xe);
     void setThoiGianGiaoDuKien(time_t duKien);
+    void ganPhuongTien(PhuongTien* pt);
 
-    // Nghiệp vụ (Phân hệ 1.5, 2.2, 2.6)
+    // Nghiệp vụ (Phân hệ 1.5, 2.2, 2.6 & Phân hệ Phương tiện)
     void capNhatTrangThaiGiao(const string& trangThaiMoi);
     bool daQuaHan3Ngay(time_t thoiGianHienTai) const;
-    virtual double tinhChiPhiVanChuyen() const;
+    void dieuPhoiPhuongTien(bool canBaoQuanLanh);
+    virtual double tinhChiPhiVanChuyen(double quangDuongKm = 1.0);
 
     // Hiển thị & xuất dữ liệu
     virtual void hienThiThongTin() const;
@@ -57,3 +65,5 @@ public:
     friend ostream& operator<<(ostream& os, const VanChuyen& vc);
     friend istream& operator>>(istream& is, VanChuyen& vc);
 };
+
+#endif // VANCHUYEN_H

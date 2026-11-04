@@ -1,3 +1,7 @@
+#ifndef NGUOIDUNG_H
+#define NGUOIDUNG_H
+
+#include "TaiKhoan.h"
 #include <string>
 #include <vector>
 
@@ -17,8 +21,6 @@ public:
     NguoiDung();
     NguoiDung(const string& id, const string& username, const string& passwordHash,
               const string& hoTen, const string& soDienThoai, const string& diaChi);
-
-    // Theo mục 5.1 README: NguoiDung chỉ giữ con trỏ mượn từ QuanLyDonHang, không giải phóng bộ nhớ
     ~NguoiDung() override = default;
 
     // Getter
@@ -26,6 +28,10 @@ public:
     const string& getSoDienThoai() const;
     const string& getDiaChi() const;
     const vector<DonHang*>& getDanhSachDonHang() const;
+
+    // Bí danh theo tài liệu
+    const string& getMaNguoiDung() const { return getId(); }
+    void setMaNguoiDung(const string& v) { setId(v); }
 
     // Setter
     void setHoTen(const string& v);
@@ -36,5 +42,8 @@ public:
     void themDonHang(DonHang* dh);
 
     void show() const override;
+    void hienThiThongTin() const override { show(); }
     string xuatChuoiFile() const override;
 };
+
+#endif // NGUOIDUNG_H

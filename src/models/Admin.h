@@ -1,3 +1,7 @@
+#ifndef ADMIN_H
+#define ADMIN_H
+
+#include "TaiKhoan.h"
 #include <string>
 
 using namespace std;
@@ -8,6 +12,13 @@ public:
     Admin(const string& id, const string& username, const string& passwordHash);
     ~Admin() override = default;
 
+    // Getter & Setter theo tài liệu
+    const string& getAdminId() const { return getId(); }
+    void setAdminId(const string& v) { setId(v); }
+
     void show() const override;
+    void hienThiThongTin() const override { show(); }
     string xuatChuoiFile() const override;
 };
+
+#endif // ADMIN_H
