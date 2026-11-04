@@ -145,3 +145,4 @@ void XeMay::hienThiThongTin() const {
          << " | Phan khoi: " << dungTichXiLanh << " cc"
          << " | Phi ship co ban: 25,000 VND\n";
 }
+

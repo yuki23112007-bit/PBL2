@@ -74,3 +74,4 @@ istream& operator>>(istream& is, NhaCungCap& ncc) {
        >> ncc.soDienThoai >> ncc.danhMucCungCap;
     return is;
 }
+

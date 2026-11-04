@@ -44,6 +44,12 @@ public:
     void show() const override;
     void hienThiThongTin() const override { show(); }
     string xuatChuoiFile() const override;
+
+    // Đa năng hóa toán tử xuất luồng
+    friend ostream& operator<<(ostream& os, const NguoiDung& nd) {
+        os << nd.xuatChuoiFile();
+        return os;
+    }
 };
 
 #endif // NGUOIDUNG_H

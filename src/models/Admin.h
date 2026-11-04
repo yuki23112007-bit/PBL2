@@ -19,6 +19,12 @@ public:
     void show() const override;
     void hienThiThongTin() const override { show(); }
     string xuatChuoiFile() const override;
+
+    // Đa năng hóa toán tử xuất luồng
+    friend ostream& operator<<(ostream& os, const Admin& ad) {
+        os << ad.xuatChuoiFile();
+        return os;
+    }
 };
 
 #endif // ADMIN_H

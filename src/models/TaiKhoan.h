@@ -37,10 +37,19 @@ public:
     bool isAdmin() const;
     bool isCustomer() const;
 
+    // Đa năng hóa toán tử (Operator Overloading)
+    bool operator==(const string& hash) const;          // So khớp mật khẩu: if (*tk == hash)
+    bool operator==(const TaiKhoan& other) const;       // So sánh cùng tài khoản (id & username)
+    bool operator!=(const TaiKhoan& other) const;
+    bool operator<(const TaiKhoan& other) const;        // So sánh theo mã định danh id
+
     // Đa hình
     virtual void show() const = 0;
     virtual void hienThiThongTin() const;
     virtual string xuatChuoiFile() const = 0;
+
+    // Toán tử xuất luồng đa hình
+    friend ostream& operator<<(ostream& os, const TaiKhoan& tk);
 };
 
 #endif // TAIKHOAN_H
