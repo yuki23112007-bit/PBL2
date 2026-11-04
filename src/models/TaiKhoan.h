@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TAIKHOAN_H
+#define TAIKHOAN_H
 
 #include <iostream>
 #include <string>
@@ -50,3 +51,5 @@ public:
     // Toán tử xuất luồng đa hình
     friend ostream& operator<<(ostream& os, const TaiKhoan& tk);
 };
+
+#endif // TAIKHOAN_H
