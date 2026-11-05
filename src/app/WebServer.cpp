@@ -1058,8 +1058,15 @@ string WebServer::apiRegister(const string& body) {
         return loiJson("Số điện thoại phải gồm 9 đến 11 chữ số.");
     }
 
+    string uNorm = username;
+    transform(uNorm.begin(), uNorm.end(), uNorm.begin(), ::tolower);
     for (TaiKhoan* tk : danhSachTaiKhoan) {
-        if (tk && tk->getUsername() == username) return loiJson("Tên đăng nhập đã được sử dụng!");
+        if (!tk) continue;
+        string exNorm = tk->getUsername();
+        transform(exNorm.begin(), exNorm.end(), exNorm.begin(), ::tolower);
+        if (exNorm == uNorm) {
+            return loiJson("Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên đăng nhập khác.");
+        }
     }
 
     int maxId = 222000;
@@ -1926,8 +1933,15 @@ string WebServer::apiSaveUser(const string& body, const PhienDangNhap& phien) {
     // Tao tai khoan moi
     if (username.size() < 3) return loiJson("Tên đăng nhập phải từ 3 ký tự trở lên!");
     if (password.size() < 6) return loiJson("Mật khẩu phải từ 6 ký tự trở lên!");
+    string uNorm = username;
+    transform(uNorm.begin(), uNorm.end(), uNorm.begin(), ::tolower);
     for (TaiKhoan* t : danhSachTaiKhoan) {
-        if (t && t->getUsername() == username) return loiJson("Tên đăng nhập đã tồn tại!");
+        if (!t) continue;
+        string exNorm = t->getUsername();
+        transform(exNorm.begin(), exNorm.end(), exNorm.begin(), ::tolower);
+        if (exNorm == uNorm) {
+            return loiJson("Tên đăng nhập '" + username + "' đã tồn tại trong hệ thống! Vui lòng chọn tên đăng nhập khác.");
+        }
     }
 
     int maxId = (role == "ADMIN") ? 111000 : 222000;

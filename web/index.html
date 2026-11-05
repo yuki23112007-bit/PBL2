@@ -148,7 +148,7 @@
               <li class="custom-dropdown-item" data-value="4" role="option">Tồn kho: Nhiều đến Ít</li>
               <li class="custom-dropdown-item" data-value="5" role="option">Tên sản phẩm: A → Z</li>
             </ul>
-            <select id="sort-products-select" class="visually-hidden" aria-hidden="true" tabindex="-1">
+            <select id="sort-products-select" class="visually-hidden" aria-hidden="true" tabindex="-1" style="display: none;">
               <option value="0">Mặc định</option>
               <option value="1">Giá: Thấp đến Cao</option>
               <option value="2">Giá: Cao đến Thấp</option>
@@ -810,6 +810,7 @@
         <div class="form-group">
           <label class="form-label">Tên đăng nhập (Username):</label>
           <input type="text" id="usr-username" class="form-input" required />
+          <div id="usr-username-err" style="display:none; color: var(--princeton-orange); font-size: 12px; font-weight: 700; margin-top: 4px;"></div>
         </div>
         <div class="form-group" id="usr-password-group">
           <label class="form-label">Mật khẩu:</label>
