@@ -629,6 +629,19 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
   box-shadow: 0 0 6px rgba(255, 248, 240, 0.7);
 }
 
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  display: none !important;
+}
+
 .sort-select-wrap {
   display: flex;
   align-items: center;
@@ -778,15 +791,59 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
 
 .product-placeholder {
   width: 100%;
-  height: 150px;
+  height: 155px;
   border-radius: var(--radius-md);
-  background: var(--floral-white-dark);
-  border: 1.5px dashed var(--jasmine);
+  border: 1.5px solid var(--jasmine);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
   position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-bounce), box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.product-card:hover .product-placeholder {
+  box-shadow: 0 6px 18px rgba(45, 49, 66, 0.08);
+}
+
+.product-cat-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(45, 49, 66, 0.06);
+  transition: transform var(--transition-bounce);
+}
+
+.product-card:hover .product-cat-avatar {
+  transform: scale(1.08) rotate(2.5deg);
+}
+
+.cat-product-img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(45, 49, 66, 0.16));
+}
+
+.product-badge-emoji {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 17px;
+  background: #ffffff;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(45, 49, 66, 0.16);
+  line-height: 1;
 }
 
 .stock-tag {
@@ -799,6 +856,8 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
   font-weight: 700;
   padding: 2px 8px;
   border-radius: var(--radius-full);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(45, 49, 66, 0.2);
 }
 
 .product-cat-name {

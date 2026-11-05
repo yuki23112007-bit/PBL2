@@ -124,6 +124,166 @@ class MeoLogiApp {
     return amount.toLocaleString('vi-VN') + ' đ';
   }
 
+  // ------------------------------------------------------------------------
+  // Helper: Tạo theme minh họa bé mèo dễ thương & màu sắc theo sản phẩm
+  // ------------------------------------------------------------------------
+  getProductTheme(p) {
+    if (!p) {
+      return {
+        icon: CAT_ICONS.happy,
+        bg: '#FFF8E1',
+        border: '#FFE082',
+        circleBg: '#FFFFFF',
+        badge: '✨'
+      };
+    }
+
+    const norm = removeVietnameseTones(`${p.tenSP || ''} ${p.danhMuc || ''} ${p.loaiSP || ''}`);
+
+    if (/mi\s|hao hao|pho|bun|chao|mien/.test(norm)) {
+      return {
+        icon: CAT_ICONS.happy,
+        bg: '#FFEFE6',
+        border: '#FFD1B3',
+        circleBg: '#FFFFFF',
+        badge: '🍜'
+      };
+    }
+    if (/gao|jasmine|st25|lua|ngu coc|luong thuc/.test(norm)) {
+      return {
+        icon: CAT_ICONS.loaf,
+        bg: '#FFF9E6',
+        border: '#FFE699',
+        circleBg: '#FFFFFF',
+        badge: '🌾'
+      };
+    }
+    if (/banh|keo|cosy|quy|snack|ngot/.test(norm)) {
+      return {
+        icon: CAT_ICONS['cat-34-sploot-flat.png'] || CAT_ICONS.happy,
+        bg: '#FFFDE7',
+        border: '#FFF59D',
+        circleBg: '#FFFFFF',
+        badge: '🍪'
+      };
+    }
+    if (/tra xanh|tra\s|tea|o long/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#E8F5E9',
+        border: '#C8E6C9',
+        circleBg: '#FFFFFF',
+        badge: '🍵'
+      };
+    }
+    if (/ca phe|coffee|g7/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#EFEBE9',
+        border: '#D7CCC8',
+        circleBg: '#FFFFFF',
+        badge: '☕'
+      };
+    }
+    if (/sua chua|yogurt/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#E0F2F1',
+        border: '#B2DFDB',
+        circleBg: '#FFFFFF',
+        badge: '🥛'
+      };
+    }
+    if (/sua|milk/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#E1F5FE',
+        border: '#B3E5FC',
+        circleBg: '#FFFFFF',
+        badge: '🥛'
+      };
+    }
+    if (/tuong ot|chin-su|ot\s/.test(norm)) {
+      return {
+        icon: CAT_ICONS['cat-06-surprise.png'] || CAT_ICONS.alert,
+        bg: '#FFEBEE',
+        border: '#FFCDD2',
+        circleBg: '#FFFFFF',
+        badge: '🌶️'
+      };
+    }
+    if (/dau an|neptune|nuoc mam|nam ngu|duong|muoi|hat nem|gia vi/.test(norm)) {
+      return {
+        icon: CAT_ICONS.sparkle,
+        bg: '#FFF3E0',
+        border: '#FFE0B2',
+        circleBg: '#FFFFFF',
+        badge: '🧂'
+      };
+    }
+    if (/ca hoi|muc|tom|cua|hai san|ca\s/.test(norm)) {
+      return {
+        icon: CAT_ICONS.heart,
+        bg: '#E0F7FA',
+        border: '#B2EBF2',
+        circleBg: '#FFFFFF',
+        badge: '🐟'
+      };
+    }
+    if (/thit bo|thit heo|thit nac|ba chi|ga ta|gia cam|thit\s/.test(norm)) {
+      return {
+        icon: CAT_ICONS.paws,
+        bg: '#FCE4EC',
+        border: '#F8BBD0',
+        circleBg: '#FFFFFF',
+        badge: '🥩'
+      };
+    }
+    if (/rau|cai\s|da lat|cu\s|nam\s|dau phu|vissan|thuc pham mat/.test(norm)) {
+      return {
+        icon: CAT_ICONS['cat-13-sunny.png'] || CAT_ICONS['cat-04-wink.png'] || CAT_ICONS.happy,
+        bg: '#E8F8F5',
+        border: '#A3E4D7',
+        circleBg: '#FFFFFF',
+        badge: '🥬'
+      };
+    }
+    if (/chuot|logitech|ban phim|dareu|tai nghe|sony|sac|anker|cong nghe|dien tu|phu kien/.test(norm)) {
+      const isAudio = /tai nghe|sony/.test(norm);
+      return {
+        icon: isAudio ? (CAT_ICONS['cat-37-hypnotized.png'] || CAT_ICONS.thumbsup) : (CAT_ICONS['cat-10-idea.png'] || CAT_ICONS.thumbsup),
+        bg: '#EDE7F6',
+        border: '#D1C4E9',
+        circleBg: '#FFFFFF',
+        badge: '⚡'
+      };
+    }
+    if (/noi com|noi chien|am sieu toc|quat|may say|sunhouse|philips|senko|panasonic|gia dung/.test(norm)) {
+      return {
+        icon: CAT_ICONS.stand,
+        bg: '#E3F2FD',
+        border: '#BBDEFB',
+        circleBg: '#FFFFFF',
+        badge: '🏠'
+      };
+    }
+
+    const palettes = [
+      { icon: CAT_ICONS.happy, bg: '#FFF8E1', border: '#FFE082', circleBg: '#FFFFFF', badge: '✨' },
+      { icon: CAT_ICONS.sparkle, bg: '#E8F5E9', border: '#C8E6C9', circleBg: '#FFFFFF', badge: '🌟' },
+      { icon: CAT_ICONS.heart, bg: '#FCE4EC', border: '#F8BBD0', circleBg: '#FFFFFF', badge: '💖' },
+      { icon: CAT_ICONS.drink, bg: '#E0F7FA', border: '#B2EBF2', circleBg: '#FFFFFF', badge: '🍀' },
+      { icon: CAT_ICONS.thumbsup, bg: '#EDE7F6', border: '#D1C4E9', circleBg: '#FFFFFF', badge: '👍' },
+      { icon: CAT_ICONS.loaf, bg: '#FFF9C4', border: '#FFF176', circleBg: '#FFFFFF', badge: '🥐' },
+      { icon: CAT_ICONS.paws, bg: '#FFF3E0', border: '#FFE0B2', circleBg: '#FFFFFF', badge: '🐾' }
+    ];
+    let hash = 0;
+    const str = (p.maSP || '') + (p.tenSP || '');
+    for (let i = 0; i < str.length; i++) hash = (hash + str.charCodeAt(i)) % palettes.length;
+    return palettes[hash];
+  }
+
+
   // Chuyển đổi màn hình độc quyền (Exclusive View Switching)
   switchView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -483,15 +643,21 @@ class MeoLogiApp {
     if (matches.length === 0) {
       dropdown.innerHTML = `<div style="padding: 12px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm phù hợp.</div>`;
     } else {
-      dropdown.innerHTML = matches.map(p => `
-        <div class="suggestion-item" onclick="App.selectSuggestion('${p.maSP}')">
+      dropdown.innerHTML = matches.map(p => {
+        const theme = this.getProductTheme(p);
+        return `
+        <div class="suggestion-item" onclick="App.selectSuggestion('${p.maSP}')" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+          <div style="width: 34px; height: 34px; border-radius: 50%; background: ${theme.bg}; border: 1px solid ${theme.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img src="${theme.icon}" style="width: 24px; height: 24px; object-fit: contain;" />
+          </div>
           <div style="flex: 1;">
             <div style="font-weight: 700; font-size: 13.5px; color: var(--space-indigo);">${p.tenSP}</div>
-            <div style="font-size: 11.5px; color: var(--space-indigo-light);">${p.maSP} • ${p.danhMuc} • Tồn: ${p.soLuongTon}</div>
+            <div style="font-size: 11.5px; color: var(--space-indigo-light);">${p.maSP} • ${p.danhMuc} • Tồn: ${p.soLuongTonKho ?? p.soLuongTon ?? 0}</div>
           </div>
           <div style="font-weight: 800; color: var(--princeton-orange); font-size: 13px;">${this.formatCurrency(p.donGia)}</div>
         </div>
-      `).join('');
+        `;
+      }).join('');
     }
     dropdown.style.display = 'block';
   }
@@ -531,14 +697,15 @@ class MeoLogiApp {
       return;
     }
 
-    container.innerHTML = this.products.map(p => `
+    container.innerHTML = this.products.map(p => {
+      const theme = this.getProductTheme(p);
+      return `
       <div class="product-card glass-panel">
-        <div class="product-placeholder" onclick="App.openProductDetail('${p.maSP}')" style="cursor: pointer;" title="Nhấn xem thông số chi tiết">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--space-indigo-light)" stroke-width="1.8">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
+        <div class="product-placeholder" onclick="App.openProductDetail('${p.maSP}')" style="background: ${theme.bg}; border-color: ${theme.border}; cursor: pointer;" title="Xem chi tiết ${p.tenSP}">
+          <div class="product-cat-avatar" style="background: ${theme.circleBg};">
+            <img src="${theme.icon}" alt="${p.tenSP}" class="cat-product-img" />
+            <span class="product-badge-emoji">${theme.badge}</span>
+          </div>
           <span class="stock-tag">Tồn: ${p.soLuongTonKho}</span>
         </div>
         <span class="product-cat-name">${p.danhMuc}</span>
@@ -551,7 +718,8 @@ class MeoLogiApp {
           </div>
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   // ------------------------------------------------------------------------
@@ -607,13 +775,19 @@ class MeoLogiApp {
     container.innerHTML = this.cart.map(c => {
       const sp = this.allProducts.find(p => p.maSP === c.productId);
       if (!sp) return '';
+      const theme = this.getProductTheme(sp);
       const subtotal = sp.donGia * c.quantity;
       total += subtotal;
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--jasmine-light);">
-          <div>
-            <div style="font-weight: 700; font-size: 14px;">${sp.tenSP}</div>
-            <div style="font-size: 12px; color: var(--space-indigo-light);">${this.formatCurrency(sp.donGia)} x ${c.quantity}</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${theme.bg}; border: 1px solid ${theme.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <img src="${theme.icon}" style="width: 26px; height: 26px; object-fit: contain;" />
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 14px;">${sp.tenSP}</div>
+              <div style="font-size: 12px; color: var(--space-indigo-light);">${this.formatCurrency(sp.donGia)} x ${c.quantity}</div>
+            </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-weight: 800; color: var(--princeton-orange);">${this.formatCurrency(subtotal)}</span>
@@ -2039,7 +2213,19 @@ class MeoLogiApp {
           `;
         }
 
+        const theme = this.getProductTheme(sp);
         document.getElementById('detail-product-body').innerHTML = `
+          <div style="background: ${theme.bg}; border: 1.5px solid ${theme.border}; border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+            <div class="product-cat-avatar" style="background: ${theme.circleBg}; width: 80px; height: 80px; flex-shrink: 0;">
+              <img src="${theme.icon}" alt="${sp.tenSP}" class="cat-product-img" style="width: 56px; height: 56px;" />
+              <span class="product-badge-emoji">${theme.badge}</span>
+            </div>
+            <div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--space-indigo-light); text-transform: uppercase;">${sp.danhMuc}</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--space-indigo); line-height: 1.3;">${sp.tenSP}</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--princeton-orange); margin-top: 4px;">${this.formatCurrency(sp.donGia)}</div>
+            </div>
+          </div>
           <div style="font-size: 14px; line-height: 1.8;">
             <p><strong>Mã sản phẩm:</strong> ${sp.maSP}</p>
             <p><strong>Tên sản phẩm:</strong> ${sp.tenSP}</p>
@@ -2081,14 +2267,27 @@ class MeoLogiApp {
 
   openOrderDetailModal(order) {
     document.getElementById('detail-order-title').textContent = `Chi Tiết Đơn Hàng ${order.maDonHang}`;
-    const itemsHtml = order.chiTiet.map(ct => `
+    const itemsHtml = order.chiTiet.map(ct => {
+      const sp = this.allProducts.find(p => p.maSP === ct.maSP);
+      const theme = this.getProductTheme(sp || { tenSP: ct.tenSP, maSP: ct.maSP });
+      return `
       <tr>
-        <td><strong>${ct.maSP}</strong> - ${ct.tenSP}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: ${theme.bg}; border: 1px solid ${theme.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <img src="${theme.icon}" style="width: 22px; height: 22px; object-fit: contain;" />
+            </div>
+            <div>
+              <strong>${ct.maSP}</strong> - ${ct.tenSP}
+            </div>
+          </div>
+        </td>
         <td>${ct.soLuong}</td>
         <td>${this.formatCurrency(ct.donGia)}</td>
         <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(ct.thanhTien)}</strong></td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
 
     let reviewHtml = '';
     if (order.danhGia) {
