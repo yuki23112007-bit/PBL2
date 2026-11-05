@@ -109,6 +109,8 @@ web/                                     Giao diện HTML và CSS, nằm ngoài 
 | **14**| **Nhập hàng nhanh (Restock)** | Quản trị (Admin) | API `/api/admin/products/restock` | 🌟 **Mở rộng (Bonus)** | Tăng tồn kho giải phóng nhanh Pending List |
 | **15**| **Kiểm tra trùng Username thời gian thực**| Khách hàng & Admin | Cây `Trie` $O(L)$ + Debounce 300ms Frontend | 🌟 **Mở rộng (Bonus)** | Đổi viền xanh/đỏ và báo lỗi ngay khi đang gõ |
 | **16**| **Giao diện thương hiệu MeoLogi tương tác**| Frontend | HTML5, CSS3 Variables, Vanilla JS, Font Alviona | 🌟 **Mở rộng (Bonus)** | Linh vật mèo cảm xúc, Toast, Modal, Giỏ hàng popup |
+| **17**| **Tìm sản phẩm theo tên hoặc mã (Admin)** | Quản trị (Admin) | Cây `Trie` $O(L)$ có sẵn (tính năng 3), gợi ý autocomplete | 🌟 **Mở rộng (Bonus)** | Gõ tên hoặc mã, gợi ý hiện ngay khi đang gõ |
+| **18**| **Sắp xếp sản phẩm theo tồn kho (Admin)** | Quản trị (Admin) | `QuickSort` tự cài đặt, khóa `soLuongTon` | 🌟 **Mở rộng (Bonus)** | Sắp xếp tăng dần để thấy hàng sắp hết hoặc đã hết kho, dễ nhập thêm |
 
 ### 2.2. Công nghệ
 
@@ -134,6 +136,21 @@ Thư mục `web/` do Quỳnh phụ trách. Chi tiết quy ước và yêu cầu 
 | 6 | Thống nhất tên lớp CSS và `id` HTML với người viết `app.js` trước khi nối API | `web/` | Chưa làm | Quỳnh, Huy |
 
 Yêu cầu chung: không dùng framework CSS (Bootstrap, Tailwind). Mọi thay đổi `id` hoặc tên lớp phải báo nhóm, vì `app.js` phụ thuộc vào chúng.
+
+### 2.4. Tìm kiếm và sắp xếp sản phẩm (Admin)
+
+Mục Sản phẩm trong khu Admin có thêm hai thao tác (tính năng 17 và 18):
+
+| Thao tác | Cách hoạt động | Phụ trách |
+|---|---|---|
+| Tìm theo tên hoặc mã | Ô tìm kiếm dùng lại cây `Trie` đã có ở tính năng 3. Gõ đến đâu hiện gợi ý đến đó. Mã sản phẩm được chèn vào cùng cây như một khóa, và kết quả là con trỏ `SanPham*` mượn từ `HashTable` | Backend: Huy. Giao diện: Quỳnh |
+| Sắp xếp theo tồn kho | Dùng `QuickSort` tự cài đặt trong `core/ThuatToan.h`, khóa là `soLuongTon`. Mặc định tăng dần để sản phẩm hết kho hiện lên đầu | Backend: Huy. Giao diện: Quỳnh |
+
+Đề xuất API: `GET /api/admin/products?q=<từ khóa>&sort=stock_asc`.
+
+Lưu ý:
+- Không dùng `std::sort` cho chức năng sắp xếp, theo mục 10.1.
+- Mục 11 cần ghi thêm: `sanPhamRef` cũng trỏ tới sản phẩm khi từ khóa là mã sản phẩm, không chỉ khi là tên.
 
 ## 3. Quy trình làm việc hằng ngày
 
