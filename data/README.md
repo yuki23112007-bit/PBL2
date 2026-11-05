@@ -1,6 +1,6 @@
 # Thư mục dữ liệu `data/`
 
-Thư mục này chứa 7 file `.txt` làm nơi lưu trữ dữ liệu của hệ thống. Lớp `FileManager` (`src/data/FileManager.h` và `FileManager.cpp`) là nơi duy nhất đọc và ghi các file này.
+Thư mục này chứa 9 file `.txt` làm nơi lưu trữ dữ liệu của hệ thống. Lớp `FileManager` (`src/data/FileManager.h` và `FileManager.cpp`) đọc và ghi bảy file nghiệp vụ chính; `WebServer` quản lý thêm đánh giá và thời điểm giao hàng.
 
 ## 1. Quy ước chung
 
@@ -12,7 +12,7 @@ Thư mục này chứa 7 file `.txt` làm nơi lưu trữ dữ liệu của hệ
 - **Không sửa tay khi chương trình đang chạy.** Chương trình lưu sau mỗi thay đổi (xem mục 4), nên sửa tay khi đang chạy có thể bị ghi đè.
 - **Không xóa file này khỏi Git.** Nếu cần dữ liệu mẫu, giữ bản sao trong nhánh riêng.
 
-## 2. Thứ tự các trường trong 7 file
+## 2. Thứ tự các trường trong 9 file
 
 | File | Thứ tự trường | Nguồn |
 |---|---|---|
@@ -23,6 +23,8 @@ Thư mục này chứa 7 file `.txt` làm nơi lưu trữ dữ liệu của hệ
 | `orders.txt` | `maDonHang\|tenKhachHang\|diaChiKhachHang\|soDienThoaiKhachHang\|trangThaiDonHang\|ngayDatHang\|IdNguoiDung` | Lược đồ mục I, bảng DonHang |
 | `chitietdonhang.txt` | `maChiTiet\|maDonHang\|maSanPham\|soLuong\|thanhTien` | Lược đồ mục I, bảng ChiTietDonHang |
 | `revenues.txt` | `ngayThongKe\|tongDoanhThu\|tongSoDonHang` | Lược đồ mục I, bảng DoanhThuNgay |
+| `danhgia.txt` | `maDanhGia\|maDonHang\|maNguoiDung\|soSao\|noiDung\|thoiGian\|laKhieuNai` | Đánh giá và khiếu nại của khách |
+| `giaohang.txt` | `maDonHang\|thoiGianChuyenSangDangGiao` | Mốc bắt đầu giao để tính hạn 3 ngày |
 
 ## 3. Chi tiết và ví dụ
 
@@ -182,33 +184,30 @@ Các lớp `TaiKhoan`, `Admin`, `DonHang`, `ChiTietDonHang`, `NhaCungCap`, `VanC
 
 ## 6. Chọn bộ dữ liệu: thật hay test
 
-Có hai thư mục dữ liệu cùng cấu trúc 7 file:
+Có hai thư mục dữ liệu cùng cấu trúc 9 file:
 
 | Thư mục | Dùng khi | Ghi chú |
 |---|---|---|
 | `data/` | Chạy thật, làm báo cáo | Dữ liệu thật. Không dùng để test |
 | `data_test/` | Test, thử chức năng | Bản sao của `data/`, có thể sửa, xóa, nạp sai thoải mái |
 
-Chương trình **không ghi cứng đường dẫn** trong code. `FileManager` nhận đường dẫn gốc qua hàm tạo, và `main.cpp` chọn thư mục theo tham số dòng lệnh:
+Chương trình dùng `data/` mặc định; có thể truyền cổng và thư mục dữ liệu khác qua dòng lệnh:
 
 ```cpp
 // src/app/main.cpp
 int main(int argc, char* argv[]) {
-    std::string dataDir = "data";
-    if (argc > 1 && std::string(argv[1]) == "--test") {
-        dataDir = "data_test";
-    }
-    HeThongQuanLy hệThống(dataDir);   // truyền xuống FileManager và WebServer
-    hệThống.chạy();
-    return 0;
+    int port = argc > 1 ? std::stoi(argv[1]) : 8080;
+    std::string dataDir = argc > 2 ? argv[2] : "data";
+    WebServer server(port, "web", dataDir);
+    server.start();
 }
 ```
 
 Cách chạy:
 
 ```text
-./app              # dùng data/ (dữ liệu thật)
-./app --test       # dùng data_test/ (dữ liệu test)
+./app                         # dùng data/ (dữ liệu chính)
+./app 8080 data_test          # dùng data_test/ (dữ liệu test)
 ```
 
 Trong Makefile có hai đích tương ứng:
@@ -221,6 +220,6 @@ test-run:
 	./app --test
 ```
 
-**Thiết lập lần đầu:** chạy `cp -r data data_test` một lần để tạo bộ test. Sau đó nên commit `data_test/` vào Git để cả nhóm dùng chung một bộ test. Không commit `data/` nếu dữ liệu thật không được công khai.
+`data/` hiện là bộ dữ liệu mặc định, gồm 50 sản phẩm và 8 tài khoản mẫu (2 Admin, 6 Customer). Nếu dùng dữ liệu thật, không công khai mật khẩu hoặc thông tin cá nhân trong Git.
 
-**Quy tắc:** khi test, không chạy `./app` với `data/` đang giữ dữ liệu báo cáo, vì chương trình lưu sau mỗi thay đổi và sẽ ghi trực tiếp vào `data/`. Muốn thử lại bộ test từ đầu thì chép lại từ `data/` hoặc từ bản commit của `data_test/`.
+**Quy tắc:** khi test, truyền `data_test/` làm thư mục dữ liệu để tránh ghi thay đổi thử nghiệm vào `data/`. Chương trình sẽ lưu các thay đổi vào chính thư mục dữ liệu được truyền vào.

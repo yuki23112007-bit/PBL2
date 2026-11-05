@@ -19,8 +19,8 @@
 #include "../core/BinarySearchTree.h"
 #include "../core/MinHeap.h"
 #include "../core/OrderQueue.h"
-#include "../Service/QuanLySanPham.h"
-#include "../Service/QuanLyDonHang.h"
+#include "../service/QuanLySanPham.h"
+#include "../service/QuanLyDonHang.h"
 
 using namespace std;
 
