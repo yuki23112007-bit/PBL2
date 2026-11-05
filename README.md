@@ -11,29 +11,24 @@ Dự án nhóm xây dựng hệ thống quản lý kho, sản phẩm, đơn hàn
 
 Ví dụ tên nhánh: `feature/dang-nhap-trie`, `feature/bang-bam-san-pham`, `feature/hang-doi-don-hang`.
 
-## 2. Chia việc theo module (tránh xung đột từ đầu)
-
-Mỗi người phụ trách một module, chỉ sửa các file của module đó. Nếu cần sửa file của người khác, phải báo trước trong nhóm.
-
-| Module | Chức năng trong tài liệu | File phụ trách | Người phụ trách |
+| Module | Chức năng trong tài liệu & Mở rộng | File phụ trách | Người phụ trách |
 |---|---|---|---|
-| Đăng nhập, đăng ký | Mục 1.1, 2.1 | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h` | `Quỳnh` |
-| Tra cứu sản phẩm | Mục 1.2, 2.2 (Trie sản phẩm) | `core/Trie.h` | `Huy` |
+| Đăng nhập, đăng ký | Mục 1.1, 2.1 (Tích hợp kiểm tra cây Trie) | `models/TaiKhoan.h`, `models/Admin.h`, `models/NguoiDung.h` | `Quỳnh` |
+| Tra cứu sản phẩm & Username | Mục 1.2, 2.2 & Mở rộng (Cây tiền tố Trie) | `core/Trie.h`, `core/Trie.cpp` | `Huy` |
 | Quản lý sản phẩm, bảng băm | Mục 1.3 | `core/HashTable.h`, `models/SanPham.h`, `models/ThucPham.h`, `models/ThucPhamThuong.h`, `models/ThucPhamTuoiSong.h`, `models/CongNghe.h`, `models/DoGiaDung.h` | `Huy` |
 | Hàng đợi duyệt đơn, Pending List | Mục 1.4, 2.3, 2.7 | `core/OrderQueue.h`, `models/DonHang.h`, `models/ChiTietDonHang.h` | `Huy` |
-| Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h` của module trên, không sửa) | `Huy` |
-| Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` (cần bổ sung, xem mục 2.1) | `Huy` |
+| Tra cứu đơn hàng | Mục 2.5 | `core/BinarySearchTree.h` (dùng `DonHang.h`) | `Huy` |
+| Cảnh báo kho, Min-Heap | Mục 1.6 | `models/KhoHang.h`, `core/MinHeap.h` | `Huy` |
 | Doanh thu, báo cáo, vận chuyển | Mục 1.5, 1.7, 2.6 | `models/DoanhThuNgay.h`, `models/VanChuyen.h` | `Quỳnh` |
-| Giao diện web (HTML, CSS) | Mục 2.4, 2.5 | `web/index.html`, `web/style.css`, `web/app.js` (xem `web/README.md`) | `Quỳnh` |
-| Máy chủ web, API JSON | Mục 2.4, 2.5 | `app/WebServer.h`, `app/WebServer.cpp` | `Quỳnh` |
-| Quản lý sản phẩm (nghiệp vụ) | Mục 1.3, 2.2 | `service/QuanLySanPham.h` | `Huy` |
-| Quản lý đơn hàng (nghiệp vụ) | Mục 1.4, 2.3, 2.5, 2.7 | `service/QuanLyDonHang.h` | `Huy` |
-| Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 | `service/QuanLyTaiKhoan.h` | `Quỳnh` |
-| Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 | `service/QuanLyKhoNCC.h` | `Quỳnh` |
-| Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h` | `Quỳnh` |
-
-Mỗi file chỉ xuất hiện ở đúng một dòng. Module khác chỉ `#include` file đó, không sửa.
-
+| Đánh giá & Khiếu nại đơn hàng | Tính năng mở rộng (Bonus) | `models/DanhGiaDonHang.h`, `models/DanhGiaDonHang.cpp` | `Quỳnh` |
+| Quản lý tài khoản người dùng Admin | Tính năng mở rộng (Bonus) | `service/QuanLyTaiKhoan.h`, `app/WebServer.cpp` | `Quỳnh` |
+| Giao diện web MeoLogi (HTML, CSS, JS) | Mục 2.4, 2.5 & Mở rộng UX/UI | `web/index.html`, `web/style.css`, `web/app.js` | `Quỳnh` |
+| Máy chủ web, API REST JSON | Mục 2.4, 2.5 & Toàn bộ API hệ thống | `app/WebServer.h`, `app/WebServer.cpp` | `Quỳnh` |
+| Quản lý sản phẩm (nghiệp vụ) | Mục 1.3, 2.2 | `service/QuanLySanPham.h`, `service/QuanLySanPham.cpp` | `Huy` |
+| Quản lý đơn hàng (nghiệp vụ) | Mục 1.4, 2.3, 2.5, 2.7 | `service/QuanLyDonHang.h`, `service/QuanLyDonHang.cpp` | `Huy` |
+| Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 (Tích hợp cây Trie $O(L)$) | `service/QuanLyTaiKhoan.h`, `service/QuanLyTaiKhoan.cpp` | `Quỳnh` |
+| Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 & Mở rộng CRUD Admin | `service/QuanLyKhoNCC.h`, `service/QuanLyKhoNCC.cpp` | `Quỳnh` |
+| Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h`, `service/QuanLyDoanhThu.cpp` | `Quỳnh` |
 ### 2.1. Cấu trúc thư mục và tên file
 
 ```text
@@ -96,6 +91,24 @@ web/                                     Giao diện HTML và CSS, nằm ngoài 
 - `FileManager` nằm trong `data/` (Tầng 1 trong tài liệu).
 
 **File dùng chung** (như định nghĩa cấu trúc dữ liệu, cấu trúc bảng, hàm băm, hàm tiện ích): ai sửa phải báo cả nhóm trước khi push, vì ảnh hưởng nhiều module.
+| STT | Tên tính năng | Phân hệ | Cấu trúc dữ liệu / Công nghệ | Trạng thái | Ghi chú |
+|:---:|---|---|---|:---:|---|
+| **1** | Xác thực & Đăng nhập phân quyền | Chung (Admin/Customer) | Cây tiền tố `Trie` $O(L)$ + Băm MD5 | ✅ Đã hoàn thành | Chuẩn Mục 1.1 |
+| **2** | Đăng ký tài khoản khách hàng | Khách hàng (Customer) | Cây tiền tố `Trie` $O(L)$ | ✅ Đã hoàn thành | Chuẩn Mục 2.1 |
+| **3** | Tra cứu sản phẩm (Autocomplete) | Chung | Cây tiền tố `Trie` $O(L)$ theo tiền tố | ✅ Đã hoàn thành | Chuẩn Mục 1.2, 2.2 |
+| **4** | Thêm / Sửa / Xóa sản phẩm | Quản trị (Admin) | Bảng băm `HashTable` $O(1)$ (Separate Chaining) | ✅ Đã hoàn thành | Chuẩn Mục 1.3 |
+| **5** | Duyệt đơn hàng (Hàng đợi & Danh sách chờ) | Quản trị (Admin) | `OrderQueue` (FIFO) & `Pending List` | ✅ Đã hoàn thành | Chuẩn Mục 1.4 |
+| **6** | Cảnh báo hạn dùng & Cảnh báo hết kho | Quản trị (Admin) | Đống nhị phân nhỏ nhất `MinHeap` $O(\log N)$ | ✅ Đã hoàn thành | Chuẩn Mục 1.6 |
+| **7** | Ghi nhận doanh thu & Báo cáo ngày | Quản trị (Admin) | Bảng băm `HashTable` DoanhThuNgay | ✅ Đã hoàn thành | Chuẩn Mục 1.5, 1.7 |
+| **8** | Tạo đơn hàng & Xem tóm tắt đơn | Khách hàng (Customer) | Danh sách liên kết đơn hàng + Tính cước xe | ✅ Đã hoàn thành | Chuẩn Mục 2.3, 2.4 |
+| **9** | Tra cứu lịch sử & Tự hủy đơn hàng | Khách hàng (Customer) | Cây nhị phân tìm kiếm `BST` / Danh sách cá nhân | ✅ Đã hoàn thành | Chuẩn Mục 2.5, 2.7 |
+| **10**| Xác nhận nhận hàng thành công | Khách hàng (Customer) | Bảng băm `DonHang` & `DoanhThuNgay` | ✅ Đã hoàn thành | Chuẩn Mục 2.6 |
+| **11**| **Đánh giá sao & Gửi khiếu nại** | Khách hàng & Admin | Model `DanhGiaDonHang` + file `danhgia.txt` | 🌟 **Mở rộng (Bonus)** | Khách đánh giá 1-5 sao, Admin xử lý khiếu nại |
+| **12**| **Admin quản trị tài khoản (CRUD User)** | Quản trị (Admin) | `QuanLyTaiKhoan` + API `/api/admin/users/*` | 🌟 **Mở rộng (Bonus)** | Xem, Thêm, Sửa, Xóa và Đặt lại mật khẩu |
+| **13**| **Admin quản trị Kho & Nhà cung cấp** | Quản trị (Admin) | Quản lý trực quan `KhoHang` & `NhaCungCap` | 🌟 **Mở rộng (Bonus)** | CRUD trực tiếp trên bảng điều khiển Admin |
+| **14**| **Nhập hàng nhanh (Restock)** | Quản trị (Admin) | API `/api/admin/products/restock` | 🌟 **Mở rộng (Bonus)** | Tăng tồn kho giải phóng nhanh Pending List |
+| **15**| **Kiểm tra trùng Username thời gian thực**| Khách hàng & Admin | Cây `Trie` $O(L)$ + Debounce 300ms Frontend | 🌟 **Mở rộng (Bonus)** | Đổi viền xanh/đỏ và báo lỗi ngay khi đang gõ |
+| **16**| **Giao diện thương hiệu MeoLogi tương tác**| Frontend | HTML5, CSS3 Variables, Vanilla JS, Font Alviona | 🌟 **Mở rộng (Bonus)** | Linh vật mèo cảm xúc, Toast, Modal, Giỏ hàng popup |
 
 ### 2.2. Công nghệ
 
