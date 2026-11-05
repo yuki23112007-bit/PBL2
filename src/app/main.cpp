@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     cout << "          Do An PBL 2 - Cong Nghe Thong Tin              " << endl;
     cout << "==========================================================" << endl;
 
-    string dataDir = "data_test";
+    string dataDir = "data";
     if (argc > 2) {
         dataDir = argv[2];
     }

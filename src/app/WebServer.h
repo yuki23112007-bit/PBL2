@@ -13,6 +13,7 @@
 #include "../data/FileManager.h"
 #include "../service/QuanLySanPham.h"
 #include "../service/QuanLyDonHang.h"
+#include "../core/Trie.h"
 #include "../models/TaiKhoan.h"
 #include "../models/Admin.h"
 #include "../models/NguoiDung.h"
@@ -42,6 +43,7 @@ private:
     FileManager fileManager;
     QuanLySanPham qlSanPham;
     QuanLyDonHang qlDonHang;
+    Trie cayTrieTaiKhoan;                        // Cay tien to Trie luu tru username phuc vu tra cuu va chan trung lap O(L)
     vector<TaiKhoan*> danhSachTaiKhoan;
     vector<KhoHang> danhSachKho;
     vector<NhaCungCap> danhSachNCC;
@@ -107,6 +109,7 @@ private:
     // Cac API Endpoints (khach)
     string apiLogin(const string& body);
     string apiRegister(const string& body);
+    string apiCheckUsername(const map<string, string>& params);
     string apiLogout(const map<string, string>& headers);
     string apiGetProducts(const map<string, string>& params);
     string apiSearchProducts(const map<string, string>& params);

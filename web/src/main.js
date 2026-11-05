@@ -57,6 +57,18 @@ class MeoLogiApp {
       }
     });
 
+    // Lắng nghe sự kiện gõ username để kiểm tra trùng qua cây Trie trong thời gian thực
+    const usrInput = document.getElementById('usr-username');
+    if (usrInput) {
+      let debounceTimer = null;
+      usrInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          this.checkUsernameRealtime(usrInput.value.trim());
+        }, 300);
+      });
+    }
+
     // Kiểm tra phiên đăng nhập đã lưu
     if (this.token && this.currentUser) {
       const ok = await this.verifySession();
@@ -232,17 +244,29 @@ class MeoLogiApp {
   }
 
   openRegisterModal() {
+    this.isRegisterMode = true;
+    this.usernameExists = false;
     const usr = document.getElementById('usr-id');
     if (usr) usr.value = '';
     document.getElementById('user-form-title').textContent = 'Đăng Ký Tài Khoản Khách Hàng';
     document.getElementById('usr-role').value = 'CUSTOMER';
     document.getElementById('usr-role').disabled = true;
-    document.getElementById('usr-username').value = '';
+    const usrName = document.getElementById('usr-username');
+    if (usrName) {
+      usrName.value = '';
+      usrName.readOnly = false;
+      usrName.style.borderColor = '';
+    }
+    const feedback = document.getElementById('usr-username-feedback');
+    if (feedback) { feedback.style.display = 'none'; feedback.textContent = ''; }
+    document.getElementById('usr-password-group').style.display = 'block';
     document.getElementById('usr-password').value = '';
     document.getElementById('usr-password').required = true;
     document.getElementById('usr-hoten').value = '';
     document.getElementById('usr-sdt').value = '';
     document.getElementById('usr-diachi').value = '';
+    const submitBtn = document.querySelector('#form-user button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Đăng Ký Tài Khoản';
     this.openModal('modal-user-form');
   }
 
@@ -1714,36 +1738,114 @@ class MeoLogiApp {
   }
 
   openAddUserModal() {
+    this.isRegisterMode = false;
+    this.usernameExists = false;
     document.getElementById('user-form-title').textContent = 'Thêm Tài Khoản Mới';
     document.getElementById('usr-id').value = '';
     document.getElementById('usr-role').disabled = false;
     document.getElementById('usr-role').value = 'CUSTOMER';
-    document.getElementById('usr-username').value = '';
-    document.getElementById('usr-username').readOnly = false;
+    const usrName = document.getElementById('usr-username');
+    if (usrName) {
+      usrName.value = '';
+      usrName.readOnly = false;
+      usrName.style.borderColor = '';
+    }
+    const feedback = document.getElementById('usr-username-feedback');
+    if (feedback) { feedback.style.display = 'none'; feedback.textContent = ''; }
     document.getElementById('usr-password-group').style.display = 'block';
     document.getElementById('usr-password').value = '';
     document.getElementById('usr-password').required = true;
     document.getElementById('usr-hoten').value = '';
     document.getElementById('usr-sdt').value = '';
     document.getElementById('usr-diachi').value = '';
+    const submitBtn = document.querySelector('#form-user button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Lưu Tài Khoản';
     this.openModal('modal-user-form');
   }
 
   openEditUserModal(userId) {
+    this.isRegisterMode = false;
+    this.usernameExists = false;
     const u = this.adminUsers.find(item => item.id === userId);
     if (!u) return;
     document.getElementById('user-form-title').textContent = `Sửa Tài Khoản ${u.username}`;
     document.getElementById('usr-id').value = u.id;
     document.getElementById('usr-role').value = u.role;
     document.getElementById('usr-role').disabled = true;
-    document.getElementById('usr-username').value = u.username;
-    document.getElementById('usr-username').readOnly = true;
+    const usrName = document.getElementById('usr-username');
+    if (usrName) {
+      usrName.value = u.username;
+      usrName.readOnly = true;
+      usrName.style.borderColor = '';
+    }
+    const feedback = document.getElementById('usr-username-feedback');
+    if (feedback) { feedback.style.display = 'none'; feedback.textContent = ''; }
     document.getElementById('usr-password-group').style.display = 'none';
     document.getElementById('usr-password').required = false;
     document.getElementById('usr-hoten').value = u.hoTen;
     document.getElementById('usr-sdt').value = u.soDienThoai;
     document.getElementById('usr-diachi').value = u.diaChi;
+    const submitBtn = document.querySelector('#form-user button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Cập Nhật Tài Khoản';
     this.openModal('modal-user-form');
+  }
+
+  async checkUsernameRealtime(val) {
+    const feedback = document.getElementById('usr-username-feedback');
+    const input = document.getElementById('usr-username');
+    if (!feedback || !input) return;
+
+    if (input.readOnly) {
+      feedback.style.display = 'none';
+      return;
+    }
+
+    if (!val) {
+      feedback.style.display = 'none';
+      input.style.borderColor = '';
+      this.usernameExists = false;
+      return;
+    }
+
+    if (val.length < 3) {
+      feedback.style.display = 'block';
+      feedback.style.color = '#64748b';
+      feedback.textContent = 'ℹ️ Tên đăng nhập phải từ 3 đến 30 ký tự.';
+      input.style.borderColor = '';
+      this.usernameExists = false;
+      return;
+    }
+
+    const regex = /^[a-zA-Z0-9_]+$/;
+    if (!regex.test(val)) {
+      feedback.style.display = 'block';
+      feedback.style.color = '#ef4444';
+      feedback.textContent = '⚠️ Chỉ gồm chữ cái không dấu, chữ số và dấu gạch dưới.';
+      input.style.borderColor = '#ef4444';
+      this.usernameExists = true;
+      return;
+    }
+
+    try {
+      const res = await fetch(`${this.apiBase}/api/check-username?username=${encodeURIComponent(val)}`);
+      if (res.ok) {
+        const data = await res.json();
+        feedback.style.display = 'block';
+        if (data.exists) {
+          feedback.style.color = '#ef4444';
+          feedback.textContent = '❌ Tên đăng nhập đã tồn tại (phát hiện bởi cây Trie)! Vui lòng chọn tên khác.';
+          input.style.borderColor = '#ef4444';
+          this.usernameExists = true;
+        } else {
+          feedback.style.color = '#10b981';
+          feedback.textContent = '✅ Tên đăng nhập hợp lệ và có thể sử dụng (kiểm tra qua cây Trie).';
+          input.style.borderColor = '#10b981';
+          this.usernameExists = false;
+        }
+      }
+    } catch (e) {
+      console.warn('Lỗi kiểm tra tên đăng nhập qua Trie:', e);
+    }
   }
 
   async saveUser(e) {
@@ -1755,6 +1857,38 @@ class MeoLogiApp {
     const hoTen = document.getElementById('usr-hoten').value.trim();
     const soDienThoai = document.getElementById('usr-sdt').value.trim();
     const diaChi = document.getElementById('usr-diachi').value.trim();
+
+    if ((this.isRegisterMode || !id) && this.usernameExists) {
+      this.showToast('Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.', true);
+      return;
+    }
+
+    if (this.isRegisterMode || !this.token) {
+      // Đăng ký khách hàng (Public API)
+      try {
+        const res = await fetch(`${this.apiBase}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, hoTen, soDienThoai, diaChi })
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.showToast(data.message);
+          this.closeModal('modal-user-form');
+          // Điền tên vào ô đăng nhập để tiện đăng nhập ngay
+          const loginUser = document.getElementById('login-username');
+          if (loginUser) loginUser.value = username;
+          const loginPass = document.getElementById('login-password');
+          if (loginPass) { loginPass.value = ''; loginPass.focus(); }
+          this.selectRole('customer');
+        } else {
+          this.showToast(data.message || 'Đăng ký tài khoản thất bại.', true);
+        }
+      } catch (err) {
+        this.showToast('Lỗi gửi dữ liệu đăng ký.', true);
+      }
+      return;
+    }
 
     try {
       const res = await fetch(`${this.apiBase}/api/admin/users/save`, {

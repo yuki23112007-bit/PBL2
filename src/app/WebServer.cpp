@@ -279,6 +279,7 @@ WebServer::~WebServer() {
         delete tk;
     }
     danhSachTaiKhoan.clear();
+    cayTrieTaiKhoan.clear();
 }
 
 // -------------------------------------------------------------
@@ -300,7 +301,13 @@ void WebServer::napDuLieuHeThong() {
     cout << "  - Da nap " << danhSachNCC.size() << " nha cung cap." << endl;
 
     danhSachTaiKhoan = fileManager.docTaiKhoan();
-    cout << "  - Da nap " << danhSachTaiKhoan.size() << " tai khoan." << endl;
+    cayTrieTaiKhoan.clear();
+    for (TaiKhoan* tk : danhSachTaiKhoan) {
+        if (tk) {
+            cayTrieTaiKhoan.chen(tk->getUsername(), tk->getVaiTro() + "|" + tk->getId());
+        }
+    }
+    cout << "  - Da nap " << danhSachTaiKhoan.size() << " tai khoan (dong bo vao cay Trie)." << endl;
 
     danhSachDoanhThu = fileManager.docDoanhThu();
     cout << "  - Da nap " << danhSachDoanhThu.size() << " ban ghi doanh thu." << endl;
@@ -703,6 +710,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
     // ---- Khong can dang nhap ----
     if (path == "/api/login" && laPost) { responseBody = apiLogin(body); return; }
     if (path == "/api/register" && laPost) { responseBody = apiRegister(body); return; }
+    if (path == "/api/check-username" && laGet) { responseBody = apiCheckUsername(q); return; }
     if (path == "/api/products" && laGet) { responseBody = apiGetProducts(q); return; }
     if (path == "/api/products/search" && laGet) { responseBody = apiSearchProducts(q); return; }
     if (path == "/api/products/detail" && laGet) { responseBody = apiGetProductDetail(q); return; }
@@ -966,6 +974,11 @@ string WebServer::apiLogin(const string& body) {
         return loiJson("Vui lòng nhập tên đăng nhập và mật khẩu!");
     }
 
+    // Tra cuu nhanh su ton tai cua username qua cay tien to Trie O(L) truoc khi xac thuc
+    if (!cayTrieTaiKhoan.tonTai(username)) {
+        return loiJson("Tên đăng nhập hoặc mật khẩu không chính xác!");
+    }
+
     TaiKhoan* matched = nullptr;
     for (TaiKhoan* tk : danhSachTaiKhoan) {
         if (tk && tk->getUsername() == username) {
@@ -1036,6 +1049,19 @@ string WebServer::apiLogout(const map<string, string>& headers) {
     return "{\"success\":true}";
 }
 
+string WebServer::apiCheckUsername(const map<string, string>& params) {
+    string username = params.count("username") ? params.at("username") : "";
+    username = lamSachTruongFile(username);
+    bool tonTai = false;
+    if (!username.empty()) {
+        tonTai = cayTrieTaiKhoan.tonTai(username);
+    }
+    ostringstream j;
+    j << "{\"success\":true,\"username\":\"" << escapeJson(username)
+      << "\",\"exists\":" << (tonTai ? "true" : "false") << "}";
+    return j.str();
+}
+
 string WebServer::apiRegister(const string& body) {
     auto data = parseSimpleJson(body);
     string username = lamSachTruongFile(data["username"]);
@@ -1058,8 +1084,9 @@ string WebServer::apiRegister(const string& body) {
         return loiJson("Số điện thoại phải gồm 9 đến 11 chữ số.");
     }
 
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
-        if (tk && tk->getUsername() == username) return loiJson("Tên đăng nhập đã được sử dụng!");
+    // Tra cuu bang Cay tien to Trie (O(L)) de chan trung lap ten dang nhap
+    if (cayTrieTaiKhoan.tonTai(username)) {
+        return loiJson("Tên đăng nhập đã được sử dụng!");
     }
 
     int maxId = 222000;
@@ -1072,6 +1099,7 @@ string WebServer::apiRegister(const string& body) {
 
     NguoiDung* ndMoi = new NguoiDung(newId, username, md5impl::hex(password), hoTen, sdt, diaChi);
     danhSachTaiKhoan.push_back(ndMoi);
+    cayTrieTaiKhoan.chen(username, "CUSTOMER|" + newId);
     fileManager.ghiTaiKhoan(danhSachTaiKhoan);
 
     return "{\"success\":true,\"message\":\"Đăng ký tài khoản thành công! Hãy đăng nhập để mua hàng.\",\"userId\":\"" + newId + "\"}";
@@ -1926,8 +1954,10 @@ string WebServer::apiSaveUser(const string& body, const PhienDangNhap& phien) {
     // Tao tai khoan moi
     if (username.size() < 3) return loiJson("Tên đăng nhập phải từ 3 ký tự trở lên!");
     if (password.size() < 6) return loiJson("Mật khẩu phải từ 6 ký tự trở lên!");
-    for (TaiKhoan* t : danhSachTaiKhoan) {
-        if (t && t->getUsername() == username) return loiJson("Tên đăng nhập đã tồn tại!");
+    
+    // Kiem tra chan trung lap ten dang nhap bang cay tien to Trie (O(L))
+    if (cayTrieTaiKhoan.tonTai(username)) {
+        return loiJson("Tên đăng nhập đã tồn tại!");
     }
 
     int maxId = (role == "ADMIN") ? 111000 : 222000;
@@ -1947,6 +1977,7 @@ string WebServer::apiSaveUser(const string& body, const PhienDangNhap& phien) {
                               hoTen.empty() ? username : hoTen, sdt, diaChi);
     }
     danhSachTaiKhoan.push_back(tkMoi);
+    cayTrieTaiKhoan.chen(username, role + "|" + newId);
     fileManager.ghiTaiKhoan(danhSachTaiKhoan);
     return "{\"success\":true,\"message\":\"Tạo tài khoản " + username + " thành công!\",\"id\":\"" + newId + "\"}";
 }
@@ -1959,6 +1990,7 @@ string WebServer::apiDeleteUser(const string& body, const PhienDangNhap& phien) 
     }
     for (auto it = danhSachTaiKhoan.begin(); it != danhSachTaiKhoan.end(); ++it) {
         if (*it && (*it)->getId() == id) {
+            cayTrieTaiKhoan.xoa((*it)->getUsername());
             delete *it;
             danhSachTaiKhoan.erase(it);
             fileManager.ghiTaiKhoan(danhSachTaiKhoan);
