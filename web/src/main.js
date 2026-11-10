@@ -303,6 +303,7 @@ class MeoLogiApp {
       if (tabStore) tabStore.classList.remove('hidden');
       if (tabOrders) tabOrders.classList.add('hidden');
       await this.loadProducts();
+      this.loadCustomerForecast();
     }
   }
 
@@ -923,6 +924,7 @@ class MeoLogiApp {
     else if (tab === 'revenues') this.loadAdminRevenues();
     else if (tab === 'users') this.loadAdminUsers();
     else if (tab === 'reviews') this.loadAdminReviews();
+    else if (tab === 'predictions') this.loadAdminPredictions();
   }
 
   // Tab 1: Đơn hàng & FIFO
@@ -1161,7 +1163,7 @@ class MeoLogiApp {
     }).slice(0, 6);
 
     if (matches.length === 0) {
-      dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm trong cây Trie.</div>`;
+      dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm phù hợp.</div>`;
     } else {
       dropdown.innerHTML = matches.map(p => `
         <div class="suggestion-item" onclick="App.selectAdminProdSuggestion('${p.maSP}')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; border-bottom: 1px solid rgba(75, 46, 131, 0.06); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(75, 46, 131, 0.05)'" onmouseout="this.style.background='transparent'">
@@ -1946,12 +1948,12 @@ class MeoLogiApp {
         feedback.style.display = 'block';
         if (data.exists) {
           feedback.style.color = '#ef4444';
-          feedback.textContent = '❌ Tên đăng nhập đã tồn tại (phát hiện bởi cây Trie)! Vui lòng chọn tên khác.';
+          feedback.textContent = '❌ Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.';
           input.style.borderColor = '#ef4444';
           this.usernameExists = true;
         } else {
           feedback.style.color = '#10b981';
-          feedback.textContent = '✅ Tên đăng nhập hợp lệ và có thể sử dụng (kiểm tra qua cây Trie).';
+          feedback.textContent = '✅ Tên đăng nhập hợp lệ và có thể sử dụng.';
           input.style.borderColor = '#10b981';
           this.usernameExists = false;
         }
@@ -2246,6 +2248,156 @@ class MeoLogiApp {
       ${reviewHtml}
     `;
     this.openModal('modal-order-detail');
+  }
+
+  // ------------------------------------------------------------------------
+  // Tab 7: AI Dự đoán xu hướng khách hàng (Tính năng 19 - Gaussian Naive Bayes)
+  // ------------------------------------------------------------------------
+  switchPredictionTab(tab) {
+    const btnQuayLai = document.getElementById('btn-pred-quaylai');
+    const btnNhom = document.getElementById('btn-pred-nhom');
+    const wrapQuayLai = document.getElementById('pred-wrap-quaylai');
+    const wrapNhom = document.getElementById('pred-wrap-nhom');
+
+    if (tab === 'nhom') {
+      if (btnQuayLai) btnQuayLai.classList.remove('active');
+      if (btnNhom) btnNhom.classList.add('active');
+      if (wrapQuayLai) wrapQuayLai.classList.add('hidden');
+      if (wrapNhom) wrapNhom.classList.remove('hidden');
+      this.loadAdminPredictions('nhom');
+    } else {
+      if (btnQuayLai) btnQuayLai.classList.add('active');
+      if (btnNhom) btnNhom.classList.remove('active');
+      if (wrapQuayLai) wrapQuayLai.classList.remove('hidden');
+      if (wrapNhom) wrapNhom.classList.add('hidden');
+      this.loadAdminPredictions('quay-lai');
+    }
+  }
+
+  async loadAdminPredictions(loai = 'quay-lai') {
+    try {
+      const res = await fetch(`${this.apiBase}/api/admin/predictions?loai=${loai}`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const countEl = document.getElementById('pred-sample-count');
+        if (countEl) countEl.textContent = `${result.soMau || 0} mẫu`;
+        const timeEl = document.getElementById('pred-update-time');
+        if (timeEl && result.thoiGian) {
+          timeEl.textContent = new Date(result.thoiGian * 1000).toLocaleTimeString('vi-VN');
+        }
+
+        if (loai === 'nhom') {
+          this.renderAdminPredictionsNhom(result.data || []);
+        } else {
+          this.renderAdminPredictionsQuayLai(result.data || []);
+        }
+      }
+    } catch (e) {}
+  }
+
+  renderAdminPredictionsQuayLai(list) {
+    const tbody = document.getElementById('pred-quaylai-tbody');
+    if (!tbody) return;
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu dự đoán.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(item => {
+      let badgeClass = 'tag-success';
+      if (item.mucDo === 'Trung bình') badgeClass = 'tag-pending';
+      else if (item.mucDo === 'Thấp') badgeClass = 'tag-cancelled';
+
+      return `
+        <tr>
+          <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+          <td>${item.recencyNgay} ngày trước</td>
+          <td><strong>${item.frequencyDon}</strong> đơn</td>
+          <td>${this.formatCurrency(item.monetaryAOV)}</td>
+          <td>⭐ ${item.satisfactionSao}</td>
+          <td><span class="tag-status ${badgeClass}">${item.mucDo}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 8px; background: rgba(75, 46, 131, 0.1); border-radius: 4px; overflow: hidden; min-width: 60px;">
+                <div style="width: ${item.xacSuatQuayLai}%; height: 100%; background: var(--princeton-orange); border-radius: 4px;"></div>
+              </div>
+              <strong style="color: var(--space-indigo); font-size: 13px; min-width: 44px; text-align: right;">${item.xacSuatQuayLai}%</strong>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  renderAdminPredictionsNhom(list) {
+    const tbody = document.getElementById('pred-nhom-tbody');
+    if (!tbody) return;
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu nhóm sản phẩm.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(item => `
+      <tr>
+        <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+        <td><strong style="color: var(--princeton-orange); font-size: 14px;">🛍️ ${item.nhomDuDoan}</strong></td>
+        <td><span class="tag-status tag-success" style="font-weight: 700;">${item.xacSuatNhom}% tin cậy</span></td>
+        <td>
+          <div style="font-size: 12px; color: var(--space-indigo-light); line-height: 1.6;">
+            🥬 Thực phẩm: <strong>${item.xacSuatThucPham}%</strong> | 📱 Công nghệ: <strong>${item.xacSuatCongNghe}%</strong> | 🍳 Gia dụng: <strong>${item.xacSuatGiaDung}%</strong>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async retrainPredictions() {
+    try {
+      const res = await fetch(`${this.apiBase}/api/admin/predictions/retrain`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        this.showToast(data.message);
+        this.loadAdminPredictions();
+      } else {
+        this.showToast(data.message || 'Huấn luyện thất bại.', true);
+      }
+    } catch (e) {
+      this.showToast('Lỗi gửi yêu cầu huấn luyện.', true);
+    }
+  }
+
+  async loadCustomerForecast() {
+    const card = document.getElementById('cust-forecast-card');
+    if (!card || !this.currentUser) return;
+    try {
+      const res = await fetch(`${this.apiBase}/api/customer/forecast`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.quayLai && data.nhomSP) {
+          const titleEl = document.getElementById('cust-forecast-title');
+          const descEl = document.getElementById('cust-forecast-desc');
+          const badgeEl = document.getElementById('cust-forecast-suggestion-badge');
+          const catIconEl = document.getElementById('cust-forecast-cat-icon');
+
+          if (titleEl) titleEl.textContent = `Xin chào ${this.currentUser.hoTen || this.currentUser.username}!`;
+          if (descEl) {
+            descEl.innerHTML = `Hệ thống AI dự báo bạn có <strong style="color: var(--princeton-orange);">${data.quayLai.xacSuat}%</strong> khả năng quay lại mua sắm (Mức độ: ${data.quayLai.mucDo}).`;
+          }
+          if (badgeEl) {
+            badgeEl.textContent = `Gợi ý cho bạn: ${data.nhomSP.nhomDuDoan} (${data.nhomSP.xacSuat}%)`;
+          }
+          if (catIconEl) {
+            catIconEl.innerHTML = data.quayLai.xacSuat >= 60 ? '😻' : '😸';
+          }
+          card.style.display = 'block';
+        }
+      }
+    } catch (e) {}
   }
 
   // Tiện ích đóng mở Modal

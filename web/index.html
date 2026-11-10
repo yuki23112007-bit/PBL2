@@ -108,6 +108,22 @@
 
     <!-- Nội dung Tab 1: Cửa hàng sản phẩm -->
     <main class="main-container" id="cust-tab-store">
+      <!-- Thẻ Dự báo & Gợi ý thông minh cho khách hàng (Tính năng 19) -->
+      <div id="cust-forecast-card" class="glass-panel mb-20 p-16" style="display: none; border: 1px solid rgba(245, 130, 32, 0.25); background: linear-gradient(135deg, rgba(254, 250, 246, 0.9), rgba(255, 245, 235, 0.95)); border-radius: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div id="cust-forecast-cat-icon" style="width: 44px; height: 44px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-size: 24px;">🐱</div>
+            <div>
+              <div style="font-weight: 800; font-size: 15px; color: var(--space-indigo);" id="cust-forecast-title">Chào bạn quay trở lại MeoLogi!</div>
+              <div style="font-size: 13px; color: var(--space-indigo-light);" id="cust-forecast-desc">Hệ thống AI dự báo bạn có <strong>85%</strong> khả năng tiếp tục gắn bó cùng chúng tôi.</div>
+            </div>
+          </div>
+          <div id="cust-forecast-suggestion-badge" class="badge-count" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; background: var(--princeton-orange); color: #fff; font-weight: 700;">
+            Gợi ý hôm nay: Thực phẩm
+          </div>
+        </div>
+      </div>
+
       <div class="filter-sort-bar">
         <!-- Bộ lọc danh mục -->
         <div class="category-pills" id="category-pills-container">
@@ -238,6 +254,9 @@
           <button type="button" class="admin-nav-item" id="adm-nav-reviews" onclick="App.showAdminTab('reviews')">
             <span id="adm-icon-reviews"></span> Đánh Giá & Khiếu Nại
           </button>
+          <button type="button" class="admin-nav-item" id="adm-nav-predictions" onclick="App.showAdminTab('predictions')">
+            <span id="adm-icon-predictions">🤖</span> Xu Hướng Khách Hàng
+          </button>
         </nav>
 
         <div class="mt-auto pt-16 border-t-separator">
@@ -353,7 +372,7 @@
             <div style="position: relative; flex: 1; min-width: 280px; max-width: 480px;">
               <div class="search-input-wrap" style="position: relative; display: flex; align-items: center;">
                 <span style="position: absolute; left: 12px; pointer-events: none; opacity: 0.6;">🔍</span>
-                <input type="text" id="adm-prod-search-input" class="form-input" style="padding-left: 36px; padding-right: 36px; height: 38px; border-radius: 20px;" placeholder="Tìm theo tên hoặc mã SP (Trie Autocomplete)..." oninput="App.handleAdminProdSearch(event)" onkeydown="App.handleAdminProdSearchKey(event)" autocomplete="off" />
+                <input type="text" id="adm-prod-search-input" class="form-input" style="padding-left: 36px; padding-right: 36px; height: 38px; border-radius: 20px;" placeholder="Tìm theo tên hoặc mã sản phẩm..." oninput="App.handleAdminProdSearch(event)" onkeydown="App.handleAdminProdSearchKey(event)" autocomplete="off" />
                 <button type="button" id="adm-prod-search-clear" class="search-clear-btn hidden" onclick="App.clearAdminProdSearch()" style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: var(--space-indigo-light); font-size: 14px;">✕</button>
               </div>
               <div id="adm-prod-suggestions" class="search-suggestions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid rgba(75, 46, 131, 0.15); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 280px; overflow-y: auto;"></div>
@@ -587,6 +606,71 @@
                   </tr>
                 </thead>
                 <tbody id="adm-reviews-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 7: Dự đoán xu hướng -->
+        <div class="admin-tab-pane" id="adm-pane-predictions">
+          <div class="admin-header-row">
+            <div>
+              <h2>Dự Đoán Xu Hướng Khách Hàng</h2>
+            </div>
+            <div class="flex-row-gap-8">
+              <button type="button" class="btn btn-primary" onclick="App.retrainPredictions()">
+                🔄 Huấn Luyện Lại Mô Hình
+              </button>
+            </div>
+          </div>
+
+          <!-- Thanh điều khiển và thông số độ tin cậy -->
+          <div class="glass-panel p-20 mb-20">
+            <div style="display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 16px;">
+              <div class="segmented-control" style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-sm role-btn active" id="btn-pred-quaylai" onclick="App.switchPredictionTab('quay-lai')">
+                  📊 Phương án 1: Xác suất khách quay lại
+                </button>
+                <button type="button" class="btn btn-sm role-btn" id="btn-pred-nhom" onclick="App.switchPredictionTab('nhom')">
+                  🎯 Phương án 2: Nhóm sản phẩm tiếp theo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bảng Phương án 1: Xác suất quay lại -->
+          <div class="glass-panel p-20" id="pred-wrap-quaylai">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Khách Hàng</th>
+                    <th>Ngày mua gần nhất</th>
+                    <th>Số đơn đã mua</th>
+                    <th>Chi tiêu trung bình</th>
+                    <th>Đánh giá sao</th>
+                    <th>Mức Độ</th>
+                    <th>Xác Suất Quay Lại</th>
+                  </tr>
+                </thead>
+                <tbody id="pred-quaylai-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bảng Phương án 2: Nhóm sản phẩm -->
+          <div class="glass-panel p-20 hidden" id="pred-wrap-nhom">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Khách Hàng</th>
+                    <th>Nhóm Dự Đoán Tiếp Theo</th>
+                    <th>Độ Tin Cậy</th>
+                    <th>Phân Phối Xác Suất</th>
+                  </tr>
+                </thead>
+                <tbody id="pred-nhom-tbody"></tbody>
               </table>
             </div>
           </div>
