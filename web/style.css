@@ -1417,3 +1417,54 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
 .hidden {
   display: none !important;
 }
+
+/* ==========================================================================
+   Rating 5 sao Uiverse.io (Tương tác đánh giá đơn hàng)
+   ========================================================================== */
+.rating {
+  display: inline-block;
+  user-select: none;
+}
+
+.rating:not(:checked) > input {
+  position: absolute;
+  appearance: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rating:not(:checked) > label {
+  float: right;
+  cursor: pointer;
+  font-size: 34px;
+  line-height: 1;
+  color: rgba(75, 46, 131, 0.2);
+  padding: 0 4px;
+  transition: color 0.2s ease, transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.rating:not(:checked) > label:before {
+  content: '★';
+}
+
+.rating:not(:checked) > label:hover {
+  transform: scale(1.22);
+}
+
+.rating > input:checked + label:hover,
+.rating > input:checked + label:hover ~ label,
+.rating > input:checked ~ label:hover,
+.rating > input:checked ~ label:hover ~ label,
+.rating > label:hover ~ input:checked ~ label {
+  color: #e58e09;
+}
+
+.rating:not(:checked) > label:hover,
+.rating:not(:checked) > label:hover ~ label {
+  color: var(--princeton-orange, #ff9e0b);
+}
+
+.rating > input:checked ~ label {
+  color: var(--princeton-orange, #ffa723);
+  text-shadow: 0 2px 10px rgba(245, 130, 32, 0.35);
+}

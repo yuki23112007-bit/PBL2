@@ -663,14 +663,21 @@
         <input type="hidden" id="review-order-id" />
         <input type="hidden" id="review-action-type" value="confirm" />
         <div class="form-group" id="review-star-group">
-          <label class="form-label">Mức độ hài lòng (Số sao):</label>
-          <select id="review-stars" class="form-select">
-            <option value="5">⭐⭐⭐⭐⭐ Tuyệt vời (5 sao)</option>
-            <option value="4">⭐⭐⭐⭐ Hài lòng (4 sao)</option>
-            <option value="3">⭐⭐⭐ Bình thường (3 sao)</option>
-            <option value="2">⭐⭐ Không hài lòng (2 sao)</option>
-            <option value="1">⭐ Rất tệ (1 sao)</option>
-          </select>
+          <label class="form-label" style="text-align: center; display: block; margin-bottom: 6px;">Mức độ hài lòng của bạn:</label>
+          <div class="rating-container" style="display: flex; justify-content: center; align-items: center; padding: 6px 0 14px 0;">
+            <div class="rating">
+              <input value="5" name="rate" id="star5" type="radio" checked>
+              <label title="5 sao - Tuyệt vời" for="star5"></label>
+              <input value="4" name="rate" id="star4" type="radio">
+              <label title="4 sao - Hài lòng" for="star4"></label>
+              <input value="3" name="rate" id="star3" type="radio">
+              <label title="3 sao - Bình thường" for="star3"></label>
+              <input value="2" name="rate" id="star2" type="radio">
+              <label title="2 sao - Không hài lòng" for="star2"></label>
+              <input value="1" name="rate" id="star1" type="radio">
+              <label title="1 sao - Rất tệ" for="star1"></label>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label" id="review-comment-label">Ý kiến đóng góp / Chi tiết sự cố:</label>

@@ -861,6 +861,13 @@ class MeoLogiApp {
       commentLbl.textContent = 'Ý kiến đóng góp:';
       submitBtn.textContent = 'Gửi Đánh Giá';
     }
+
+    // Reset về 5 sao mặc định và xóa nội dung cũ
+    const defaultStar = document.getElementById('star5');
+    if (defaultStar) defaultStar.checked = true;
+    const contentInput = document.getElementById('review-content');
+    if (contentInput) contentInput.value = '';
+
     this.openModal('modal-review');
   }
 
@@ -868,7 +875,8 @@ class MeoLogiApp {
     e.preventDefault();
     const orderId = document.getElementById('review-order-id').value;
     const actionType = document.getElementById('review-action-type').value;
-    const soSao = parseInt(document.getElementById('review-stars').value, 10) || 5;
+    const checkedStar = document.querySelector('input[name="rate"]:checked');
+    const soSao = checkedStar ? (parseInt(checkedStar.value, 10) || 5) : 5;
     const noiDung = document.getElementById('review-content').value.trim();
 
     let endpoint = '/api/orders/confirm';
