@@ -113,6 +113,7 @@ private:
     string apiLogout(const map<string, string>& headers);
     string apiGetProducts(const map<string, string>& params);
     string apiSearchProducts(const map<string, string>& params);
+    string apiAutocompleteProducts(const map<string, string>& params);
     string apiGetProductDetail(const map<string, string>& params);
     string apiCreateOrder(const string& body, const PhienDangNhap& phien);
     string apiGetOrders(const PhienDangNhap& phien);

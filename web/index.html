@@ -341,11 +341,38 @@
           <div class="admin-header-row">
             <div>
               <h2>Quản Lý Danh Mục Sản Phẩm</h2>
-              <p class="empty-sub">Thêm, sửa, xóa sản phẩm và cập nhật tồn kho</p>
+              <p class="empty-sub">Thêm, sửa, xóa sản phẩm và theo dõi tồn kho</p>
             </div>
             <button type="button" class="btn btn-primary" onclick="App.openAddProductModal()">
               + Thêm Sản Phẩm Mới
             </button>
+          </div>
+
+          <!-- Thanh tìm kiếm Trie Autocomplete & Sắp xếp tồn kho cho Quản lý sản phẩm -->
+          <div class="admin-toolbar glass-panel p-16 mb-16" style="display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div class="search-wrap" style="position: relative; max-width: 440px; flex: 1; min-width: 280px;">
+              <button type="button" class="search-icon-btn" onclick="App.submitAdminProductSearch()" aria-label="Tìm kiếm">
+                <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 18px; height: 18px;">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </button>
+              <input type="text" id="adm-prod-search-input" class="search-input" placeholder="Tìm theo tên hoặc mã SP (SP01, Gạo, Mì, Cá...)..." oninput="App.handleAdminProductSearch(event)" onkeydown="if(event.key==='Enter') App.submitAdminProductSearch()" autocomplete="off" />
+              <button type="button" id="adm-prod-search-clear" class="search-clear-btn hidden" onclick="App.clearAdminProductSearch()">✕</button>
+              <div id="adm-prod-search-dropdown" class="search-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100; max-height: 280px; overflow-y: auto;"></div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <label class="form-label" for="adm-prod-sort-select" style="margin-bottom: 0; white-space: nowrap; font-weight: 700;">Sắp xếp tồn kho:</label>
+              <select id="adm-prod-sort-select" class="form-select" style="width: auto; min-width: 230px;" onchange="App.handleAdminProductSort(this.value)">
+                <option value="0">Mặc định</option>
+                <option value="3" selected>⚠️ Tồn kho: Ít đến Nhiều (Cần nhập kho)</option>
+                <option value="4">📈 Tồn kho: Nhiều đến Ít</option>
+                <option value="1">💵 Giá: Thấp đến Cao</option>
+                <option value="2">💎 Giá: Cao đến Thấp</option>
+                <option value="5">🔤 Tên sản phẩm: A → Z</option>
+              </select>
+            </div>
           </div>
 
           <div class="glass-panel p-20">

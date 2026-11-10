@@ -57,6 +57,14 @@ class MeoLogiApp {
       }
     });
 
+    // Đóng dropdown tìm kiếm sản phẩm admin khi click ra ngoài
+    document.addEventListener('click', (e) => {
+      const admWrap = document.querySelector('#adm-pane-products .search-wrap');
+      if (admWrap && !admWrap.contains(e.target)) {
+        this.closeAdminSearchDropdown();
+      }
+    });
+
     // Lắng nghe sự kiện gõ username để kiểm tra trùng qua cây Trie trong thời gian thực
     const usrInput = document.getElementById('usr-username');
     if (usrInput) {
@@ -123,6 +131,166 @@ class MeoLogiApp {
     if (typeof amount !== 'number') amount = Number(amount) || 0;
     return amount.toLocaleString('vi-VN') + ' đ';
   }
+
+  // ------------------------------------------------------------------------
+  // Helper: Tạo theme minh họa bé mèo dễ thương & màu sắc theo sản phẩm
+  // ------------------------------------------------------------------------
+  getProductTheme(p) {
+    if (!p) {
+      return {
+        icon: CAT_ICONS.happy,
+        bg: '#FFF8E1',
+        border: '#FFE082',
+        circleBg: '#FFFFFF',
+        badge: '✨'
+      };
+    }
+
+    const norm = removeVietnameseTones(`${p.tenSP || ''} ${p.danhMuc || ''} ${p.loaiSP || ''}`);
+
+    if (/mi\s|hao hao|pho|bun|chao|mien/.test(norm)) {
+      return {
+        icon: CAT_ICONS.happy,
+        bg: '#FFEFE6',
+        border: '#FFD1B3',
+        circleBg: '#FFFFFF',
+        badge: '🍜'
+      };
+    }
+    if (/gao|jasmine|st25|lua|ngu coc|luong thuc/.test(norm)) {
+      return {
+        icon: CAT_ICONS.loaf,
+        bg: '#FFF9E6',
+        border: '#FFE699',
+        circleBg: '#FFFFFF',
+        badge: '🌾'
+      };
+    }
+    if (/banh|keo|cosy|quy|snack|ngot/.test(norm)) {
+      return {
+        icon: CAT_ICONS['cat-34-sploot-flat.png'] || CAT_ICONS.happy,
+        bg: '#FFFDE7',
+        border: '#FFF59D',
+        circleBg: '#FFFFFF',
+        badge: '🍪'
+      };
+    }
+    if (/tra xanh|tra\s|tea|o long/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#E8F5E9',
+        border: '#C8E6C9',
+        circleBg: '#FFFFFF',
+        badge: '🍵'
+      };
+    }
+    if (/ca phe|coffee|g7/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#EFEBE9',
+        border: '#D7CCC8',
+        circleBg: '#FFFFFF',
+        badge: '☕'
+      };
+    }
+    if (/sua chua|yogurt/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#E0F2F1',
+        border: '#B2DFDB',
+        circleBg: '#FFFFFF',
+        badge: '🥛'
+      };
+    }
+    if (/sua|milk/.test(norm)) {
+      return {
+        icon: CAT_ICONS.drink,
+        bg: '#E1F5FE',
+        border: '#B3E5FC',
+        circleBg: '#FFFFFF',
+        badge: '🥛'
+      };
+    }
+    if (/tuong ot|chin-su|ot\s/.test(norm)) {
+      return {
+        icon: CAT_ICONS['cat-06-surprise.png'] || CAT_ICONS.alert,
+        bg: '#FFEBEE',
+        border: '#FFCDD2',
+        circleBg: '#FFFFFF',
+        badge: '🌶️'
+      };
+    }
+    if (/dau an|neptune|nuoc mam|nam ngu|duong|muoi|hat nem|gia vi/.test(norm)) {
+      return {
+        icon: CAT_ICONS.sparkle,
+        bg: '#FFF3E0',
+        border: '#FFE0B2',
+        circleBg: '#FFFFFF',
+        badge: '🧂'
+      };
+    }
+    if (/ca hoi|muc|tom|cua|hai san|ca\s/.test(norm)) {
+      return {
+        icon: CAT_ICONS.heart,
+        bg: '#E0F7FA',
+        border: '#B2EBF2',
+        circleBg: '#FFFFFF',
+        badge: '🐟'
+      };
+    }
+    if (/thit bo|thit heo|thit nac|ba chi|ga ta|gia cam|thit\s/.test(norm)) {
+      return {
+        icon: CAT_ICONS.paws,
+        bg: '#FCE4EC',
+        border: '#F8BBD0',
+        circleBg: '#FFFFFF',
+        badge: '🥩'
+      };
+    }
+    if (/rau|cai\s|da lat|cu\s|nam\s|dau phu|vissan|thuc pham mat/.test(norm)) {
+      return {
+        icon: CAT_ICONS['cat-13-sunny.png'] || CAT_ICONS['cat-04-wink.png'] || CAT_ICONS.happy,
+        bg: '#E8F8F5',
+        border: '#A3E4D7',
+        circleBg: '#FFFFFF',
+        badge: '🥬'
+      };
+    }
+    if (/chuot|logitech|ban phim|dareu|tai nghe|sony|sac|anker|cong nghe|dien tu|phu kien/.test(norm)) {
+      const isAudio = /tai nghe|sony/.test(norm);
+      return {
+        icon: isAudio ? (CAT_ICONS['cat-37-hypnotized.png'] || CAT_ICONS.thumbsup) : (CAT_ICONS['cat-10-idea.png'] || CAT_ICONS.thumbsup),
+        bg: '#EDE7F6',
+        border: '#D1C4E9',
+        circleBg: '#FFFFFF',
+        badge: '⚡'
+      };
+    }
+    if (/noi com|noi chien|am sieu toc|quat|may say|sunhouse|philips|senko|panasonic|gia dung/.test(norm)) {
+      return {
+        icon: CAT_ICONS.stand,
+        bg: '#E3F2FD',
+        border: '#BBDEFB',
+        circleBg: '#FFFFFF',
+        badge: '🏠'
+      };
+    }
+
+    const palettes = [
+      { icon: CAT_ICONS.happy, bg: '#FFF8E1', border: '#FFE082', circleBg: '#FFFFFF', badge: '✨' },
+      { icon: CAT_ICONS.sparkle, bg: '#E8F5E9', border: '#C8E6C9', circleBg: '#FFFFFF', badge: '🌟' },
+      { icon: CAT_ICONS.heart, bg: '#FCE4EC', border: '#F8BBD0', circleBg: '#FFFFFF', badge: '💖' },
+      { icon: CAT_ICONS.drink, bg: '#E0F7FA', border: '#B2EBF2', circleBg: '#FFFFFF', badge: '🍀' },
+      { icon: CAT_ICONS.thumbsup, bg: '#EDE7F6', border: '#D1C4E9', circleBg: '#FFFFFF', badge: '👍' },
+      { icon: CAT_ICONS.loaf, bg: '#FFF9C4', border: '#FFF176', circleBg: '#FFFFFF', badge: '🥐' },
+      { icon: CAT_ICONS.paws, bg: '#FFF3E0', border: '#FFE0B2', circleBg: '#FFFFFF', badge: '🐾' }
+    ];
+    let hash = 0;
+    const str = (p.maSP || '') + (p.tenSP || '');
+    for (let i = 0; i < str.length; i++) hash = (hash + str.charCodeAt(i)) % palettes.length;
+    return palettes[hash];
+  }
+
 
   // Chuyển đổi màn hình độc quyền (Exclusive View Switching)
   switchView(viewId) {
@@ -483,15 +651,21 @@ class MeoLogiApp {
     if (matches.length === 0) {
       dropdown.innerHTML = `<div style="padding: 12px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm phù hợp.</div>`;
     } else {
-      dropdown.innerHTML = matches.map(p => `
-        <div class="suggestion-item" onclick="App.selectSuggestion('${p.maSP}')">
+      dropdown.innerHTML = matches.map(p => {
+        const theme = this.getProductTheme(p);
+        return `
+        <div class="suggestion-item" onclick="App.selectSuggestion('${p.maSP}')" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px;">
+          <div style="width: 34px; height: 34px; border-radius: 50%; background: ${theme.bg}; border: 1px solid ${theme.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img src="${theme.icon}" style="width: 24px; height: 24px; object-fit: contain;" />
+          </div>
           <div style="flex: 1;">
             <div style="font-weight: 700; font-size: 13.5px; color: var(--space-indigo);">${p.tenSP}</div>
-            <div style="font-size: 11.5px; color: var(--space-indigo-light);">${p.maSP} • ${p.danhMuc} • Tồn: ${p.soLuongTon}</div>
+            <div style="font-size: 11.5px; color: var(--space-indigo-light);">${p.maSP} • ${p.danhMuc} • Tồn: ${p.soLuongTonKho ?? p.soLuongTon ?? 0}</div>
           </div>
           <div style="font-weight: 800; color: var(--princeton-orange); font-size: 13px;">${this.formatCurrency(p.donGia)}</div>
         </div>
-      `).join('');
+        `;
+      }).join('');
     }
     dropdown.style.display = 'block';
   }
@@ -531,14 +705,15 @@ class MeoLogiApp {
       return;
     }
 
-    container.innerHTML = this.products.map(p => `
+    container.innerHTML = this.products.map(p => {
+      const theme = this.getProductTheme(p);
+      return `
       <div class="product-card glass-panel">
-        <div class="product-placeholder" onclick="App.openProductDetail('${p.maSP}')" style="cursor: pointer;" title="Nhấn xem thông số chi tiết">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--space-indigo-light)" stroke-width="1.8">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
+        <div class="product-placeholder" onclick="App.openProductDetail('${p.maSP}')" style="background: ${theme.bg}; border-color: ${theme.border}; cursor: pointer;" title="Xem chi tiết ${p.tenSP}">
+          <div class="product-cat-avatar" style="background: ${theme.circleBg};">
+            <img src="${theme.icon}" alt="${p.tenSP}" class="cat-product-img" />
+            <span class="product-badge-emoji">${theme.badge}</span>
+          </div>
           <span class="stock-tag">Tồn: ${p.soLuongTonKho}</span>
         </div>
         <span class="product-cat-name">${p.danhMuc}</span>
@@ -551,7 +726,8 @@ class MeoLogiApp {
           </div>
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   // ------------------------------------------------------------------------
@@ -607,13 +783,19 @@ class MeoLogiApp {
     container.innerHTML = this.cart.map(c => {
       const sp = this.allProducts.find(p => p.maSP === c.productId);
       if (!sp) return '';
+      const theme = this.getProductTheme(sp);
       const subtotal = sp.donGia * c.quantity;
       total += subtotal;
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--jasmine-light);">
-          <div>
-            <div style="font-weight: 700; font-size: 14px;">${sp.tenSP}</div>
-            <div style="font-size: 12px; color: var(--space-indigo-light);">${this.formatCurrency(sp.donGia)} x ${c.quantity}</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${theme.bg}; border: 1px solid ${theme.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <img src="${theme.icon}" style="width: 26px; height: 26px; object-fit: contain;" />
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 14px;">${sp.tenSP}</div>
+              <div style="font-size: 12px; color: var(--space-indigo-light);">${this.formatCurrency(sp.donGia)} x ${c.quantity}</div>
+            </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-weight: 800; color: var(--princeton-orange);">${this.formatCurrency(subtotal)}</span>
@@ -1081,35 +1263,159 @@ class MeoLogiApp {
   }
 
   // Tab 2: Quản lý sản phẩm (CRUD)
-  async loadAdminProducts() {
+  async loadAdminProducts(sortType = null, searchKeyword = null) {
+    if (sortType !== null) this.adminProductSort = sortType;
+    if (searchKeyword !== null) this.adminProductSearch = searchKeyword;
+
+    // Mặc định sắp xếp: Tồn kho ít đến nhiều (sort = 3) để dễ phát hiện và thêm sản phẩm hết hàng
+    if (this.adminProductSort === undefined || this.adminProductSort === null) {
+      this.adminProductSort = 3;
+      const select = document.getElementById('adm-prod-sort-select');
+      if (select) select.value = '3';
+    }
+
+    const sort = this.adminProductSort;
+    const q = (this.adminProductSearch || '').trim();
+
     try {
-      const res = await fetch(`${this.apiBase}/api/products?sort=0`);
+      const url = q
+        ? `${this.apiBase}/api/products/search?q=${encodeURIComponent(q)}&sort=${sort}`
+        : `${this.apiBase}/api/products?sort=${sort}`;
+      const res = await fetch(url);
       if (res.ok) {
-        const prods = await res.json();
-        this.renderAdminProducts(prods);
+        this.adminProductsList = await res.json();
+        this.renderAdminProducts(this.adminProductsList);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Lỗi nạp sản phẩm admin:', e);
+    }
   }
 
   renderAdminProducts(prods) {
     const tbody = document.getElementById('adm-products-tbody');
     if (!tbody) return;
-    tbody.innerHTML = prods.map(p => `
-      <tr>
-        <td><strong>${p.maSP}</strong></td>
-        <td>${p.tenSP}</td>
+    if (!prods || prods.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--space-indigo-light); font-weight: 500;">Không tìm thấy sản phẩm nào phù hợp với từ khóa tìm kiếm.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = prods.map(p => {
+      const tonKho = p.soLuongTonKho ?? p.soLuongTon ?? 0;
+      let stockBadge = '';
+      let btnStockStyle = '';
+      if (tonKho <= 0) {
+        stockBadge = `<span class="stock-tag" style="position: static; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;">Hết hàng (0)</span>`;
+        btnStockStyle = 'background: #dc2626; color: #fff; border-color: #dc2626; font-weight: 700;';
+      } else if (tonKho <= 10) {
+        stockBadge = `<span class="stock-tag" style="position: static; background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; font-weight: 700;">Sắp hết (${tonKho})</span>`;
+        btnStockStyle = 'background: var(--princeton-orange); color: #fff; border-color: var(--princeton-orange); font-weight: 700;';
+      } else {
+        stockBadge = `<span class="stock-tag" style="position: static;">Tồn: ${tonKho}</span>`;
+      }
+
+      return `
+      <tr style="${tonKho <= 10 ? 'background: rgba(255, 136, 17, 0.05);' : ''}">
+        <td><strong style="color: var(--space-indigo); font-family: monospace; font-size: 13.5px;">${p.maSP}</strong></td>
+        <td><strong>${p.tenSP}</strong></td>
         <td>${p.danhMuc}</td>
         <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(p.donGia)}</strong></td>
-        <td><span class="stock-tag" style="position: static;">${p.soLuongTonKho}</span></td>
+        <td>${stockBadge}</td>
         <td><span class="tag-status tag-pending">${p.loaiSP}</span></td>
         <td>${p.maNCC}</td>
         <td>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.openEditProductModal('${p.maSP}')">Sửa</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')">+ Kho</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')" style="${btnStockStyle}">+ Nhập Kho</button>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.deleteProduct('${p.maSP}')" style="color: var(--princeton-orange);">Xóa</button>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
+  }
+
+  handleAdminProductSearch(e) {
+    const rawVal = e.target.value;
+    const val = rawVal.trim();
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) {
+      if (rawVal.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+    }
+
+    clearTimeout(this.admSearchDebounce);
+    if (!val) {
+      this.closeAdminSearchDropdown();
+      this.loadAdminProducts(null, '');
+      return;
+    }
+
+    this.admSearchDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(`${this.apiBase}/api/products/autocomplete?q=${encodeURIComponent(val)}`);
+        if (res.ok) {
+          const suggestions = await res.json();
+          this.renderAdminSearchSuggestions(suggestions);
+        }
+      } catch (err) {
+        console.warn('Lỗi gợi ý tìm kiếm Trie admin:', err);
+      }
+    }, 200);
+  }
+
+  renderAdminSearchSuggestions(matches) {
+    const dropdown = document.getElementById('adm-prod-search-dropdown');
+    if (!dropdown) return;
+    if (!matches || matches.length === 0) {
+      dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm gợi ý từ cây Trie.</div>`;
+    } else {
+      dropdown.innerHTML = matches.map(p => {
+        const ton = p.soLuongTonKho ?? p.soLuongTon ?? 0;
+        const tonColor = ton <= 0 ? '#dc2626' : (ton <= 10 ? '#d97706' : '#10b981');
+        return `
+        <div class="suggestion-item" onclick="App.selectAdminProductSuggestion('${p.maSP}', '${p.tenSP}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.15s ease;">
+          <div>
+            <span style="font-weight: 800; color: var(--princeton-orange); margin-right: 6px;">[${p.maSP}]</span>
+            <span style="font-weight: 600; color: var(--space-indigo);">${p.tenSP}</span>
+            <span style="font-size: 12px; color: var(--space-indigo-light); margin-left: 8px;">(${p.danhMuc})</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: ${tonColor};">
+            Tồn: ${ton}
+          </div>
+        </div>
+        `;
+      }).join('');
+    }
+    dropdown.style.display = 'block';
+  }
+
+  closeAdminSearchDropdown() {
+    const dropdown = document.getElementById('adm-prod-search-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+
+  selectAdminProductSuggestion(maSP, tenSP) {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = maSP;
+    this.closeAdminSearchDropdown();
+    this.loadAdminProducts(null, maSP);
+  }
+
+  submitAdminProductSearch() {
+    const input = document.getElementById('adm-prod-search-input');
+    const val = input ? input.value.trim() : '';
+    this.closeAdminSearchDropdown();
+    this.loadAdminProducts(null, val);
+  }
+
+  clearAdminProductSearch() {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    this.closeAdminSearchDropdown();
+    this.loadAdminProducts(null, '');
+  }
+
+  handleAdminProductSort(val) {
+    const sortType = parseInt(val, 10) || 0;
+    this.loadAdminProducts(sortType, null);
   }
 
   openAddProductModal() {
@@ -2039,7 +2345,19 @@ class MeoLogiApp {
           `;
         }
 
+        const theme = this.getProductTheme(sp);
         document.getElementById('detail-product-body').innerHTML = `
+          <div style="background: ${theme.bg}; border: 1.5px solid ${theme.border}; border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+            <div class="product-cat-avatar" style="background: ${theme.circleBg}; width: 80px; height: 80px; flex-shrink: 0;">
+              <img src="${theme.icon}" alt="${sp.tenSP}" class="cat-product-img" style="width: 56px; height: 56px;" />
+              <span class="product-badge-emoji">${theme.badge}</span>
+            </div>
+            <div>
+              <div style="font-size: 11.5px; font-weight: 700; color: var(--space-indigo-light); text-transform: uppercase;">${sp.danhMuc}</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--space-indigo); line-height: 1.3;">${sp.tenSP}</div>
+              <div style="font-size: 16px; font-weight: 800; color: var(--princeton-orange); margin-top: 4px;">${this.formatCurrency(sp.donGia)}</div>
+            </div>
+          </div>
           <div style="font-size: 14px; line-height: 1.8;">
             <p><strong>Mã sản phẩm:</strong> ${sp.maSP}</p>
             <p><strong>Tên sản phẩm:</strong> ${sp.tenSP}</p>
@@ -2081,14 +2399,27 @@ class MeoLogiApp {
 
   openOrderDetailModal(order) {
     document.getElementById('detail-order-title').textContent = `Chi Tiết Đơn Hàng ${order.maDonHang}`;
-    const itemsHtml = order.chiTiet.map(ct => `
+    const itemsHtml = order.chiTiet.map(ct => {
+      const sp = this.allProducts.find(p => p.maSP === ct.maSP);
+      const theme = this.getProductTheme(sp || { tenSP: ct.tenSP, maSP: ct.maSP });
+      return `
       <tr>
-        <td><strong>${ct.maSP}</strong> - ${ct.tenSP}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: ${theme.bg}; border: 1px solid ${theme.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <img src="${theme.icon}" style="width: 22px; height: 22px; object-fit: contain;" />
+            </div>
+            <div>
+              <strong>${ct.maSP}</strong> - ${ct.tenSP}
+            </div>
+          </div>
+        </td>
         <td>${ct.soLuong}</td>
         <td>${this.formatCurrency(ct.donGia)}</td>
         <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(ct.thanhTien)}</strong></td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
 
     let reviewHtml = '';
     if (order.danhGia) {

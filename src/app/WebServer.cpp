@@ -713,6 +713,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
     if (path == "/api/check-username" && laGet) { responseBody = apiCheckUsername(q); return; }
     if (path == "/api/products" && laGet) { responseBody = apiGetProducts(q); return; }
     if (path == "/api/products/search" && laGet) { responseBody = apiSearchProducts(q); return; }
+    if (path == "/api/products/autocomplete" && laGet) { responseBody = apiAutocompleteProducts(q); return; }
     if (path == "/api/products/detail" && laGet) { responseBody = apiGetProductDetail(q); return; }
 
     // ---- Can dang nhap ----
@@ -1187,6 +1188,64 @@ string WebServer::apiSearchProducts(const map<string, string>& params) {
     ostringstream json;
     json << "[";
     for (size_t i = 0; i < ketQua.size(); ++i) {
+        if (i > 0) json << ",";
+        json << sanPhamJson(ketQua[i]);
+    }
+    json << "]";
+    return json.str();
+}
+
+string WebServer::apiAutocompleteProducts(const map<string, string>& params) {
+    string query = params.count("q") ? params.at("q") : "";
+    size_t a = query.find_first_not_of(" \t");
+    size_t b = query.find_last_not_of(" \t");
+    query = (a == string::npos) ? "" : query.substr(a, b - a + 1);
+    if (query.empty()) return "[]";
+
+    vector<SanPham*> ketQua;
+    set<string> daThem;
+    auto them = [&](SanPham* sp) {
+        if (sp && daThem.insert(sp->getMaSP()).second) ketQua.push_back(sp);
+    };
+
+    // 1. Tra cuu tien to ten va ma SP bang cay Trie - O(L)
+    for (SanPham* sp : qlSanPham.timKiemTheoTen(query)) them(sp);
+
+    // 2. Tra cuu tien to chu dau viet hoa
+    if (islower((unsigned char)query[0])) {
+        string hoaDau = query;
+        hoaDau[0] = (char)toupper((unsigned char)hoaDau[0]);
+        for (SanPham* sp : qlSanPham.timKiemTheoTen(hoaDau)) them(sp);
+    }
+
+    // 3. Tra cuu tien to chu in hoa (ma SP nhu SP01)
+    string hoaHet = query;
+    for (char& c : hoaHet) c = (char)toupper((unsigned char)c);
+    if (hoaHet != query) {
+        for (SanPham* sp : qlSanPham.timKiemTheoTen(hoaHet)) them(sp);
+    }
+
+    // 4. Tim bo sung bang chuoi con neu ket qua con it
+    if (ketQua.size() < 6) {
+        auto thuong = [](string s) {
+            for (char& c : s) c = (char)tolower((unsigned char)c);
+            return s;
+        };
+        string ql = thuong(query);
+        vector<SanPham*> tatCa = qlSanPham.layDanhSachSanPham(0);
+        for (SanPham* sp : tatCa) {
+            if (!sp || daThem.count(sp->getMaSP())) continue;
+            if (thuong(sp->getTenSP()).find(ql) != string::npos ||
+                thuong(sp->getMaSP()).find(ql) != string::npos) {
+                them(sp);
+                if (ketQua.size() >= 8) break;
+            }
+        }
+    }
+
+    ostringstream json;
+    json << "[";
+    for (size_t i = 0; i < ketQua.size() && i < 8; ++i) {
         if (i > 0) json << ",";
         json << sanPhamJson(ketQua[i]);
     }

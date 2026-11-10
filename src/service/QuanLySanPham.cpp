@@ -21,8 +21,16 @@ bool QuanLySanPham::themSanPham(SanPham* sp) {
         return false;
     }
 
-    // Dong bo cay Trie de tim kiem theo ten
+    // Dong bo cay Trie de tim kiem theo ca ten va ma san pham
     cayTienToSanPham.chen(sp->getTenSP(), sp->getMaSP(), sp);
+    cayTienToSanPham.chen(sp->getMaSP(), sp->getTenSP(), sp);
+
+    // Ho tro tim kiem ma san pham khong phan biet chu hoa/chu thuong (vi du: sp01 va SP01)
+    string maThuong = sp->getMaSP();
+    for (char& c : maThuong) c = (char)tolower((unsigned char)c);
+    if (maThuong != sp->getMaSP()) {
+        cayTienToSanPham.chen(maThuong, sp->getTenSP(), sp);
+    }
 
     // Neu la thuc pham tuoi song, dua vao MinHeap de quan ly han dung
     if (sp->canbaoquanlanh()) {
@@ -57,6 +65,10 @@ bool QuanLySanPham::xoaSanPham(const string& maSP) {
 
     // Xoa tren Trie truoc de tranh con tro treo
     cayTienToSanPham.xoa(sp->getTenSP());
+    cayTienToSanPham.xoa(sp->getMaSP());
+    string maThuong = sp->getMaSP();
+    for (char& c : maThuong) c = (char)tolower((unsigned char)c);
+    cayTienToSanPham.xoa(maThuong);
 
     // Neu la hang tuoi song, xoa khoi MinHeap
     if (sp->canbaoquanlanh()) {

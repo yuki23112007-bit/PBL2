@@ -57,6 +57,14 @@ class MeoLogiApp {
       }
     });
 
+    // Đóng dropdown tìm kiếm sản phẩm admin khi click ra ngoài
+    document.addEventListener('click', (e) => {
+      const admWrap = document.querySelector('#adm-pane-products .search-wrap');
+      if (admWrap && !admWrap.contains(e.target)) {
+        this.closeAdminSearchDropdown();
+      }
+    });
+
     // Lắng nghe sự kiện gõ username để kiểm tra trùng qua cây Trie trong thời gian thực
     const usrInput = document.getElementById('usr-username');
     if (usrInput) {
@@ -1255,35 +1263,159 @@ class MeoLogiApp {
   }
 
   // Tab 2: Quản lý sản phẩm (CRUD)
-  async loadAdminProducts() {
+  async loadAdminProducts(sortType = null, searchKeyword = null) {
+    if (sortType !== null) this.adminProductSort = sortType;
+    if (searchKeyword !== null) this.adminProductSearch = searchKeyword;
+
+    // Mặc định sắp xếp: Tồn kho ít đến nhiều (sort = 3) để dễ phát hiện và thêm sản phẩm hết hàng
+    if (this.adminProductSort === undefined || this.adminProductSort === null) {
+      this.adminProductSort = 3;
+      const select = document.getElementById('adm-prod-sort-select');
+      if (select) select.value = '3';
+    }
+
+    const sort = this.adminProductSort;
+    const q = (this.adminProductSearch || '').trim();
+
     try {
-      const res = await fetch(`${this.apiBase}/api/products?sort=0`);
+      const url = q
+        ? `${this.apiBase}/api/products/search?q=${encodeURIComponent(q)}&sort=${sort}`
+        : `${this.apiBase}/api/products?sort=${sort}`;
+      const res = await fetch(url);
       if (res.ok) {
-        const prods = await res.json();
-        this.renderAdminProducts(prods);
+        this.adminProductsList = await res.json();
+        this.renderAdminProducts(this.adminProductsList);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Lỗi nạp sản phẩm admin:', e);
+    }
   }
 
   renderAdminProducts(prods) {
     const tbody = document.getElementById('adm-products-tbody');
     if (!tbody) return;
-    tbody.innerHTML = prods.map(p => `
-      <tr>
-        <td><strong>${p.maSP}</strong></td>
-        <td>${p.tenSP}</td>
+    if (!prods || prods.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--space-indigo-light); font-weight: 500;">Không tìm thấy sản phẩm nào phù hợp với từ khóa tìm kiếm.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = prods.map(p => {
+      const tonKho = p.soLuongTonKho ?? p.soLuongTon ?? 0;
+      let stockBadge = '';
+      let btnStockStyle = '';
+      if (tonKho <= 0) {
+        stockBadge = `<span class="stock-tag" style="position: static; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;">Hết hàng (0)</span>`;
+        btnStockStyle = 'background: #dc2626; color: #fff; border-color: #dc2626; font-weight: 700;';
+      } else if (tonKho <= 10) {
+        stockBadge = `<span class="stock-tag" style="position: static; background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; font-weight: 700;">Sắp hết (${tonKho})</span>`;
+        btnStockStyle = 'background: var(--princeton-orange); color: #fff; border-color: var(--princeton-orange); font-weight: 700;';
+      } else {
+        stockBadge = `<span class="stock-tag" style="position: static;">Tồn: ${tonKho}</span>`;
+      }
+
+      return `
+      <tr style="${tonKho <= 10 ? 'background: rgba(255, 136, 17, 0.05);' : ''}">
+        <td><strong style="color: var(--space-indigo); font-family: monospace; font-size: 13.5px;">${p.maSP}</strong></td>
+        <td><strong>${p.tenSP}</strong></td>
         <td>${p.danhMuc}</td>
         <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(p.donGia)}</strong></td>
-        <td><span class="stock-tag" style="position: static;">${p.soLuongTonKho}</span></td>
+        <td>${stockBadge}</td>
         <td><span class="tag-status tag-pending">${p.loaiSP}</span></td>
         <td>${p.maNCC}</td>
         <td>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.openEditProductModal('${p.maSP}')">Sửa</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')">+ Kho</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')" style="${btnStockStyle}">+ Nhập Kho</button>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.deleteProduct('${p.maSP}')" style="color: var(--princeton-orange);">Xóa</button>
         </td>
       </tr>
-    `).join('');
+    `}).join('');
+  }
+
+  handleAdminProductSearch(e) {
+    const rawVal = e.target.value;
+    const val = rawVal.trim();
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) {
+      if (rawVal.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+    }
+
+    clearTimeout(this.admSearchDebounce);
+    if (!val) {
+      this.closeAdminSearchDropdown();
+      this.loadAdminProducts(null, '');
+      return;
+    }
+
+    this.admSearchDebounce = setTimeout(async () => {
+      try {
+        const res = await fetch(`${this.apiBase}/api/products/autocomplete?q=${encodeURIComponent(val)}`);
+        if (res.ok) {
+          const suggestions = await res.json();
+          this.renderAdminSearchSuggestions(suggestions);
+        }
+      } catch (err) {
+        console.warn('Lỗi gợi ý tìm kiếm Trie admin:', err);
+      }
+    }, 200);
+  }
+
+  renderAdminSearchSuggestions(matches) {
+    const dropdown = document.getElementById('adm-prod-search-dropdown');
+    if (!dropdown) return;
+    if (!matches || matches.length === 0) {
+      dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm gợi ý từ cây Trie.</div>`;
+    } else {
+      dropdown.innerHTML = matches.map(p => {
+        const ton = p.soLuongTonKho ?? p.soLuongTon ?? 0;
+        const tonColor = ton <= 0 ? '#dc2626' : (ton <= 10 ? '#d97706' : '#10b981');
+        return `
+        <div class="suggestion-item" onclick="App.selectAdminProductSuggestion('${p.maSP}', '${p.tenSP}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); transition: background 0.15s ease;">
+          <div>
+            <span style="font-weight: 800; color: var(--princeton-orange); margin-right: 6px;">[${p.maSP}]</span>
+            <span style="font-weight: 600; color: var(--space-indigo);">${p.tenSP}</span>
+            <span style="font-size: 12px; color: var(--space-indigo-light); margin-left: 8px;">(${p.danhMuc})</span>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: ${tonColor};">
+            Tồn: ${ton}
+          </div>
+        </div>
+        `;
+      }).join('');
+    }
+    dropdown.style.display = 'block';
+  }
+
+  closeAdminSearchDropdown() {
+    const dropdown = document.getElementById('adm-prod-search-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+
+  selectAdminProductSuggestion(maSP, tenSP) {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = maSP;
+    this.closeAdminSearchDropdown();
+    this.loadAdminProducts(null, maSP);
+  }
+
+  submitAdminProductSearch() {
+    const input = document.getElementById('adm-prod-search-input');
+    const val = input ? input.value.trim() : '';
+    this.closeAdminSearchDropdown();
+    this.loadAdminProducts(null, val);
+  }
+
+  clearAdminProductSearch() {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    this.closeAdminSearchDropdown();
+    this.loadAdminProducts(null, '');
+  }
+
+  handleAdminProductSort(val) {
+    const sortType = parseInt(val, 10) || 0;
+    this.loadAdminProducts(sortType, null);
   }
 
   openAddProductModal() {
