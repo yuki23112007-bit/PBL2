@@ -39,6 +39,9 @@ class MeoLogiApp {
     this.adminRevenues = [];
     this.adminUsers = [];
     this.adminReviews = [];
+    this.adminProductKeyword = '';
+    this.adminProductSort = '3';
+    this.adminSearchDebounce = null;
   }
 
   // ------------------------------------------------------------------------
@@ -54,6 +57,11 @@ class MeoLogiApp {
       const wrap = document.querySelector('.search-wrap');
       if (wrap && !wrap.contains(e.target)) {
         this.closeSearchDropdown();
+      }
+      const admWrap = document.getElementById('adm-prod-search-input');
+      const admSug = document.getElementById('adm-prod-suggestions');
+      if (admWrap && admSug && !admWrap.contains(e.target) && !admSug.contains(e.target)) {
+        this.closeAdminProdSuggestions();
       }
     });
 
@@ -1080,10 +1088,103 @@ class MeoLogiApp {
     this.renderAdminAllOrders(filtered);
   }
 
-  // Tab 2: Quản lý sản phẩm (CRUD)
+  // Tab 2: Quản lý sản phẩm (CRUD, Tìm kiếm Trie Autocomplete & QuickSort Tồn kho)
+  handleAdminProdSearch(e) {
+    const rawVal = e.target.value;
+    this.adminProductKeyword = rawVal.trim();
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) {
+      if (rawVal.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+    }
+
+    this.renderAdminProdSuggestions();
+
+    clearTimeout(this.adminSearchDebounce);
+    this.adminSearchDebounce = setTimeout(() => {
+      this.loadAdminProducts();
+    }, 250);
+  }
+
+  handleAdminProdSearchKey(e) {
+    if (e.key === 'Enter') {
+      this.closeAdminProdSuggestions();
+      this.loadAdminProducts();
+    } else if (e.key === 'Escape') {
+      this.clearAdminProdSearch();
+    }
+  }
+
+  clearAdminProdSearch() {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    this.adminProductKeyword = '';
+    this.closeAdminProdSuggestions();
+    this.loadAdminProducts();
+  }
+
+  handleAdminProdSort(sortVal) {
+    this.adminProductSort = sortVal;
+    this.loadAdminProducts();
+  }
+
+  closeAdminProdSuggestions() {
+    const dropdown = document.getElementById('adm-prod-suggestions');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+
+  renderAdminProdSuggestions() {
+    const dropdown = document.getElementById('adm-prod-suggestions');
+    if (!dropdown) return;
+    if (!this.adminProductKeyword) {
+      dropdown.style.display = 'none';
+      return;
+    }
+    const normKey = removeVietnameseTones(this.adminProductKeyword);
+    const kws = normKey.split(/\s+/).filter(Boolean);
+    const pool = (this.allProducts && this.allProducts.length > 0) ? this.allProducts : (this.products || []);
+    const matches = pool.filter(p => {
+      const nTen = removeVietnameseTones(p.tenSP || '');
+      const nMa = removeVietnameseTones(p.maSP || '');
+      const nDm = removeVietnameseTones(p.danhMuc || '');
+      return kws.every(k => nTen.includes(k) || nMa.includes(k) || nDm.includes(k));
+    }).slice(0, 6);
+
+    if (matches.length === 0) {
+      dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm trong cây Trie.</div>`;
+    } else {
+      dropdown.innerHTML = matches.map(p => `
+        <div class="suggestion-item" onclick="App.selectAdminProdSuggestion('${p.maSP}')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; border-bottom: 1px solid rgba(75, 46, 131, 0.06); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(75, 46, 131, 0.05)'" onmouseout="this.style.background='transparent'">
+          <div>
+            <span style="font-weight: 700; color: var(--space-indigo); font-size: 13.5px;">${p.tenSP}</span>
+            <span style="font-size: 12px; color: var(--space-indigo-light); margin-left: 6px;">(${p.maSP} - ${p.danhMuc})</span>
+          </div>
+          <div>
+            <span class="stock-tag" style="position: static; font-size: 11px; padding: 2px 8px;">Tồn: ${p.soLuongTonKho ?? p.soLuongTon ?? 0}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    dropdown.style.display = 'block';
+  }
+
+  selectAdminProdSuggestion(maSP) {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = maSP;
+    this.adminProductKeyword = maSP;
+    this.closeAdminProdSuggestions();
+    this.loadAdminProducts();
+  }
+
   async loadAdminProducts() {
     try {
-      const res = await fetch(`${this.apiBase}/api/products?sort=0`);
+      const q = encodeURIComponent(this.adminProductKeyword || '');
+      const sort = encodeURIComponent(this.adminProductSort ?? '3');
+      const res = await fetch(`${this.apiBase}/api/admin/products?q=${q}&sort=${sort}`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
       if (res.ok) {
         const prods = await res.json();
         this.renderAdminProducts(prods);
@@ -1094,13 +1195,17 @@ class MeoLogiApp {
   renderAdminProducts(prods) {
     const tbody = document.getElementById('adm-products-tbody');
     if (!tbody) return;
+    if (!prods || prods.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 28px; color: var(--space-indigo-light); font-style: italic;">Không tìm thấy sản phẩm nào phù hợp với bộ lọc tìm kiếm.</td></tr>`;
+      return;
+    }
     tbody.innerHTML = prods.map(p => `
       <tr>
         <td><strong>${p.maSP}</strong></td>
         <td>${p.tenSP}</td>
         <td>${p.danhMuc}</td>
         <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(p.donGia)}</strong></td>
-        <td><span class="stock-tag" style="position: static;">${p.soLuongTonKho}</span></td>
+        <td><span class="stock-tag" style="position: static;">${p.soLuongTonKho ?? p.soLuongTon ?? 0}</span></td>
         <td><span class="tag-status tag-pending">${p.loaiSP}</span></td>
         <td>${p.maNCC}</td>
         <td>

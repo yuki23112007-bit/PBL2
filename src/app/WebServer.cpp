@@ -777,6 +777,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
         if (path == "/api/admin/suppliers/save" && laPost) { responseBody = apiSaveSupplier(body); return; }
         if (path == "/api/admin/suppliers/delete" && laPost) { responseBody = apiDeleteSupplier(body); return; }
         if (path == "/api/admin/revenues" && laGet) { responseBody = apiGetRevenues(q); return; }
+        if (path == "/api/admin/products" && laGet) { responseBody = apiAdminGetProducts(q); return; }
         if (path == "/api/admin/products/add" && laPost) { responseBody = apiAddProduct(body); return; }
         if (path == "/api/admin/products/update" && laPost) { responseBody = apiUpdateProduct(body); return; }
         if (path == "/api/admin/products/delete" && laPost) { responseBody = apiDeleteProduct(body); return; }
@@ -1758,8 +1759,28 @@ string WebServer::apiGetRevenues(const map<string, string>& params) {
 }
 
 // -------------------------------------------------------------
-// API: quan tri - san pham (CRUD)
+// API: quan tri - san pham (CRUD, Tim kiem Trie & QuickSort ton kho)
 // -------------------------------------------------------------
+string WebServer::apiAdminGetProducts(const map<string, string>& params) {
+    map<string, string> convertedParams = params;
+    string sortStr = params.count("sort") ? params.at("sort") : "0";
+    int sortType = 0;
+    if (sortStr == "stock_asc" || sortStr == "3") sortType = 3;
+    else if (sortStr == "stock_desc" || sortStr == "4") sortType = 4;
+    else if (sortStr == "price_asc" || sortStr == "1") sortType = 1;
+    else if (sortStr == "price_desc" || sortStr == "2") sortType = 2;
+    else if (sortStr == "name_asc" || sortStr == "5") sortType = 5;
+    else {
+        try { sortType = stoi(sortStr); } catch (...) { sortType = 0; }
+    }
+    convertedParams["sort"] = to_string(sortType);
+
+    if (convertedParams.count("q") && !convertedParams.at("q").empty()) {
+        return apiSearchProducts(convertedParams);
+    }
+    return apiGetProducts(convertedParams);
+}
+
 string WebServer::apiAddProduct(const string& body) {
     auto data = parseSimpleJson(body);
     string loai = data["loaiSP"];

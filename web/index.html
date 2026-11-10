@@ -348,6 +348,30 @@
             </button>
           </div>
 
+          <!-- Thanh công cụ tìm kiếm Trie Autocomplete và Sắp xếp tồn kho QuickSort -->
+          <div class="admin-toolbar mb-16" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="position: relative; flex: 1; min-width: 280px; max-width: 480px;">
+              <div class="search-input-wrap" style="position: relative; display: flex; align-items: center;">
+                <span style="position: absolute; left: 12px; pointer-events: none; opacity: 0.6;">🔍</span>
+                <input type="text" id="adm-prod-search-input" class="form-input" style="padding-left: 36px; padding-right: 36px; height: 38px; border-radius: 20px;" placeholder="Tìm theo tên hoặc mã SP (Trie Autocomplete)..." oninput="App.handleAdminProdSearch(event)" onkeydown="App.handleAdminProdSearchKey(event)" autocomplete="off" />
+                <button type="button" id="adm-prod-search-clear" class="search-clear-btn hidden" onclick="App.clearAdminProdSearch()" style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: var(--space-indigo-light); font-size: 14px;">✕</button>
+              </div>
+              <div id="adm-prod-suggestions" class="search-suggestions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid rgba(75, 46, 131, 0.15); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100; max-height: 280px; overflow-y: auto;"></div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label for="adm-prod-sort-select" style="font-size: 13px; font-weight: 600; color: var(--space-indigo-light); white-space: nowrap;">Sắp xếp:</label>
+              <select id="adm-prod-sort-select" class="form-select" style="height: 38px; padding: 0 12px; border-radius: 10px; min-width: 220px; font-weight: 600;" onchange="App.handleAdminProdSort(this.value)">
+                <option value="3" selected>📦 Tồn kho: Ít ➔ Nhiều (Ưu tiên nhập)</option>
+                <option value="4">📦 Tồn kho: Nhiều ➔ Ít</option>
+                <option value="0">📋 Mặc định (Thứ tự thêm)</option>
+                <option value="1">💰 Giá: Thấp ➔ Cao</option>
+                <option value="2">💰 Giá: Cao ➔ Thấp</option>
+                <option value="5">🔤 Tên sản phẩm: A ➔ Z</option>
+              </select>
+            </div>
+          </div>
+
           <div class="glass-panel p-20">
             <div class="table-wrap">
               <table class="data-table">

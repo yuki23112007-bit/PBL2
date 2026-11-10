@@ -136,6 +136,7 @@ private:
     string apiSaveSupplier(const string& body);
     string apiDeleteSupplier(const string& body);
     string apiGetRevenues(const map<string, string>& params);
+    string apiAdminGetProducts(const map<string, string>& params);
     string apiAddProduct(const string& body);
     string apiUpdateProduct(const string& body);
     string apiDeleteProduct(const string& body);
