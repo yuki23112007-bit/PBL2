@@ -2642,31 +2642,78 @@ class MeoLogiApp {
 
   renderAdminPredictionsNhom(list) {
     const tbody = document.getElementById('pred-nhom-tbody');
+    const summaryEl = document.getElementById('pred-nhom-summary');
     if (!tbody) return;
+
     if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu nhóm sản phẩm.</td></tr>`;
+      if (summaryEl) summaryEl.style.display = 'none';
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu xu hướng sản phẩm.</td></tr>`;
       return;
     }
-    tbody.innerHTML = list.map(item => {
-      if (item.xacSuatNhom === 0 || item.nhomDuDoan === "Chưa có dữ liệu") {
+
+    const topItem = list.find(item => item.soDonHang > 0 && item.xacSuat > 0);
+    if (summaryEl) {
+      if (topItem) {
+        summaryEl.style.display = 'block';
+        summaryEl.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="font-size: 12px; color: var(--space-indigo-light); margin-bottom: 4px;">🏆 Dự báo từ dữ liệu toàn bộ khách hàng (tháng sau)</div>
+              <div style="font-size: 16px; font-weight: 700; color: var(--space-indigo);">
+                Sản phẩm có xác suất mua nhiều nhất: <span style="color: var(--princeton-orange);">${topItem.tenSanPham}</span>
+                <span style="font-size: 12px; font-weight: 500; color: var(--space-indigo-light);">(${topItem.maSanPham} - ${topItem.loaiSP})</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span class="tag-status tag-success" style="font-size: 13px; font-weight: 700;">Xác suất xu hướng: ${topItem.xacSuat}%</span>
+              <div style="font-size: 11.5px; color: var(--space-indigo-light); margin-top: 4px;">
+                ${topItem.soKhachMua} khách đã mua • ${topItem.soLuong30Ngay} sp/30 ngày
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        summaryEl.style.display = 'none';
+      }
+    }
+
+    tbody.innerHTML = list.map((item, idx) => {
+      if (item.soDonHang === 0 || item.xuHuong === 'Chưa có dữ liệu') {
         return `
           <tr>
-            <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
-            <td><span style="color: var(--space-indigo-light); font-size: 13px;">Chưa có lịch sử mua</span></td>
-            <td><span class="tag-status tag-pending">Chưa đủ dữ liệu</span></td>
-            <td><span style="font-size: 12px; color: var(--space-indigo-light);">-</span></td>
+            <td><strong>#${idx + 1}</strong></td>
+            <td><strong>${item.tenSanPham}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.maSanPham}</span></td>
+            <td>${item.loaiSP}</td>
+            <td>0 khách</td>
+            <td>0 / 0</td>
+            <td><span class="tag-status tag-pending">Chưa có dữ liệu</span></td>
+            <td><span style="color: var(--space-indigo-light); font-size: 12px;">0%</span></td>
           </tr>
         `;
       }
+
+      let badgeClass = 'tag-success';
+      if (item.xuHuong === 'Trung bình') badgeClass = 'tag-pending';
+      else if (item.xuHuong === 'Thấp') badgeClass = 'tag-cancelled';
+
+      const rankBadge = idx === 0 ? '🥇 #1' : idx === 1 ? '🥈 #2' : idx === 2 ? '🥉 #3' : `#${idx + 1}`;
+
       return `
         <tr>
-          <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
-          <td><strong style="color: var(--princeton-orange); font-size: 14px;">🛍️ ${item.nhomDuDoan}</strong></td>
-          <td><span class="tag-status tag-success" style="font-weight: 700;">${item.xacSuatNhom}% tin cậy</span></td>
+          <td><strong>${rankBadge}</strong></td>
+          <td><strong>${item.tenSanPham}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.maSanPham} • ⭐ ${item.diemDanhGiaTB}</span></td>
+          <td>${item.loaiSP}</td>
+          <td><strong>${item.soKhachMua}</strong> khách</td>
+          <td><strong>${item.soLuong30Ngay}</strong> / ${item.tongSoLuongBan}</td>
+          <td><span class="tag-status ${badgeClass}">${item.xuHuong}</span></td>
           <td>
-            <div style="font-size: 12px; color: var(--space-indigo-light); line-height: 1.6;">
-              🥬 Thực phẩm: <strong>${item.xacSuatThucPham}%</strong> | 📱 Công nghệ: <strong>${item.xacSuatCongNghe}%</strong> | 🍳 Gia dụng: <strong>${item.xacSuatGiaDung}%</strong>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 8px; background: rgba(75, 46, 131, 0.1); border-radius: 4px; overflow: hidden; min-width: 60px;">
+                <div style="width: ${item.xacSuat}%; height: 100%; background: var(--princeton-orange); border-radius: 4px;"></div>
+              </div>
+              <strong style="color: var(--space-indigo); font-size: 13px; min-width: 44px; text-align: right;">${item.xacSuat}%</strong>
             </div>
+            <div style="font-size: 11px; color: var(--space-indigo-light); margin-top: 2px;">Tỷ trọng dự báo: ${item.tyLeDuBao}%</div>
           </td>
         </tr>
       `;
@@ -2682,7 +2729,9 @@ class MeoLogiApp {
       const data = await res.json();
       if (data.success) {
         this.showToast(data.message);
-        this.loadAdminPredictions();
+        const btnNhom = document.getElementById('btn-pred-nhom');
+        const activeTab = (btnNhom && btnNhom.classList.contains('active')) ? 'nhom' : 'quay-lai';
+        this.loadAdminPredictions(activeTab);
       } else {
         this.showToast(data.message || 'Huấn luyện thất bại.', true);
       }

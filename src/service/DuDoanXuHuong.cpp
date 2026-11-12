@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cmath>
 #include <algorithm>
+#include <set>
 
 DuDoanXuHuong::DuDoanXuHuong()
     : qlDonHang(nullptr), danhSachTaiKhoan(nullptr), qlSanPham(nullptr),
@@ -54,6 +55,39 @@ void DuDoanXuHuong::quickSortKetQua(std::vector<KetQuaQuayLai>& arr, int low, in
     quickSortKetQua(arr, p + 1, high);
 }
 
+// QuickSort tu cai dat sap xep giam dan xac suat san pham xu huong thang sau
+void DuDoanXuHuong::quickSortXuHuongSP(std::vector<KetQuaXuHuongSP>& arr, int low, int high) {
+    if (low >= high) return;
+
+    const auto& pivot = arr[high];
+    double pProb = pivot.xacSuatDuocMuaNhieu;
+    int p30 = pivot.soLuong30Ngay;
+    int pTong = pivot.tongSoLuongBan;
+    int i = low - 1;
+
+    for (int j = low; j < high; ++j) {
+        bool lonHonHoacBang = false;
+        if (arr[j].xacSuatDuocMuaNhieu > pProb) {
+            lonHonHoacBang = true;
+        } else if (std::abs(arr[j].xacSuatDuocMuaNhieu - pProb) < 1e-6) {
+            if (arr[j].soLuong30Ngay > p30) {
+                lonHonHoacBang = true;
+            } else if (arr[j].soLuong30Ngay == p30 && arr[j].tongSoLuongBan >= pTong) {
+                lonHonHoacBang = true;
+            }
+        }
+        if (lonHonHoacBang) {
+            i++;
+            std::swap(arr[i], arr[j]);
+        }
+    }
+    std::swap(arr[i + 1], arr[high]);
+    int p = i + 1;
+
+    quickSortXuHuongSP(arr, low, p - 1);
+    quickSortXuHuongSP(arr, p + 1, high);
+}
+
 bool DuDoanXuHuong::huanLuyen() {
     thoiGianHuanLuyen = time(nullptr);
 
@@ -85,28 +119,31 @@ bool DuDoanXuHuong::huanLuyen() {
     std::vector<int> y1 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     // -------------------------------------------------------------
-    // Tap mau Huan luyen Nhom san pham tiep theo (Phuong an 2)
-    // Dac trung: [TyLeThucPham, TyLeCongNghe, TyLeGiaDung, ChiTieuTB, TanSuat]
-    // Nhan y: 0 = Thuc pham, 1 = Cong nghe, 2 = Do gia dung
+    // Tap mau Huan luyen Xu huong San pham Thang sau (Phuong an 2 - Toan bo KH)
+    // Dac trung: [TongSoLuongBan, SoKhachHangMua, SoDonHang, SoLuong30Ngay, DiemDanhGiaTB]
+    // Nhan y: 1 = San pham xu huong (mua nhieu thang sau), 0 = Nhu cau thuong/thap
     // -------------------------------------------------------------
     std::vector<std::vector<double>> X2 = {
-        // Uu tien Thuc pham (y = 0)
-        { 0.85, 0.05, 0.10, 120000.0, 5.0 },
-        { 0.75, 0.10, 0.15, 180000.0, 4.0 },
-        { 0.90, 0.00, 0.10,  95000.0, 6.0 },
-        { 0.70, 0.15, 0.15, 140000.0, 3.0 },
-        // Uu tien Cong nghe (y = 1)
-        { 0.10, 0.80, 0.10, 1250000.0, 2.0 },
-        { 0.15, 0.75, 0.10,  980000.0, 2.0 },
-        { 0.05, 0.85, 0.10, 2100000.0, 1.0 },
-        { 0.20, 0.70, 0.10,  850000.0, 3.0 },
-        // Uu tien Do gia dung (y = 2)
-        { 0.15, 0.10, 0.75, 380000.0, 2.0 },
-        { 0.10, 0.15, 0.75, 450000.0, 3.0 },
-        { 0.20, 0.05, 0.75, 290000.0, 2.0 },
-        { 0.05, 0.10, 0.85, 520000.0, 2.0 }
+        // Nhom san pham xu huong, nhieu khach mua, tan suat cao -> y = 1
+        { 12.0, 5.0, 5.0, 8.0, 4.8 },
+        {  8.0, 4.0, 4.0, 6.0, 4.5 },
+        { 15.0, 6.0, 6.0, 10.0, 4.7 },
+        {  6.0, 3.0, 3.0, 4.0, 4.3 },
+        {  5.0, 3.0, 3.0, 3.0, 4.2 },
+        { 10.0, 4.0, 4.0, 7.0, 4.6 },
+        {  4.0, 2.0, 3.0, 3.0, 4.4 },
+        {  7.0, 3.0, 4.0, 5.0, 4.5 },
+        // Nhom san pham it nguoi mua, khong on dinh -> y = 0
+        {  1.0, 1.0, 1.0, 0.0, 3.0 },
+        {  1.0, 1.0, 1.0, 1.0, 2.5 },
+        {  2.0, 1.0, 1.0, 0.0, 3.2 },
+        {  0.0, 0.0, 0.0, 0.0, 3.5 },
+        {  2.0, 1.0, 1.0, 1.0, 2.8 },
+        {  1.0, 1.0, 1.0, 0.0, 2.0 },
+        {  3.0, 1.0, 1.0, 1.0, 3.0 },
+        {  0.0, 0.0, 0.0, 0.0, 3.0 }
     };
-    std::vector<int> y2 = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2 };
+    std::vector<int> y2 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     // Tich hop them du lieu tu don hang thuc te neu co he thong
     if (qlDonHang && danhSachTaiKhoan) {
@@ -115,15 +152,13 @@ bool DuDoanXuHuong::huanLuyen() {
         const auto& dsCTDH = qlDonHang->getDanhSachCTDH();
         const auto& dsTK = *danhSachTaiKhoan;
 
+        // 1. Du lieu khach hang cho Model 1 (Quay lai)
         for (TaiKhoan* tk : dsTK) {
             if (!tk || tk->getVaiTro() == "ADMIN") continue;
             std::string idND = tk->getId();
 
             int donHoanThanh = 0;
             double tongTien = 0.0;
-            double tienThucPham = 0.0;
-            double tienCongNghe = 0.0;
-            double tienGiaDung = 0.0;
             time_t donMoiNhat = 0;
             double tongSao = 0.0;
             int demSao = 0;
@@ -134,26 +169,12 @@ bool DuDoanXuHuong::huanLuyen() {
                         donHoanThanh++;
                         if (dh->getThoiGianTao() > donMoiNhat) donMoiNhat = dh->getThoiGianTao();
 
-                        // Tinh tien theo don & nhom san pham
                         for (const ChiTietDonHang& ct : dsCTDH) {
                             if (ct.getMaDonHang() == dh->getMaDonHang()) {
-                                double tt = ct.getThanhTien();
-                                tongTien += tt;
-                                if (qlSanPham) {
-                                    SanPham* sp = qlSanPham->timSanPhamTheoMa(ct.getMaSanPham());
-                                    if (sp) {
-                                        std::string loai = sp->getLoaiSP();
-                                        if (loai == "CONG_NGHE") tienCongNghe += tt;
-                                        else if (loai == "DO_GIA_DUNG") tienGiaDung += tt;
-                                        else tienThucPham += tt;
-                                    } else {
-                                        tienThucPham += tt;
-                                    }
-                                }
+                                tongTien += ct.getThanhTien();
                             }
                         }
 
-                        // Danh gia
                         if (diemDanhGiaMap.count(dh->getMaDonHang())) {
                             tongSao += diemDanhGiaMap[dh->getMaDonHang()];
                             demSao++;
@@ -171,16 +192,69 @@ bool DuDoanXuHuong::huanLuyen() {
                 int nhan = (recency <= 30.0 && saoTB >= 3.0) ? 1 : 0;
                 X1.push_back({ recency, static_cast<double>(donHoanThanh), aov, saoTB });
                 y1.push_back(nhan);
+            }
+        }
 
-                if (qlSanPham && tongTien > 0.0) {
-                    double r0 = tienThucPham / tongTien;
-                    double r1 = tienCongNghe / tongTien;
-                    double r2 = tienGiaDung / tongTien;
-                    int nhanNhom = 0;
-                    if (r1 >= r0 && r1 >= r2) nhanNhom = 1;
-                    else if (r2 >= r0 && r2 >= r1) nhanNhom = 2;
-                    X2.push_back({ r0, r1, r2, aov, static_cast<double>(donHoanThanh) });
-                    y2.push_back(nhanNhom);
+        // 2. Du lieu tong hop san pham tu tat ca khach hang cho Model 2 (Xu huong SP thang sau)
+        if (qlSanPham) {
+            std::map<std::string, DonHang*> donHopLeMap;
+            for (DonHang* dh : dsDon) {
+                if (!dh) continue;
+                std::string tt = dh->getTrangThaiDonHang();
+                if (tt == "Đã hủy" || tt == "DA_HUY") continue;
+                donHopLeMap[dh->getMaDonHang()] = dh;
+            }
+
+            struct ThongKeSP {
+                int tongSL = 0;
+                int sl30Ngay = 0;
+                std::set<std::string> khachSet;
+                std::set<std::string> donSet;
+                double tongSao = 0.0;
+                int demSao = 0;
+            };
+            std::map<std::string, ThongKeSP> tkSP;
+
+            for (const ChiTietDonHang& ct : dsCTDH) {
+                auto itDH = donHopLeMap.find(ct.getMaDonHang());
+                if (itDH == donHopLeMap.end()) continue;
+                DonHang* dh = itDH->second;
+
+                auto& item = tkSP[ct.getMaSanPham()];
+                item.tongSL += ct.getSoLuong();
+                double tuoiNgay = difftime(now, dh->getThoiGianTao()) / 86400.0;
+                if (tuoiNgay <= 30.0) {
+                    item.sl30Ngay += ct.getSoLuong();
+                }
+                if (!dh->getMaNguoiDung().empty()) {
+                    item.khachSet.insert(dh->getMaNguoiDung());
+                }
+                if (item.donSet.insert(dh->getMaDonHang()).second) {
+                    if (diemDanhGiaMap.count(dh->getMaDonHang())) {
+                        item.tongSao += diemDanhGiaMap[dh->getMaDonHang()];
+                        item.demSao++;
+                    }
+                }
+            }
+
+            auto dsSP = qlSanPham->layDanhSachSanPham(0);
+            for (SanPham* sp : dsSP) {
+                if (!sp) continue;
+                const auto& st = tkSP[sp->getMaSP()];
+                int soKhach = static_cast<int>(st.khachSet.size());
+                int soDon = static_cast<int>(st.donSet.size());
+                double saoTB = st.demSao > 0 ? (st.tongSao / st.demSao) : 4.0;
+
+                if (soDon >= 1) {
+                    int nhanSP = (((soKhach >= 2 && st.tongSL >= 3) || st.sl30Ngay >= 3) && saoTB >= 3.5) ? 1 : 0;
+                    X2.push_back({
+                        static_cast<double>(st.tongSL),
+                        static_cast<double>(soKhach),
+                        static_cast<double>(soDon),
+                        static_cast<double>(st.sl30Ngay),
+                        saoTB
+                    });
+                    y2.push_back(nhanSP);
                 }
             }
         }
@@ -190,9 +264,9 @@ bool DuDoanXuHuong::huanLuyen() {
 
     // Fit ca 2 mo hinh
     modelQuayLai.fit(X1, y1);
-    modelNhomSP.fit(X2, y2);
+    modelXuHuongSP.fit(X2, y2);
 
-    return modelQuayLai.isDaHuanLuyen() && modelNhomSP.isDaHuanLuyen();
+    return modelQuayLai.isDaHuanLuyen() && modelXuHuongSP.isDaHuanLuyen();
 }
 
 std::vector<KetQuaQuayLai> DuDoanXuHuong::duDoanTatCaQuayLai() {
@@ -283,88 +357,125 @@ std::vector<KetQuaQuayLai> DuDoanXuHuong::duDoanTatCaQuayLai() {
     return danhSach;
 }
 
-std::vector<KetQuaNhomSP> DuDoanXuHuong::duDoanTatCaNhomSP() {
-    std::vector<KetQuaNhomSP> danhSach;
-    if (!danhSachTaiKhoan || !qlDonHang || !qlSanPham) return danhSach;
+std::vector<KetQuaXuHuongSP> DuDoanXuHuong::duDoanXuHuongSanPhamThangSau() {
+    std::vector<KetQuaXuHuongSP> danhSach;
+    if (!qlDonHang || !qlSanPham) return danhSach;
 
-    const auto& dsTK = *danhSachTaiKhoan;
+    time_t now = time(nullptr);
     const auto& dsDon = qlDonHang->getDanhSachDonHang();
     const auto& dsCTDH = qlDonHang->getDanhSachCTDH();
 
-    for (TaiKhoan* tk : dsTK) {
-        if (!tk || tk->getVaiTro() == "ADMIN") continue;
-        NguoiDung* nd = dynamic_cast<NguoiDung*>(tk);
-        std::string idND = tk->getId();
+    // Tong hop du lieu tu TAT CA khach hang (bo qua don da huy)
+    std::map<std::string, DonHang*> donHopLeMap;
+    for (DonHang* dh : dsDon) {
+        if (!dh) continue;
+        std::string tt = dh->getTrangThaiDonHang();
+        if (tt == "Đã hủy" || tt == "DA_HUY") continue;
+        donHopLeMap[dh->getMaDonHang()] = dh;
+    }
 
-        double tienThucPham = 0.0;
-        double tienCongNghe = 0.0;
-        double tienGiaDung = 0.0;
-        int tongDon = 0;
+    struct ThongKeSP {
+        int tongSL = 0;
+        int sl30Ngay = 0;
+        double doanhThu = 0.0;
+        std::set<std::string> khachSet;
+        std::set<std::string> donSet;
+        double tongSao = 0.0;
+        int demSao = 0;
+    };
+    std::map<std::string, ThongKeSP> tkSP;
 
-        for (DonHang* dh : dsDon) {
-            if (dh && dh->getMaNguoiDung() == idND) {
-                tongDon++;
-                for (const ChiTietDonHang& ct : dsCTDH) {
-                    if (ct.getMaDonHang() == dh->getMaDonHang()) {
-                        SanPham* sp = qlSanPham->timSanPhamTheoMa(ct.getMaSanPham());
-                        if (sp) {
-                            std::string loai = sp->getLoaiSP();
-                            if (loai == "THUONG" || loai == "TUOI_SONG") tienThucPham += ct.getThanhTien();
-                            else if (loai == "CONG_NGHE") tienCongNghe += ct.getThanhTien();
-                            else tienGiaDung += ct.getThanhTien();
-                        } else {
-                            tienThucPham += ct.getThanhTien();
-                        }
-                    }
-                }
+    for (const ChiTietDonHang& ct : dsCTDH) {
+        auto itDH = donHopLeMap.find(ct.getMaDonHang());
+        if (itDH == donHopLeMap.end()) continue;
+        DonHang* dh = itDH->second;
+
+        auto& item = tkSP[ct.getMaSanPham()];
+        item.tongSL += ct.getSoLuong();
+        item.doanhThu += ct.getThanhTien();
+
+        double tuoiNgay = difftime(now, dh->getThoiGianTao()) / 86400.0;
+        if (tuoiNgay <= 30.0) {
+            item.sl30Ngay += ct.getSoLuong();
+        }
+        if (!dh->getMaNguoiDung().empty()) {
+            item.khachSet.insert(dh->getMaNguoiDung());
+        }
+        if (item.donSet.insert(dh->getMaDonHang()).second) {
+            if (diemDanhGiaMap.count(dh->getMaDonHang())) {
+                item.tongSao += diemDanhGiaMap[dh->getMaDonHang()];
+                item.demSao++;
             }
         }
+    }
 
-        KetQuaNhomSP kq;
-        kq.idKhachHang = idND;
-        kq.username = tk->getUsername();
-        kq.hoTen = nd ? nd->getHoTen() : tk->getUsername();
+    auto dsSP = qlSanPham->layDanhSachSanPham(0);
+    double tongXacSuatTho = 0.0;
 
-        double tongTien = tienThucPham + tienCongNghe + tienGiaDung;
+    for (SanPham* sp : dsSP) {
+        if (!sp) continue;
+        const auto& st = tkSP[sp->getMaSP()];
 
-        if (tongDon == 0 || tongTien <= 0.0) {
-            kq.nhomDuDoan = "Chưa có dữ liệu";
-            kq.xacSuatNhom = 0.0;
-            kq.xacSuatCacNhom = { 0.0, 0.0, 0.0 };
+        KetQuaXuHuongSP kq;
+        kq.maSanPham = sp->getMaSP();
+        kq.tenSanPham = sp->getTenSP();
+
+        std::string loai = sp->getLoaiSP();
+        if (loai == "CONG_NGHE") kq.loaiSP = "Công nghệ";
+        else if (loai == "DO_GIA_DUNG") kq.loaiSP = "Đồ gia dụng";
+        else kq.loaiSP = "Thực phẩm";
+
+        kq.soKhachMua = static_cast<int>(st.khachSet.size());
+        kq.tongSoLuongBan = st.tongSL;
+        kq.soLuong30Ngay = st.sl30Ngay;
+        kq.soDonHang = static_cast<int>(st.donSet.size());
+        kq.doanhThu = std::round(st.doanhThu);
+        kq.diemDanhGiaTB = st.demSao > 0 ? std::round((st.tongSao / st.demSao) * 10.0) / 10.0 : 4.0;
+
+        if (kq.soDonHang == 0) {
+            kq.xacSuatDuocMuaNhieu = 0.0;
+            kq.tyLeDuBao = 0.0;
+            kq.xuHuong = "Chưa có dữ liệu";
             danhSach.push_back(kq);
             continue;
         }
 
-        double r0 = tienThucPham / tongTien;
-        double r1 = tienCongNghe / tongTien;
-        double r2 = tienGiaDung / tongTien;
-        double aov = tongTien / tongDon;
-        double freq = static_cast<double>(tongDon);
+        std::vector<double> x = {
+            static_cast<double>(kq.tongSoLuongBan),
+            static_cast<double>(kq.soKhachMua),
+            static_cast<double>(kq.soDonHang),
+            static_cast<double>(kq.soLuong30Ngay),
+            kq.diemDanhGiaTB
+        };
+        std::vector<double> probas = modelXuHuongSP.predictProba(x);
 
-        std::vector<double> x = { r0, r1, r2, aov, freq };
-        std::vector<double> probas = modelNhomSP.predictProba(x);
-
-        if (probas.size() < 3) {
-            probas = { 0.34, 0.33, 0.33 };
+        double pHot = 50.0;
+        if (probas.size() >= 2) {
+            pHot = probas[1] * 100.0;
         }
 
-        int maxIdx = 0;
-        if (probas[1] > probas[maxIdx]) maxIdx = 1;
-        if (probas[2] > probas[maxIdx]) maxIdx = 2;
+        kq.xacSuatDuocMuaNhieu = std::round(pHot * 10.0) / 10.0;
+        tongXacSuatTho += kq.xacSuatDuocMuaNhieu;
 
-        std::string tenNhom = "Thực phẩm";
-        if (maxIdx == 1) tenNhom = "Công nghệ";
-        else if (maxIdx == 2) tenNhom = "Đồ gia dụng";
+        if (kq.xacSuatDuocMuaNhieu >= 75.0) kq.xuHuong = "Rất cao";
+        else if (kq.xacSuatDuocMuaNhieu >= 50.0) kq.xuHuong = "Cao";
+        else if (kq.xacSuatDuocMuaNhieu >= 25.0) kq.xuHuong = "Trung bình";
+        else kq.xuHuong = "Thấp";
 
-        kq.nhomDuDoan = tenNhom;
-        kq.xacSuatNhom = std::round(probas[maxIdx] * 1000.0) / 10.0;
-        kq.xacSuatCacNhom = {
-            std::round(probas[0] * 1000.0) / 10.0,
-            std::round(probas[1] * 1000.0) / 10.0,
-            std::round(probas[2] * 1000.0) / 10.0
-        };
-
+        kq.tyLeDuBao = 0.0;
         danhSach.push_back(kq);
+    }
+
+    // Chuan hoa ty trong du bao thang sau (tong = 100% tren toan bo san pham)
+    if (tongXacSuatTho > 0.0) {
+        for (auto& item : danhSach) {
+            item.tyLeDuBao = std::round((item.xacSuatDuocMuaNhieu / tongXacSuatTho) * 1000.0) / 10.0;
+        }
+    }
+
+    // QuickSort sap xep giam dan theo xac suat mua nhieu thang sau
+    if (danhSach.size() > 1) {
+        quickSortXuHuongSP(danhSach, 0, static_cast<int>(danhSach.size()) - 1);
     }
 
     return danhSach;
@@ -386,13 +497,55 @@ bool DuDoanXuHuong::duDoanChoKhachHang(const std::string& idKhachHang, KetQuaQua
     }
     if (!timThay) return false;
 
-    auto dsNhom = duDoanTatCaNhomSP();
-    for (const auto& item : dsNhom) {
-        if (item.idKhachHang == idKhachHang) {
-            kqNhom = item;
-            return true;
+    // Goi y nhom san pham ua thich dua tren lich su don hang cua khach (va fallback sang xu huong chung)
+    kqNhom.idKhachHang = kqQuayLai.idKhachHang;
+    kqNhom.hoTen = kqQuayLai.hoTen;
+    kqNhom.username = kqQuayLai.username;
+
+    double tienThucPham = 0.0, tienCongNghe = 0.0, tienGiaDung = 0.0;
+    if (qlDonHang && qlSanPham) {
+        const auto& dsDon = qlDonHang->getDanhSachDonHang();
+        const auto& dsCTDH = qlDonHang->getDanhSachCTDH();
+        for (DonHang* dh : dsDon) {
+            if (dh && dh->getMaNguoiDung() == idKhachHang) {
+                for (const ChiTietDonHang& ct : dsCTDH) {
+                    if (ct.getMaDonHang() == dh->getMaDonHang()) {
+                        SanPham* sp = qlSanPham->timSanPhamTheoMa(ct.getMaSanPham());
+                        if (sp) {
+                            std::string loai = sp->getLoaiSP();
+                            if (loai == "CONG_NGHE") tienCongNghe += ct.getThanhTien();
+                            else if (loai == "DO_GIA_DUNG") tienGiaDung += ct.getThanhTien();
+                            else tienThucPham += ct.getThanhTien();
+                        } else {
+                            tienThucPham += ct.getThanhTien();
+                        }
+                    }
+                }
+            }
         }
     }
 
-    return false;
+    double tongTien = tienThucPham + tienCongNghe + tienGiaDung;
+    if (tongTien > 0.0) {
+        double p0 = std::round((tienThucPham / tongTien) * 1000.0) / 10.0;
+        double p1 = std::round((tienCongNghe / tongTien) * 1000.0) / 10.0;
+        double p2 = std::round((tienGiaDung / tongTien) * 1000.0) / 10.0;
+        kqNhom.xacSuatCacNhom = { p0, p1, p2 };
+        if (p1 >= p0 && p1 >= p2) {
+            kqNhom.nhomDuDoan = "Công nghệ";
+            kqNhom.xacSuatNhom = p1;
+        } else if (p2 >= p0 && p2 >= p1) {
+            kqNhom.nhomDuDoan = "Đồ gia dụng";
+            kqNhom.xacSuatNhom = p2;
+        } else {
+            kqNhom.nhomDuDoan = "Thực phẩm";
+            kqNhom.xacSuatNhom = p0;
+        }
+    } else {
+        kqNhom.nhomDuDoan = "Thực phẩm";
+        kqNhom.xacSuatNhom = 100.0;
+        kqNhom.xacSuatCacNhom = { 100.0, 0.0, 0.0 };
+    }
+
+    return true;
 }

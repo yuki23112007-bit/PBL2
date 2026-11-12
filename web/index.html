@@ -630,7 +630,7 @@
                   📊 Phương án 1: Xác suất khách quay lại
                 </button>
                 <button type="button" class="btn btn-sm role-btn" id="btn-pred-nhom" onclick="App.switchPredictionTab('nhom')">
-                  🎯 Phương án 2: Nhóm sản phẩm tiếp theo
+                  🎯 Phương án 2: Xu hướng sản phẩm tháng sau
                 </button>
               </div>
             </div>
@@ -656,16 +656,20 @@
             </div>
           </div>
 
-          <!-- Bảng Phương án 2: Nhóm sản phẩm -->
+          <!-- Bảng Phương án 2: Xu hướng sản phẩm tháng sau (toàn bộ khách hàng) -->
           <div class="glass-panel p-20 hidden" id="pred-wrap-nhom">
+            <div id="pred-nhom-summary" style="margin-bottom: 16px; padding: 14px 18px; border-radius: 12px; background: rgba(255, 138, 0, 0.08); border: 1px solid rgba(255, 138, 0, 0.25); display: none;"></div>
             <div class="table-wrap">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Khách Hàng</th>
-                    <th>Nhóm Dự Đoán Tiếp Theo</th>
-                    <th>Độ Tin Cậy</th>
-                    <th>Phân Phối Xác Suất</th>
+                    <th>Hạng</th>
+                    <th>Sản Phẩm</th>
+                    <th>Phân Loại</th>
+                    <th>Số Khách Mua</th>
+                    <th>Đã Bán (30 ngày / Tổng)</th>
+                    <th>Mức Xu Hướng</th>
+                    <th>Xác Suất Mua Tháng Sau</th>
                   </tr>
                 </thead>
                 <tbody id="pred-nhom-tbody"></tbody>

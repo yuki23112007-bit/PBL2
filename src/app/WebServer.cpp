@@ -2113,20 +2113,24 @@ string WebServer::apiAdminGetPredictions(const map<string, string>& params) {
          << "\"soMau\":" << duDoanXuHuong.getSoLuongMau() << ","
          << "\"thoiGian\":" << duDoanXuHuong.getThoiGianHuanLuyen() << ",\"data\":[";
 
-    if (loai == "nhom") {
-        auto ds = duDoanXuHuong.duDoanTatCaNhomSP();
+    if (loai == "nhom" || loai == "san-pham") {
+        auto ds = duDoanXuHuong.duDoanXuHuongSanPhamThangSau();
         for (size_t i = 0; i < ds.size(); ++i) {
             if (i > 0) json << ",";
             const auto& item = ds[i];
             json << "{"
-                 << "\"idKhachHang\":\"" << escapeJson(item.idKhachHang) << "\","
-                 << "\"hoTen\":\"" << escapeJson(item.hoTen) << "\","
-                 << "\"username\":\"" << escapeJson(item.username) << "\","
-                 << "\"nhomDuDoan\":\"" << escapeJson(item.nhomDuDoan) << "\","
-                 << "\"xacSuatNhom\":" << fixed << setprecision(1) << item.xacSuatNhom << ","
-                 << "\"xacSuatThucPham\":" << (item.xacSuatCacNhom.size() > 0 ? item.xacSuatCacNhom[0] : 0.0) << ","
-                 << "\"xacSuatCongNghe\":" << (item.xacSuatCacNhom.size() > 1 ? item.xacSuatCacNhom[1] : 0.0) << ","
-                 << "\"xacSuatGiaDung\":" << (item.xacSuatCacNhom.size() > 2 ? item.xacSuatCacNhom[2] : 0.0)
+                 << "\"maSanPham\":\"" << escapeJson(item.maSanPham) << "\","
+                 << "\"tenSanPham\":\"" << escapeJson(item.tenSanPham) << "\","
+                 << "\"loaiSP\":\"" << escapeJson(item.loaiSP) << "\","
+                 << "\"soKhachMua\":" << item.soKhachMua << ","
+                 << "\"tongSoLuongBan\":" << item.tongSoLuongBan << ","
+                 << "\"soLuong30Ngay\":" << item.soLuong30Ngay << ","
+                 << "\"soDonHang\":" << item.soDonHang << ","
+                 << "\"doanhThu\":" << fixed << setprecision(0) << item.doanhThu << ","
+                 << "\"diemDanhGiaTB\":" << fixed << setprecision(1) << item.diemDanhGiaTB << ","
+                 << "\"xacSuat\":" << fixed << setprecision(1) << item.xacSuatDuocMuaNhieu << ","
+                 << "\"tyLeDuBao\":" << fixed << setprecision(1) << item.tyLeDuBao << ","
+                 << "\"xuHuong\":\"" << escapeJson(item.xuHuong) << "\""
                  << "}";
         }
     } else {
