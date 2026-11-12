@@ -13,6 +13,7 @@
 #include "../data/FileManager.h"
 #include "../service/QuanLySanPham.h"
 #include "../service/QuanLyDonHang.h"
+#include "../service/DuDoanXuHuong.h"
 #include "../core/Trie.h"
 #include "../models/TaiKhoan.h"
 #include "../models/Admin.h"
@@ -53,6 +54,7 @@ private:
     vector<DanhGiaDonHang> danhSachDanhGia;      // danhgia.txt
     map<string, time_t> thoiGianGiaoHang;        // giaohang.txt: ma don -> luc chuyen sang "Dang giao"
     map<string, PhienDangNhap> phienDangNhap;    // token -> phien (chi giu trong bo nho)
+    DuDoanXuHuong duDoanXuHuong;                 // Tinh nang 19: AI Du doan xu huong (Gaussian Naive Bayes)
 
     // Khoi tao va nap du lieu tu cac file trong data/
     void napDuLieuHeThong();
@@ -137,6 +139,7 @@ private:
     string apiSaveSupplier(const string& body);
     string apiDeleteSupplier(const string& body);
     string apiGetRevenues(const map<string, string>& params);
+    string apiAdminGetProducts(const map<string, string>& params);
     string apiAddProduct(const string& body);
     string apiUpdateProduct(const string& body);
     string apiDeleteProduct(const string& body);
@@ -146,6 +149,9 @@ private:
     string apiDeleteUser(const string& body, const PhienDangNhap& phien);
     string apiResetPassword(const string& body);
     string apiGetReviews();
+    string apiAdminGetPredictions(const map<string, string>& params);
+    string apiAdminRetrainPredictions();
+    string apiCustomerGetForecast(const map<string, string>& params, const PhienDangNhap& phien);
 
 public:
     explicit WebServer(int port = 8080, const string& webRoot = "web", const string& dataDir = "data");

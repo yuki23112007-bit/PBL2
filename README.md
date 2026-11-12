@@ -29,6 +29,7 @@ Ví dụ tên nhánh: `feature/dang-nhap-trie`, `feature/bang-bam-san-pham`, `fe
 | Quản lý tài khoản (nghiệp vụ) | Mục 1.1, 2.1 (Tích hợp cây Trie $O(L)$) | `service/QuanLyTaiKhoan.h`, `service/QuanLyTaiKhoan.cpp` | `Quỳnh` |
 | Quản lý kho và nhà cung cấp | Mục 1.3, 1.6 & Mở rộng CRUD Admin | `service/QuanLyKhoNCC.h`, `service/QuanLyKhoNCC.cpp` | `Quỳnh` |
 | Quản lý doanh thu (nghiệp vụ) | Mục 1.5, 1.7 | `service/QuanLyDoanhThu.h`, `service/QuanLyDoanhThu.cpp` | `Quỳnh` |
+| Dự đoán xu hướng mua hàng (Bonus) | Mở rộng (Bonus), mục 2.5 | `core/IBoPhanLoai.h`, `core/GaussianNaiveBayes.h`, `core/GaussianNaiveBayes.cpp`, `service/DuDoanXuHuong.h`, `service/DuDoanXuHuong.cpp` | `Huy` (core), `Quỳnh` (service) |
 ### 2.1. Cấu trúc thư mục và tên file
 
 ```text
@@ -55,22 +56,26 @@ src/
 │   ├── BinarySearchTree.h / .cpp        Cây nhị phân tìm kiếm, O(log N)
 │   ├── OrderQueue.h / OrderQueue.cpp    Hàng đợi duyệt đơn FIFO, O(1)
 │   ├── MinHeap.h / MinHeap.cpp          Min-Heap cảnh báo hết hạn (mục 1.6, tài liệu chưa có phần này trong Phân hệ 4)
-│   └── ThuatToan.h / ThuatToan.cpp      Lớp tiện ích thuật toán (ví dụ QuickSort)
+│   ├── ThuatToan.h / ThuatToan.cpp      Lớp tiện ích thuật toán (ví dụ QuickSort)
+│   ├── IBoPhanLoai.h                    Lớp trừu tượng bộ phân loại (interface)
+│   └── GaussianNaiveBayes.h / .cpp      Naive Bayes Gaussian, kế thừa IBoPhanLoai (mục 2.5)
 ├── service/                             Quản lý nghiệp vụ (Tầng 2 trong tài liệu)
 │   ├── QuanLySanPham.h / .cpp           Thêm, sửa, xóa, tìm và sắp xếp sản phẩm
 │   ├── QuanLyDonHang.h / .cpp           Đặt hàng, duyệt đơn, lịch sử đơn
 │   ├── QuanLyTaiKhoan.h / .cpp          Đăng ký, đăng nhập, quản lý tài khoản
 │   ├── QuanLyKhoNCC.h / .cpp            Kho hàng và nhà cung cấp
-│   └── QuanLyDoanhThu.h / .cpp          Ghi nhận và báo cáo doanh thu
+│   ├── QuanLyDoanhThu.h / .cpp          Ghi nhận và báo cáo doanh thu
+│   └── DuDoanXuHuong.h / .cpp           Trích xuất đặc trưng RFM, gọi bộ phân loại (mục 2.5)
 ├── data/                                Đọc, ghi file .txt
-│   ├── FileManager.h / FileManager.cpp  Tầng lưu trữ, đọc và ghi 7 file
+│   ├── FileManager.h / FileManager.cpp  Tầng lưu trữ, đọc và ghi 8 file
 │   ├── products.txt
 │   ├── warehouses.txt
 │   ├── suppliers.txt
 │   ├── users.txt
 │   ├── orders.txt
 │   ├── chitietdonhang.txt
-│   └── revenues.txt
+│   ├── revenues.txt
+│   └── danhgia.txt
 └── app/                                 Điểm vào chương trình và máy chủ web
     ├── main.cpp                         Hàm main, chỉ khởi tạo và điều phối
     ├── WebServer.h / WebServer.cpp      Máy chủ HTTP (cpp-httplib), trả API JSON cho giao diện web
@@ -111,6 +116,7 @@ web/                                     Giao diện HTML và CSS, nằm ngoài 
 | **16**| **Giao diện thương hiệu MeoLogi tương tác**| Frontend | HTML5, CSS3 Variables, Vanilla JS, Font Alviona | 🌟 **Mở rộng (Bonus)** | Linh vật mèo cảm xúc, Toast, Modal, Giỏ hàng popup |
 | **17**| **Tìm sản phẩm theo tên hoặc mã (Admin)** | Quản trị (Admin) | Cây `Trie` $O(L)$ có sẵn (tính năng 3), gợi ý autocomplete | 🌟 **Mở rộng (Bonus)** | Gõ tên hoặc mã, gợi ý hiện ngay khi đang gõ |
 | **18**| **Sắp xếp sản phẩm theo tồn kho (Admin)** | Quản trị (Admin) | `QuickSort` tự cài đặt, khóa `soLuongTon` | 🌟 **Mở rộng (Bonus)** | Sắp xếp tăng dần để thấy hàng sắp hết hoặc đã hết kho, dễ nhập thêm |
+| **19**| **Dự đoán xu hướng mua hàng** | Quản trị (Admin) & Khách hàng | `GaussianNaiveBayes` tự cài đặt. Phương án 1: đặc trưng RFM. Phương án 2: tỷ lệ nhóm sản phẩm | 🌟 **Mở rộng (Bonus)** | Admin xem xác suất khách quay lại và nhóm sản phẩm sắp mua. Khách xem gợi ý cho chính mình |
 
 ### 2.2. Công nghệ
 
@@ -151,6 +157,151 @@ Mục Sản phẩm trong khu Admin có thêm hai thao tác (tính năng 17 và 1
 Lưu ý:
 - Không dùng `std::sort` cho chức năng sắp xếp, theo mục 10.1.
 - Mục 11 cần ghi thêm: `sanPhamRef` cũng trỏ tới sản phẩm khi từ khóa là mã sản phẩm, không chỉ khi là tên.
+
+### 2.5. Dự đoán xu hướng mua hàng (Bonus)
+
+Mục tiêu: dự đoán xu hướng mua hàng của khách, để Admin biết khách nào cần chăm sóc và nhóm sản phẩm nào nên đẩy. Nhóm chọn cả hai phương án. Hai phương án dùng chung bộ phân loại `GaussianNaiveBayes` và khác nhau ở nhãn và đặc trưng.
+
+**Phương án 1: dự đoán khách có quay lại mua không**
+
+**Nhãn `y`** (tính từ dữ liệu, không nhập tay):
+- `1`: khách có ít nhất một đơn mới trong 30 ngày sau mốc cắt `T`.
+- `0`: khách không có đơn mới trong 30 ngày sau mốc cắt `T`.
+
+**Mốc cắt `T`** là một thời điểm cố định trong quá khứ. Đặc trưng chỉ tính từ dữ liệu trước `T`, và nhãn chỉ nhìn sau `T`. Nếu không tách như vậy, mô hình sẽ thấy đáp án khi huấn luyện và kết quả dự đoán sẽ sai khi dùng thật.
+
+**Đặc trưng `x`** (tính tại `T`):
+
+| Ký hiệu | Đặc trưng | Nguồn | Quy ước |
+|---|---|---|---|
+| `x1` | Recency: số ngày từ đơn gần nhất đến `T` | `orders.txt`, `ngayDatHang` | Khách chưa có đơn trước `T` không tham gia huấn luyện |
+| `x2` | Frequency: số đơn đã hoàn thành trước `T` | `orders.txt`, `trangThaiDonHang` | Đếm đơn có trạng thái "Đã hoàn thành" |
+| `x3` | Monetary: giá trị trung bình mỗi đơn (AOV) | `chitietdonhang.txt`, `thanhTien` | Tổng tiền các đơn chia cho số đơn |
+| `x4` | Satisfaction: điểm sao trung bình | `danhgia.txt`, `soSao` | Khách chưa đánh giá lấy `3` (đề xuất, nhóm xác nhận) |
+
+**Mô hình:** Gaussian Naive Bayes hai lớp. Công thức:
+
+```text
+P(y | x) ∝ P(y) · Π_j N(x_j ; μ_{y,j}, σ²_{y,j})
+```
+
+- Huấn luyện: `P(y)` là tỷ lệ mẫu của lớp `y`. Với mỗi lớp và mỗi đặc trưng, tính `μ` (trung bình) và `σ²` (phương sai).
+- Thêm `epsilon` (ví dụ `1e-9`) vào `σ²` để tránh chia cho 0.
+- Dự đoán: tính log-xác suất để tránh tràn số, rồi chuẩn hóa để ra xác suất trong khoảng 0 đến 1.
+
+**Thuật toán và cấu trúc dữ liệu:**
+- Huấn luyện: `O(n · d)` với `n` là số khách, `d = 4` là số đặc trưng.
+- Dự đoán một khách: `O(d)`.
+- Lưu `μ`, `σ²`, `P(y)` trong mảng cố định kích thước `2 × 4`, không dùng `std::map` (theo mục 10.1).
+- Trích xuất đặc trưng: mỗi khách duyệt `danhSachDonHangCaNhan` một lần, tổng `O(N)` cho cả hệ thống.
+- Dùng `<cmath>` cho `exp`, `log`, `sqrt`.
+
+**Ràng buộc:**
+- Huấn luyện cần ít nhất 10 khách và đủ cả hai nhãn `0` và `1`. Nếu không đủ, trả về "Chưa đủ dữ liệu", không đưa ra xác suất (con số 10 là đề xuất).
+- Khách chưa có đơn nào không được dự đoán.
+- Admin xem được xác suất của tất cả khách. Khách hàng chỉ xem được của chính mình.
+- Dự đoán chỉ để gợi ý, không tự thay đổi dữ liệu nào.
+- Kết quả hiển thị kèm số khách dùng để huấn luyện, để người dùng biết độ tin cậy.
+
+**Liên kết giữa các lớp:**
+
+```text
+WebServer  →  DuDoanXuHuong (service)  →  IBoPhanLoai (core, interface)
+                     ↓                              ↑
+   NguoiDung, DonHang, DanhGiaDonHang        GaussianNaiveBayes (core)
+   (models, lấy từ bộ nhớ do HeThongQuanLy nạp)
+```
+
+- `DuDoanXuHuong` không tự đọc file. Dữ liệu đã được `FileManager` nạp và `HeThongQuanLy` đưa vào.
+- `GaussianNaiveBayes` không biết khách hàng hay đơn hàng, chỉ nhận vector số. Đúng với quy tắc `core/` chỉ include `models/`, và thực tế không include gì ngoài chuẩn.
+- `DuDoanXuHuong` chỉ phụ thuộc vào `IBoPhanLoai`, không phụ thuộc vào `GaussianNaiveBayes` cụ thể (nguyên lý D). Sau này thêm bộ phân loại khác chỉ cần kế thừa `IBoPhanLoai`.
+
+**Quan hệ lớp cha và lớp con:**
+
+| Lớp | Loại | Vai trò |
+|---|---|---|
+| `IBoPhanLoai` | Lớp trừu tượng (core) | Khai báo `fit` và `predictProba` |
+| `GaussianNaiveBayes` | Kế thừa `IBoPhanLoai` (core) | Cài đặt Naive Bayes Gaussian |
+| `DanhGiaDonHang` | Model mới (models), thuộc feature 11 | Cung cấp `soSao` cho `x4` |
+
+Interface đề xuất (sẽ được chốt khi viết header, cần thống nhất trước theo mục 9.3):
+
+```cpp
+// core/IBoPhanLoai.h
+// Đầu file: include guard hoặc #pragma once, theo quyết định của nhóm (mục 9.1)
+class IBoPhanLoai {
+public:
+    virtual ~IBoPhanLoai() {}
+    virtual void fit(const std::vector<std::vector<double> >& X, const std::vector<int>& y) = 0;
+    // Trả về xác suất của từng lớp, thứ tự theo nhãn. Phương án 1 dùng 2 phần tử, phương án 2 dùng 3.
+    virtual std::vector<double> predictProba(const std::vector<double>& x) const = 0;
+};
+```
+
+**Định dạng `danhgia.txt`** (file mới, cần thêm vào `data/` và `FileManager`):
+
+```text
+maDanhGia|maDonHang|IdNguoiDung|soSao|ngayDanhGia
+```
+
+Ví dụ: `DG001|DH001|222001|5|1761100800`
+
+- `soSao` từ 1 đến 5.
+- Mỗi đơn chỉ có một đánh giá.
+- Đề xuất: chỉ đánh giá đơn đã hoàn thành (theo tính năng 10).
+
+**API đề xuất** (trong `app/WebServer.cpp`):
+
+| Phương thức | Đường dẫn | Quyền | Nội dung |
+|---|---|---|---|
+| GET | `/api/admin/predictions?loai=quay-lai` | Admin | Danh sách khách kèm xác suất quay lại, sắp xếp giảm dần bằng `QuickSort` tự cài |
+| GET | `/api/admin/predictions?loai=nhom` | Admin | Danh sách khách kèm xác suất từng nhóm sản phẩm sắp mua |
+| POST | `/api/admin/predictions/retrain` | Admin | Huấn luyện lại từ dữ liệu hiện có |
+| GET | `/api/customer/forecast?loai=quay-lai` | Khách | Xác suất quay lại của chính khách đang đăng nhập |
+| GET | `/api/customer/forecast?loai=nhom` | Khách | Nhóm sản phẩm chính khách có khả năng mua tiếp |
+
+**Giao diện web:**
+- Khu Admin: tab "Xu hướng khách hàng" có ô chọn phương án (quay lại hoặc nhóm sản phẩm), bảng xác suất, nút huấn luyện lại, và dòng ghi số khách đã dùng.
+- Khu Customer: một thẻ "Bạn có khả năng quay lại" với mèo cảm xúc: vui khi xác suất cao, lo khi thấp. Thêm một thẻ "Gợi ý cho bạn" hiển thị nhóm sản phẩm có xác suất cao nhất.
+
+**Phương án 2: dự đoán nhóm sản phẩm mua tiếp theo**
+
+**Nhãn `y`** (nhóm của đơn kế tiếp sau mốc cắt `T`):
+- `0`: Thực phẩm (`THUONG`, `TUOI_SONG`).
+- `1`: Công nghệ (`CONG_NGHE`).
+- `2`: Đồ gia dụng (`DO_GIA_DUNG`).
+
+Nhóm lấy từ `products.txt` qua `chitietdonhang.txt`. Đơn có nhiều nhóm thì lấy nhóm có `thanhTien` lớn nhất (đề xuất).
+
+**Đặc trưng `x`** (tính tại `T`, chỉ dùng đơn trước `T`):
+
+| Ký hiệu | Đặc trưng | Quy ước |
+|---|---|---|
+| `x1` | Tỷ lệ đơn có sản phẩm nhóm 0 | Đếm trên tổng số đơn đã hoàn thành |
+| `x2` | Tỷ lệ đơn có sản phẩm nhóm 1 | Tương tự |
+| `x3` | Tỷ lệ đơn có sản phẩm nhóm 2 | Tương tự |
+| `x4` | Chi tiêu trung bình mỗi đơn | Giống `x3` của phương án 1 |
+| `x5` | Tần suất mua | Số đơn trong 90 ngày trước `T` |
+
+Lưu ý: `x1`, `x2`, `x3` có tổng bằng 1, nên phụ thuộc lẫn nhau. Có thể bỏ một trong ba (đề xuất, nhóm xác nhận).
+
+**Thuật toán:** `GaussianNaiveBayes` với 3 lớp, `d = 5`. Huấn luyện `O(n · d)`, dự đoán `O(d)`. Mảng `μ`, `σ²` kích thước `3 × 5`.
+
+**Ràng buộc:**
+- Khách cần ít nhất 2 đơn trước `T` để có "đơn kế tiếp" làm nhãn.
+- Huấn luyện cần ít nhất 10 mẫu, và mỗi nhóm nhãn có ít nhất một mẫu. Nhóm nào thiếu mẫu thì không đưa ra dự đoán cho nhóm đó, và giao diện ghi rõ lý do.
+- Quyền xem giống phương án 1.
+
+**Phân công (đề xuất, nhóm xác nhận):**
+
+| Việc | File | Phụ trách |
+|---|---|---|
+| Interface bộ phân loại | `core/IBoPhanLoai.h` | Huy |
+| Naive Bayes Gaussian | `core/GaussianNaiveBayes.h/.cpp` | Huy |
+| Trích xuất đặc trưng, tạo nhãn theo mốc `T` | `service/DuDoanXuHuong.h/.cpp` | Quỳnh |
+| API dự đoán | `app/WebServer.cpp` | Quỳnh |
+| Tab Admin và thẻ khách | `web/` | Quỳnh |
+| Thêm `danhgia.txt` vào `FileManager` | `data/` | `[điền tên]` |
 
 ## 3. Quy trình làm việc hằng ngày
 

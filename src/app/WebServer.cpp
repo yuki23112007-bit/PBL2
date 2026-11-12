@@ -331,6 +331,9 @@ void WebServer::napDuLieuHeThong() {
 
     napDanhGia();
     napGiaoHang();
+    duDoanXuHuong.ganDependencies(&qlDonHang, &danhSachTaiKhoan, &qlSanPham);
+    duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
+    duDoanXuHuong.huanLuyen();
     cout << "[WebServer] Nap du lieu hoan tat!" << endl;
 }
 
@@ -743,6 +746,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
     if (path == "/api/orders" && laGet) { responseBody = apiGetOrders(phien); return; }
     if (path == "/api/orders/lookup" && laGet) { responseBody = apiLookupOrder(q, phien, status); return; }
     if (path == "/api/orders/cancel" && laPost) { responseBody = apiCancelOrder(body, phien); return; }
+    if (path == "/api/customer/forecast" && laGet) { responseBody = apiCustomerGetForecast(q, phien); return; }
 
     if (path.rfind("/api/orders", 0) == 0 && laPost) {
         if (laAdmin) {
@@ -763,6 +767,8 @@ void WebServer::routeRequest(const string& method, const string& path, const str
             responseBody = loiJson("Bạn không có quyền quản trị.");
             return;
         }
+        if (path == "/api/admin/predictions" && laGet) { responseBody = apiAdminGetPredictions(q); return; }
+        if (path == "/api/admin/predictions/retrain" && laPost) { responseBody = apiAdminRetrainPredictions(); return; }
         if (path == "/api/admin/orders/queue" && laGet) { responseBody = apiGetOrderQueue(); return; }
         if (path == "/api/admin/orders/pending" && laGet) { responseBody = apiGetPendingOrders(); return; }
         if (path == "/api/admin/orders/overdue" && laGet) { responseBody = apiGetOverdueOrders(); return; }
@@ -778,6 +784,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
         if (path == "/api/admin/suppliers/save" && laPost) { responseBody = apiSaveSupplier(body); return; }
         if (path == "/api/admin/suppliers/delete" && laPost) { responseBody = apiDeleteSupplier(body); return; }
         if (path == "/api/admin/revenues" && laGet) { responseBody = apiGetRevenues(q); return; }
+        if (path == "/api/admin/products" && laGet) { responseBody = apiAdminGetProducts(q); return; }
         if (path == "/api/admin/products/add" && laPost) { responseBody = apiAddProduct(body); return; }
         if (path == "/api/admin/products/update" && laPost) { responseBody = apiUpdateProduct(body); return; }
         if (path == "/api/admin/products/delete" && laPost) { responseBody = apiDeleteProduct(body); return; }
@@ -1817,8 +1824,28 @@ string WebServer::apiGetRevenues(const map<string, string>& params) {
 }
 
 // -------------------------------------------------------------
-// API: quan tri - san pham (CRUD)
+// API: quan tri - san pham (CRUD, Tim kiem Trie & QuickSort ton kho)
 // -------------------------------------------------------------
+string WebServer::apiAdminGetProducts(const map<string, string>& params) {
+    map<string, string> convertedParams = params;
+    string sortStr = params.count("sort") ? params.at("sort") : "0";
+    int sortType = 0;
+    if (sortStr == "stock_asc" || sortStr == "3") sortType = 3;
+    else if (sortStr == "stock_desc" || sortStr == "4") sortType = 4;
+    else if (sortStr == "price_asc" || sortStr == "1") sortType = 1;
+    else if (sortStr == "price_desc" || sortStr == "2") sortType = 2;
+    else if (sortStr == "name_asc" || sortStr == "5") sortType = 5;
+    else {
+        try { sortType = stoi(sortStr); } catch (...) { sortType = 0; }
+    }
+    convertedParams["sort"] = to_string(sortType);
+
+    if (convertedParams.count("q") && !convertedParams.at("q").empty()) {
+        return apiSearchProducts(convertedParams);
+    }
+    return apiGetProducts(convertedParams);
+}
+
 string WebServer::apiAddProduct(const string& body) {
     auto data = parseSimpleJson(body);
     string loai = data["loaiSP"];
@@ -2070,4 +2097,100 @@ string WebServer::apiResetPassword(const string& body) {
     tk->setPasswordHash(md5impl::hex(newPass));
     fileManager.ghiTaiKhoan(danhSachTaiKhoan);
     return "{\"success\":true,\"message\":\"Đã đặt lại mật khẩu cho tài khoản " + tk->getUsername() + " thành công!\"}";
+}
+
+// -------------------------------------------------------------
+// Tinh nang 19: AI Du doan xu huong (Gaussian Naive Bayes)
+// -------------------------------------------------------------
+string WebServer::apiAdminGetPredictions(const map<string, string>& params) {
+    string loai = params.count("loai") ? params.at("loai") : "quay-lai";
+
+    // Dong bo danh gia moi nhat
+    duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
+
+    ostringstream json;
+    json << "{\"success\":true,\"loai\":\"" << escapeJson(loai) << "\","
+         << "\"soMau\":" << duDoanXuHuong.getSoLuongMau() << ","
+         << "\"thoiGian\":" << duDoanXuHuong.getThoiGianHuanLuyen() << ",\"data\":[";
+
+    if (loai == "nhom") {
+        auto ds = duDoanXuHuong.duDoanTatCaNhomSP();
+        for (size_t i = 0; i < ds.size(); ++i) {
+            if (i > 0) json << ",";
+            const auto& item = ds[i];
+            json << "{"
+                 << "\"idKhachHang\":\"" << escapeJson(item.idKhachHang) << "\","
+                 << "\"hoTen\":\"" << escapeJson(item.hoTen) << "\","
+                 << "\"username\":\"" << escapeJson(item.username) << "\","
+                 << "\"nhomDuDoan\":\"" << escapeJson(item.nhomDuDoan) << "\","
+                 << "\"xacSuatNhom\":" << fixed << setprecision(1) << item.xacSuatNhom << ","
+                 << "\"xacSuatThucPham\":" << (item.xacSuatCacNhom.size() > 0 ? item.xacSuatCacNhom[0] : 0.0) << ","
+                 << "\"xacSuatCongNghe\":" << (item.xacSuatCacNhom.size() > 1 ? item.xacSuatCacNhom[1] : 0.0) << ","
+                 << "\"xacSuatGiaDung\":" << (item.xacSuatCacNhom.size() > 2 ? item.xacSuatCacNhom[2] : 0.0)
+                 << "}";
+        }
+    } else {
+        auto ds = duDoanXuHuong.duDoanTatCaQuayLai();
+        for (size_t i = 0; i < ds.size(); ++i) {
+            if (i > 0) json << ",";
+            const auto& item = ds[i];
+            json << "{"
+                 << "\"idKhachHang\":\"" << escapeJson(item.idKhachHang) << "\","
+                 << "\"hoTen\":\"" << escapeJson(item.hoTen) << "\","
+                 << "\"username\":\"" << escapeJson(item.username) << "\","
+                 << "\"xacSuatQuayLai\":" << fixed << setprecision(1) << item.xacSuatQuayLai << ","
+                 << "\"recencyNgay\":" << fixed << setprecision(1) << item.recencyNgay << ","
+                 << "\"frequencyDon\":" << item.frequencyDon << ","
+                 << "\"monetaryAOV\":" << fixed << setprecision(0) << item.monetaryAOV << ","
+                 << "\"satisfactionSao\":" << fixed << setprecision(1) << item.satisfactionSao << ","
+                 << "\"mucDo\":\"" << escapeJson(item.mucDo) << "\""
+                 << "}";
+        }
+    }
+
+    json << "]}";
+    return json.str();
+}
+
+string WebServer::apiAdminRetrainPredictions() {
+    duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
+    bool ok = duDoanXuHuong.huanLuyen();
+    if (ok) {
+        return "{\"success\":true,\"message\":\"Huấn luyện lại mô hình Gaussian Naive Bayes thành công!\",\"soMau\":" +
+               to_string(duDoanXuHuong.getSoLuongMau()) + "}";
+    }
+    return loiJson("Huấn luyện mô hình thất bại do chưa đủ dữ liệu!");
+}
+
+string WebServer::apiCustomerGetForecast(const map<string, string>& params, const PhienDangNhap& phien) {
+    (void)params;
+    duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
+
+    KetQuaQuayLai kqQuayLai;
+    KetQuaNhomSP kqNhom;
+    bool ok = duDoanXuHuong.duDoanChoKhachHang(phien.idNguoiDung, kqQuayLai, kqNhom);
+
+    if (!ok) {
+        return "{\"success\":false,\"message\":\"Chưa có đủ lịch sử đơn hàng để đưa ra dự báo.\"}";
+    }
+
+    ostringstream json;
+    json << "{\"success\":true,"
+         << "\"soMau\":" << duDoanXuHuong.getSoLuongMau() << ","
+         << "\"quayLai\":{"
+         << "\"xacSuat\":" << fixed << setprecision(1) << kqQuayLai.xacSuatQuayLai << ","
+         << "\"mucDo\":\"" << escapeJson(kqQuayLai.mucDo) << "\","
+         << "\"recencyNgay\":" << fixed << setprecision(1) << kqQuayLai.recencyNgay << ","
+         << "\"frequencyDon\":" << kqQuayLai.frequencyDon << ","
+         << "\"monetaryAOV\":" << fixed << setprecision(0) << kqQuayLai.monetaryAOV << ","
+         << "\"satisfactionSao\":" << fixed << setprecision(1) << kqQuayLai.satisfactionSao
+         << "},"
+         << "\"nhomSP\":{"
+         << "\"nhomDuDoan\":\"" << escapeJson(kqNhom.nhomDuDoan) << "\","
+         << "\"xacSuat\":" << fixed << setprecision(1) << kqNhom.xacSuatNhom << ","
+         << "\"xacSuatThucPham\":" << (kqNhom.xacSuatCacNhom.size() > 0 ? kqNhom.xacSuatCacNhom[0] : 0.0) << ","
+         << "\"xacSuatCongNghe\":" << (kqNhom.xacSuatCacNhom.size() > 1 ? kqNhom.xacSuatCacNhom[1] : 0.0) << ","
+         << "\"xacSuatGiaDung\":" << (kqNhom.xacSuatCacNhom.size() > 2 ? kqNhom.xacSuatCacNhom[2] : 0.0)
+         << "}}";
+    return json.str();
 }

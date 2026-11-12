@@ -6,3 +6,17 @@ CUSTOMER|222003|cuong|e10adc3949ba59abbe56e057f20f883e|Lê Văn Cường|0905112
 CUSTOMER|222004|dung|e10adc3949ba59abbe56e057f20f883e|Phạm Thị Dung|0934567890|102 3 Tháng 2, Cần Thơ
 CUSTOMER|222005|huy|e10adc3949ba59abbe56e057f20f883e|Võ Quang Huy|0978123456|15 Quang Trung, Đà Nẵng
 CUSTOMER|222006|mai|e10adc3949ba59abbe56e057f20f883e|Hoàng Ngọc Mai|0918765432|20 Trần Phú, Hải Phòng
+CUSTOMER|222007|nghiem|e10adc3949ba59abbe56e057f20f883e|Nghiêm Quỳnh|0345671234|Đà Nẵng
+CUSTOMER|222008|linh|e10adc3949ba59abbe56e057f20f883e|Nguyễn Thùy Linh|0912345608|14 Lê Lợi, Huế
+CUSTOMER|222009|nam|e10adc3949ba59abbe56e057f20f883e|Trần Hoàng Nam|0912345609|25 Phan Châu Trinh, Đà Nẵng
+CUSTOMER|222010|hoa|e10adc3949ba59abbe56e057f20f883e|Lê Thị Hoa|0912345610|89 Hùng Vương, Quy Nhơn
+CUSTOMER|222011|minh|e10adc3949ba59abbe56e057f20f883e|Phạm Quang Minh|0912345611|102 Nguyễn Trãi, Hà Nội
+CUSTOMER|222012|thao|e10adc3949ba59abbe56e057f20f883e|Vũ Phương Thảo|0912345612|33 Võ Văn Tần, TP.HCM
+CUSTOMER|222013|tuan|e10adc3949ba59abbe56e057f20f883e|Đặng Anh Tuấn|0912345613|56 Trần Hưng Đạo, Nha Trang
+CUSTOMER|222014|ngoc|e10adc3949ba59abbe56e057f20f883e|Bùi Bảo Ngọc|0912345614|78 Lý Thường Kiệt, Hải Phòng
+CUSTOMER|222015|khanh|e10adc3949ba59abbe56e057f20f883e|Hoàng Quốc Khánh|0912345615|19 Điện Biên Phủ, Đà Nẵng
+CUSTOMER|222016|vy|e10adc3949ba59abbe56e057f20f883e|Đỗ Khánh Vy|0912345616|44 Pasteur, TP.HCM
+CUSTOMER|222017|duc|e10adc3949ba59abbe56e057f20f883e|Ngô Minh Đức|0912345617|61 Quang Trung, Hà Nội
+CUSTOMER|222018|trang|e10adc3949ba59abbe56e057f20f883e|Phan Huyền Trang|0912345618|72 Nguyễn Văn Linh, Cần Thơ
+CUSTOMER|222019|long|e10adc3949ba59abbe56e057f20f883e|Lý Thành Long|0912345619|11 Bạch Đằng, Đà Nẵng
+CUSTOMER|222020|nhi|e10adc3949ba59abbe56e057f20f883e|Trương Yến Nhi|0912345620|90 Hai Bà Trưng, TP.HCM

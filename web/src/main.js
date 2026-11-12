@@ -39,6 +39,9 @@ class MeoLogiApp {
     this.adminRevenues = [];
     this.adminUsers = [];
     this.adminReviews = [];
+    this.adminProductKeyword = '';
+    this.adminProductSort = '3';
+    this.adminSearchDebounce = null;
   }
 
   // ------------------------------------------------------------------------
@@ -54,6 +57,11 @@ class MeoLogiApp {
       const wrap = document.querySelector('.search-wrap');
       if (wrap && !wrap.contains(e.target)) {
         this.closeSearchDropdown();
+      }
+      const admWrap = document.getElementById('adm-prod-search-input');
+      const admSug = document.getElementById('adm-prod-suggestions');
+      if (admWrap && admSug && !admWrap.contains(e.target) && !admSug.contains(e.target)) {
+        this.closeAdminProdSuggestions();
       }
     });
 
@@ -463,6 +471,7 @@ class MeoLogiApp {
       if (tabStore) tabStore.classList.remove('hidden');
       if (tabOrders) tabOrders.classList.add('hidden');
       await this.loadProducts();
+      this.loadCustomerForecast();
     }
   }
 
@@ -1035,6 +1044,13 @@ class MeoLogiApp {
       commentLbl.textContent = 'Ý kiến đóng góp:';
       submitBtn.textContent = 'Gửi Đánh Giá';
     }
+
+    // Reset về 5 sao mặc định và xóa nội dung cũ
+    const defaultStar = document.getElementById('star5');
+    if (defaultStar) defaultStar.checked = true;
+    const contentInput = document.getElementById('review-content');
+    if (contentInput) contentInput.value = '';
+
     this.openModal('modal-review');
   }
 
@@ -1042,7 +1058,8 @@ class MeoLogiApp {
     e.preventDefault();
     const orderId = document.getElementById('review-order-id').value;
     const actionType = document.getElementById('review-action-type').value;
-    const soSao = parseInt(document.getElementById('review-stars').value, 10) || 5;
+    const checkedStar = document.querySelector('input[name="rate"]:checked');
+    const soSao = checkedStar ? (parseInt(checkedStar.value, 10) || 5) : 5;
     const noiDung = document.getElementById('review-content').value.trim();
 
     let endpoint = '/api/orders/confirm';
@@ -1089,6 +1106,7 @@ class MeoLogiApp {
     else if (tab === 'revenues') this.loadAdminRevenues();
     else if (tab === 'users') this.loadAdminUsers();
     else if (tab === 'reviews') this.loadAdminReviews();
+    else if (tab === 'predictions') this.loadAdminPredictions();
   }
 
   // Tab 1: Đơn hàng & FIFO
@@ -1262,26 +1280,103 @@ class MeoLogiApp {
     this.renderAdminAllOrders(filtered);
   }
 
-  // Tab 2: Quản lý sản phẩm (CRUD)
-  async loadAdminProducts(sortType = null, searchKeyword = null) {
-    if (sortType !== null) this.adminProductSort = sortType;
-    if (searchKeyword !== null) this.adminProductSearch = searchKeyword;
-
-    // Mặc định sắp xếp: Tồn kho ít đến nhiều (sort = 3) để dễ phát hiện và thêm sản phẩm hết hàng
-    if (this.adminProductSort === undefined || this.adminProductSort === null) {
-      this.adminProductSort = 3;
-      const select = document.getElementById('adm-prod-sort-select');
-      if (select) select.value = '3';
+  // Tab 2: Quản lý sản phẩm (CRUD, Tìm kiếm Trie Autocomplete & QuickSort Tồn kho)
+  handleAdminProdSearch(e) {
+    const rawVal = e.target.value;
+    this.adminProductKeyword = rawVal.trim();
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) {
+      if (rawVal.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
     }
 
-    const sort = this.adminProductSort;
-    const q = (this.adminProductSearch || '').trim();
+    this.renderAdminProdSuggestions();
 
+    clearTimeout(this.adminSearchDebounce);
+    this.adminSearchDebounce = setTimeout(() => {
+      this.loadAdminProducts();
+    }, 250);
+  }
+
+  handleAdminProdSearchKey(e) {
+    if (e.key === 'Enter') {
+      this.closeAdminProdSuggestions();
+      this.loadAdminProducts();
+    } else if (e.key === 'Escape') {
+      this.clearAdminProdSearch();
+    }
+  }
+
+  clearAdminProdSearch() {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = '';
+    const clearBtn = document.getElementById('adm-prod-search-clear');
+    if (clearBtn) clearBtn.classList.add('hidden');
+    this.adminProductKeyword = '';
+    this.closeAdminProdSuggestions();
+    this.loadAdminProducts();
+  }
+
+  handleAdminProdSort(sortVal) {
+    this.adminProductSort = sortVal;
+    this.loadAdminProducts();
+  }
+
+  closeAdminProdSuggestions() {
+    const dropdown = document.getElementById('adm-prod-suggestions');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+
+  renderAdminProdSuggestions() {
+    const dropdown = document.getElementById('adm-prod-suggestions');
+    if (!dropdown) return;
+    if (!this.adminProductKeyword) {
+      dropdown.style.display = 'none';
+      return;
+    }
+    const normKey = removeVietnameseTones(this.adminProductKeyword);
+    const kws = normKey.split(/\s+/).filter(Boolean);
+    const pool = (this.allProducts && this.allProducts.length > 0) ? this.allProducts : (this.products || []);
+    const matches = pool.filter(p => {
+      const nTen = removeVietnameseTones(p.tenSP || '');
+      const nMa = removeVietnameseTones(p.maSP || '');
+      const nDm = removeVietnameseTones(p.danhMuc || '');
+      return kws.every(k => nTen.includes(k) || nMa.includes(k) || nDm.includes(k));
+    }).slice(0, 6);
+
+    if (matches.length === 0) {
+      dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 13px; text-align: center; color: var(--space-indigo-light);">Không tìm thấy sản phẩm phù hợp.</div>`;
+    } else {
+      dropdown.innerHTML = matches.map(p => `
+        <div class="suggestion-item" onclick="App.selectAdminProdSuggestion('${p.maSP}')" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; cursor: pointer; border-bottom: 1px solid rgba(75, 46, 131, 0.06); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(75, 46, 131, 0.05)'" onmouseout="this.style.background='transparent'">
+          <div>
+            <span style="font-weight: 700; color: var(--space-indigo); font-size: 13.5px;">${p.tenSP}</span>
+            <span style="font-size: 12px; color: var(--space-indigo-light); margin-left: 6px;">(${p.maSP} - ${p.danhMuc})</span>
+          </div>
+          <div>
+            <span class="stock-tag" style="position: static; font-size: 11px; padding: 2px 8px;">Tồn: ${p.soLuongTonKho ?? p.soLuongTon ?? 0}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    dropdown.style.display = 'block';
+  }
+
+  selectAdminProdSuggestion(maSP) {
+    const input = document.getElementById('adm-prod-search-input');
+    if (input) input.value = maSP;
+    this.adminProductKeyword = maSP;
+    this.closeAdminProdSuggestions();
+    this.loadAdminProducts();
+  }
+
+  async loadAdminProducts() {
     try {
-      const url = q
-        ? `${this.apiBase}/api/products/search?q=${encodeURIComponent(q)}&sort=${sort}`
-        : `${this.apiBase}/api/products?sort=${sort}`;
-      const res = await fetch(url);
+      const q = encodeURIComponent(this.adminProductKeyword || '');
+      const sort = encodeURIComponent(this.adminProductSort ?? '3');
+      const res = await fetch(`${this.apiBase}/api/admin/products?q=${q}&sort=${sort}`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
       if (res.ok) {
         this.adminProductsList = await res.json();
         this.renderAdminProducts(this.adminProductsList);
@@ -1295,30 +1390,16 @@ class MeoLogiApp {
     const tbody = document.getElementById('adm-products-tbody');
     if (!tbody) return;
     if (!prods || prods.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--space-indigo-light); font-weight: 500;">Không tìm thấy sản phẩm nào phù hợp với từ khóa tìm kiếm.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 28px; color: var(--space-indigo-light); font-style: italic;">Không tìm thấy sản phẩm nào phù hợp với bộ lọc tìm kiếm.</td></tr>`;
       return;
     }
-    tbody.innerHTML = prods.map(p => {
-      const tonKho = p.soLuongTonKho ?? p.soLuongTon ?? 0;
-      let stockBadge = '';
-      let btnStockStyle = '';
-      if (tonKho <= 0) {
-        stockBadge = `<span class="stock-tag" style="position: static; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;">Hết hàng (0)</span>`;
-        btnStockStyle = 'background: #dc2626; color: #fff; border-color: #dc2626; font-weight: 700;';
-      } else if (tonKho <= 10) {
-        stockBadge = `<span class="stock-tag" style="position: static; background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; font-weight: 700;">Sắp hết (${tonKho})</span>`;
-        btnStockStyle = 'background: var(--princeton-orange); color: #fff; border-color: var(--princeton-orange); font-weight: 700;';
-      } else {
-        stockBadge = `<span class="stock-tag" style="position: static;">Tồn: ${tonKho}</span>`;
-      }
-
-      return `
-      <tr style="${tonKho <= 10 ? 'background: rgba(255, 136, 17, 0.05);' : ''}">
-        <td><strong style="color: var(--space-indigo); font-family: monospace; font-size: 13.5px;">${p.maSP}</strong></td>
-        <td><strong>${p.tenSP}</strong></td>
+    tbody.innerHTML = prods.map(p => `
+      <tr>
+        <td><strong>${p.maSP}</strong></td>
+        <td>${p.tenSP}</td>
         <td>${p.danhMuc}</td>
         <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(p.donGia)}</strong></td>
-        <td>${stockBadge}</td>
+        <td><span class="stock-tag" style="position: static;">${p.soLuongTonKho ?? p.soLuongTon ?? 0}</span></td>
         <td><span class="tag-status tag-pending">${p.loaiSP}</span></td>
         <td>${p.maNCC}</td>
         <td>
@@ -2139,12 +2220,12 @@ class MeoLogiApp {
         feedback.style.display = 'block';
         if (data.exists) {
           feedback.style.color = '#ef4444';
-          feedback.textContent = '❌ Tên đăng nhập đã tồn tại (phát hiện bởi cây Trie)! Vui lòng chọn tên khác.';
+          feedback.textContent = '❌ Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.';
           input.style.borderColor = '#ef4444';
           this.usernameExists = true;
         } else {
           feedback.style.color = '#10b981';
-          feedback.textContent = '✅ Tên đăng nhập hợp lệ và có thể sử dụng (kiểm tra qua cây Trie).';
+          feedback.textContent = '✅ Tên đăng nhập hợp lệ và có thể sử dụng.';
           input.style.borderColor = '#10b981';
           this.usernameExists = false;
         }
@@ -2464,6 +2545,188 @@ class MeoLogiApp {
       ${reviewHtml}
     `;
     this.openModal('modal-order-detail');
+  }
+
+  // ------------------------------------------------------------------------
+  // Tab 7: AI Dự đoán xu hướng khách hàng (Tính năng 19 - Gaussian Naive Bayes)
+  // ------------------------------------------------------------------------
+  switchPredictionTab(tab) {
+    const btnQuayLai = document.getElementById('btn-pred-quaylai');
+    const btnNhom = document.getElementById('btn-pred-nhom');
+    const wrapQuayLai = document.getElementById('pred-wrap-quaylai');
+    const wrapNhom = document.getElementById('pred-wrap-nhom');
+
+    if (tab === 'nhom') {
+      if (btnQuayLai) btnQuayLai.classList.remove('active');
+      if (btnNhom) btnNhom.classList.add('active');
+      if (wrapQuayLai) wrapQuayLai.classList.add('hidden');
+      if (wrapNhom) wrapNhom.classList.remove('hidden');
+      this.loadAdminPredictions('nhom');
+    } else {
+      if (btnQuayLai) btnQuayLai.classList.add('active');
+      if (btnNhom) btnNhom.classList.remove('active');
+      if (wrapQuayLai) wrapQuayLai.classList.remove('hidden');
+      if (wrapNhom) wrapNhom.classList.add('hidden');
+      this.loadAdminPredictions('quay-lai');
+    }
+  }
+
+  async loadAdminPredictions(loai = 'quay-lai') {
+    try {
+      const res = await fetch(`${this.apiBase}/api/admin/predictions?loai=${loai}`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const countEl = document.getElementById('pred-sample-count');
+        if (countEl) countEl.textContent = `${result.soMau || 0} mẫu`;
+        const timeEl = document.getElementById('pred-update-time');
+        if (timeEl && result.thoiGian) {
+          timeEl.textContent = new Date(result.thoiGian * 1000).toLocaleTimeString('vi-VN');
+        }
+
+        if (loai === 'nhom') {
+          this.renderAdminPredictionsNhom(result.data || []);
+        } else {
+          this.renderAdminPredictionsQuayLai(result.data || []);
+        }
+      }
+    } catch (e) {}
+  }
+
+  renderAdminPredictionsQuayLai(list) {
+    const tbody = document.getElementById('pred-quaylai-tbody');
+    if (!tbody) return;
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu dự đoán.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(item => {
+      if (item.frequencyDon === 0) {
+        return `
+          <tr>
+            <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+            <td>-</td>
+            <td><strong>0</strong> đơn</td>
+            <td>0 đ</td>
+            <td>-</td>
+            <td><span class="tag-status tag-pending">Chưa có đơn</span></td>
+            <td><span style="color: var(--space-indigo-light); font-size: 12px;">Chưa đủ dữ liệu</span></td>
+          </tr>
+        `;
+      }
+      let badgeClass = 'tag-success';
+      if (item.mucDo === 'Trung bình') badgeClass = 'tag-pending';
+      else if (item.mucDo === 'Thấp') badgeClass = 'tag-cancelled';
+
+      return `
+        <tr>
+          <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+          <td>${item.recencyNgay} ngày trước</td>
+          <td><strong>${item.frequencyDon}</strong> đơn</td>
+          <td>${this.formatCurrency(item.monetaryAOV)}</td>
+          <td>⭐ ${item.satisfactionSao}</td>
+          <td><span class="tag-status ${badgeClass}">${item.mucDo}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="flex: 1; height: 8px; background: rgba(75, 46, 131, 0.1); border-radius: 4px; overflow: hidden; min-width: 60px;">
+                <div style="width: ${item.xacSuatQuayLai}%; height: 100%; background: var(--princeton-orange); border-radius: 4px;"></div>
+              </div>
+              <strong style="color: var(--space-indigo); font-size: 13px; min-width: 44px; text-align: right;">${item.xacSuatQuayLai}%</strong>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  renderAdminPredictionsNhom(list) {
+    const tbody = document.getElementById('pred-nhom-tbody');
+    if (!tbody) return;
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu nhóm sản phẩm.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(item => {
+      if (item.xacSuatNhom === 0 || item.nhomDuDoan === "Chưa có dữ liệu") {
+        return `
+          <tr>
+            <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+            <td><span style="color: var(--space-indigo-light); font-size: 13px;">Chưa có lịch sử mua</span></td>
+            <td><span class="tag-status tag-pending">Chưa đủ dữ liệu</span></td>
+            <td><span style="font-size: 12px; color: var(--space-indigo-light);">-</span></td>
+          </tr>
+        `;
+      }
+      return `
+        <tr>
+          <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+          <td><strong style="color: var(--princeton-orange); font-size: 14px;">🛍️ ${item.nhomDuDoan}</strong></td>
+          <td><span class="tag-status tag-success" style="font-weight: 700;">${item.xacSuatNhom}% tin cậy</span></td>
+          <td>
+            <div style="font-size: 12px; color: var(--space-indigo-light); line-height: 1.6;">
+              🥬 Thực phẩm: <strong>${item.xacSuatThucPham}%</strong> | 📱 Công nghệ: <strong>${item.xacSuatCongNghe}%</strong> | 🍳 Gia dụng: <strong>${item.xacSuatGiaDung}%</strong>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async retrainPredictions() {
+    try {
+      const res = await fetch(`${this.apiBase}/api/admin/predictions/retrain`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        this.showToast(data.message);
+        this.loadAdminPredictions();
+      } else {
+        this.showToast(data.message || 'Huấn luyện thất bại.', true);
+      }
+    } catch (e) {
+      this.showToast('Lỗi gửi yêu cầu huấn luyện.', true);
+    }
+  }
+
+  async loadCustomerForecast() {
+    const card = document.getElementById('cust-forecast-card');
+    if (!card || !this.currentUser) return;
+    try {
+      const res = await fetch(`${this.apiBase}/api/customer/forecast`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.quayLai && data.nhomSP && data.quayLai.xacSuat > 0) {
+          const titleEl = document.getElementById('cust-forecast-title');
+          const descEl = document.getElementById('cust-forecast-desc');
+          const badgeEl = document.getElementById('cust-forecast-suggestion-badge');
+          const catIconEl = document.getElementById('cust-forecast-cat-icon');
+
+          if (titleEl) titleEl.textContent = `Xin chào ${this.currentUser.hoTen || this.currentUser.username}!`;
+          if (descEl) {
+            descEl.innerHTML = `Hệ thống AI dự báo bạn có <strong style="color: var(--princeton-orange);">${data.quayLai.xacSuat}%</strong> khả năng quay lại mua sắm (Mức độ: ${data.quayLai.mucDo}).`;
+          }
+          if (badgeEl) {
+            badgeEl.textContent = `Gợi ý cho bạn: ${data.nhomSP.nhomDuDoan} (${data.nhomSP.xacSuat}%)`;
+            badgeEl.style.display = 'inline-block';
+          }
+          if (catIconEl) {
+            catIconEl.innerHTML = data.quayLai.xacSuat >= 60 ? '😻' : '😸';
+          }
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      } else {
+        card.style.display = 'none';
+      }
+    } catch (e) {
+      card.style.display = 'none';
+    }
   }
 
   // Tiện ích đóng mở Modal
