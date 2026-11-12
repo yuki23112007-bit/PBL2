@@ -121,6 +121,9 @@ bool DuDoanXuHuong::huanLuyen() {
 
             int donHoanThanh = 0;
             double tongTien = 0.0;
+            double tienThucPham = 0.0;
+            double tienCongNghe = 0.0;
+            double tienGiaDung = 0.0;
             time_t donMoiNhat = 0;
             double tongSao = 0.0;
             int demSao = 0;
@@ -131,10 +134,22 @@ bool DuDoanXuHuong::huanLuyen() {
                         donHoanThanh++;
                         if (dh->getThoiGianTao() > donMoiNhat) donMoiNhat = dh->getThoiGianTao();
 
-                        // Tinh tien
+                        // Tinh tien theo don & nhom san pham
                         for (const ChiTietDonHang& ct : dsCTDH) {
                             if (ct.getMaDonHang() == dh->getMaDonHang()) {
-                                tongTien += ct.getThanhTien();
+                                double tt = ct.getThanhTien();
+                                tongTien += tt;
+                                if (qlSanPham) {
+                                    SanPham* sp = qlSanPham->timSanPhamTheoMa(ct.getMaSanPham());
+                                    if (sp) {
+                                        std::string loai = sp->getLoaiSP();
+                                        if (loai == "CONG_NGHE") tienCongNghe += tt;
+                                        else if (loai == "DO_GIA_DUNG") tienGiaDung += tt;
+                                        else tienThucPham += tt;
+                                    } else {
+                                        tienThucPham += tt;
+                                    }
+                                }
                             }
                         }
 
@@ -156,6 +171,17 @@ bool DuDoanXuHuong::huanLuyen() {
                 int nhan = (recency <= 30.0 && saoTB >= 3.0) ? 1 : 0;
                 X1.push_back({ recency, static_cast<double>(donHoanThanh), aov, saoTB });
                 y1.push_back(nhan);
+
+                if (qlSanPham && tongTien > 0.0) {
+                    double r0 = tienThucPham / tongTien;
+                    double r1 = tienCongNghe / tongTien;
+                    double r2 = tienGiaDung / tongTien;
+                    int nhanNhom = 0;
+                    if (r1 >= r0 && r1 >= r2) nhanNhom = 1;
+                    else if (r2 >= r0 && r2 >= r1) nhanNhom = 2;
+                    X2.push_back({ r0, r1, r2, aov, static_cast<double>(donHoanThanh) });
+                    y2.push_back(nhanNhom);
+                }
             }
         }
     }

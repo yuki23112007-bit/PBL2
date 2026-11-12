@@ -52,7 +52,27 @@ void GaussianNaiveBayes::fit(const std::vector<std::vector<double>>& X, const st
         }
     }
 
-    // 2. Tinh phuong sai sigma^2
+    // 2. Tinh phuong sai sigma^2 va phuong sai toan cuc de lam tron (variance smoothing)
+    std::vector<double> globalMeans(soDacTrung, 0.0);
+    std::vector<double> globalVars(soDacTrung, 0.0);
+    for (int i = 0; i < soLuongMau; ++i) {
+        for (int j = 0; j < soDacTrung; ++j) {
+            globalMeans[j] += X[i][j];
+        }
+    }
+    for (int j = 0; j < soDacTrung; ++j) {
+        globalMeans[j] /= static_cast<double>(soLuongMau);
+    }
+    for (int i = 0; i < soLuongMau; ++i) {
+        for (int j = 0; j < soDacTrung; ++j) {
+            double d = X[i][j] - globalMeans[j];
+            globalVars[j] += d * d;
+        }
+    }
+    for (int j = 0; j < soDacTrung; ++j) {
+        globalVars[j] /= static_cast<double>(soLuongMau);
+    }
+
     for (int i = 0; i < soLuongMau; ++i) {
         int c = y[i];
         if (c < 0 || c >= soLop) continue;
@@ -64,10 +84,11 @@ void GaussianNaiveBayes::fit(const std::vector<std::vector<double>>& X, const st
 
     for (int c = 0; c < soLop; ++c) {
         for (int j = 0; j < soDacTrung; ++j) {
+            double smoothing = std::max(1e-3 * globalVars[j], 1e-4);
             if (counts[c] > 1) {
-                vars[c][j] = (vars[c][j] / static_cast<double>(counts[c])) + EPSILON;
+                vars[c][j] = (vars[c][j] / static_cast<double>(counts[c])) + smoothing;
             } else {
-                vars[c][j] = 1.0; // Fallback khi khong du mau
+                vars[c][j] = std::max(globalVars[j], 1.0); // Fallback khi khong du mau
             }
         }
     }
