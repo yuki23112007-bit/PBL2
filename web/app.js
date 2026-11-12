@@ -3,7 +3,7 @@
 // Tuân thủ toàn bộ yêu cầu trong web/README.md & Không dùng mock data riêng
 // ==========================================================================
 
-import { CAT_ICONS } from './src/catData.js';
+let CAT_ICONS = {};
 
 // Chuẩn hóa tiếng Việt phục vụ tìm kiếm thông minh không dấu
 function removeVietnameseTones(str) {
@@ -20,13 +20,22 @@ class MeoLogiApp {
   constructor() {
     this.apiBase = '';
     this.token = sessionStorage.getItem('meologi_token') || '';
-    this.currentUser = JSON.parse(sessionStorage.getItem('meologi_user') || 'null');
+    try {
+      this.currentUser = JSON.parse(sessionStorage.getItem('meologi_user') || 'null');
+    } catch (e) {
+      this.currentUser = null;
+    }
     this.currentRole = 'customer';
 
     // Dữ liệu bộ nhớ khách
     this.allProducts = [];
     this.products = [];
-    this.cart = JSON.parse(localStorage.getItem('meologi_cart') || '[]');
+    try {
+      this.cart = JSON.parse(localStorage.getItem('meologi_cart') || '[]');
+      if (!Array.isArray(this.cart)) this.cart = [];
+    } catch (e) {
+      this.cart = [];
+    }
     this.currentCategory = 'all';
     this.currentSort = 0;
     this.currentSearchKeyword = '';
@@ -34,6 +43,8 @@ class MeoLogiApp {
 
     // Dữ liệu quản trị
     this.adminOrders = [];
+    this.adminOverdueOrders = [];
+    this.showOverdueOnly = false;
     this.adminWarehouses = [];
     this.adminSuppliers = [];
     this.adminRevenues = [];
@@ -104,8 +115,15 @@ class MeoLogiApp {
     this.switchView('view-login');
   }
 
-  // Gắn các icon mèo inline (base64 data-URI, không tải file ngoài)
-  mountCatIcons() {
+  // Gắn các icon mèo inline (base64 data-URI, tải bất đồng bộ để không chặn khởi tạo App)
+  async mountCatIcons() {
+    try {
+      const mod = await import('./src/catData.js');
+      if (mod && mod.CAT_ICONS) CAT_ICONS = mod.CAT_ICONS;
+    } catch (e) {
+      console.warn('Không tải được catData.js:', e);
+    }
+
     const setImg = (id, src) => {
       const el = document.getElementById(id);
       if (el && src) el.innerHTML = `<img src="${src}" alt="Cat" />`;
@@ -330,21 +348,24 @@ class MeoLogiApp {
   // Xác thực & Phiên đăng nhập
   // ------------------------------------------------------------------------
   setRole(role) {
-    this.currentRole = role;
+    this.currentRole = role === 'admin' ? 'admin' : 'customer';
     const btnCust = document.getElementById('role-btn-cust');
     const btnAdmin = document.getElementById('role-btn-admin');
     const u = document.getElementById('login-username');
     const p = document.getElementById('login-password');
-    if (role === 'admin') {
-      btnAdmin.classList.add('active');
-      btnCust.classList.remove('active');
-      if (u) u.placeholder = 'Tên đăng nhập quản trị...';
+    const regWrap = document.getElementById('login-register-wrap');
+    if (this.currentRole === 'admin') {
+      if (btnAdmin) btnAdmin.classList.add('active');
+      if (btnCust) btnCust.classList.remove('active');
+      if (u) u.placeholder = 'Tên đăng nhập quản trị (vd: admin)...';
       if (p) p.placeholder = 'Mật khẩu quản trị...';
+      if (regWrap) regWrap.style.display = 'none';
     } else {
-      btnCust.classList.add('active');
-      btnAdmin.classList.remove('active');
+      if (btnCust) btnCust.classList.add('active');
+      if (btnAdmin) btnAdmin.classList.remove('active');
       if (u) u.placeholder = 'Tên đăng nhập khách hàng...';
       if (p) p.placeholder = 'Mật khẩu...';
+      if (regWrap) regWrap.style.display = 'block';
     }
   }
 
@@ -1130,17 +1151,52 @@ class MeoLogiApp {
         this.renderAdminPending(pending);
       }
 
-      // 3. Toàn bộ đơn hàng (qua BST)
+      // 3. Đơn quá hạn 3 ngày
+      const resOverdue = await fetch(`${this.apiBase}/api/admin/orders/overdue`, {
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      });
+      if (resOverdue.ok) {
+        this.adminOverdueOrders = await resOverdue.json();
+        this.updateOverdueBanner();
+      }
+
+      // 4. Toàn bộ đơn hàng (qua BST)
       const resAll = await fetch(`${this.apiBase}/api/orders`, {
         headers: { 'Authorization': `Bearer ${this.token}` }
       });
       if (resAll.ok) {
         this.adminOrders = await resAll.json();
-        this.renderAdminAllOrders(this.adminOrders);
+        this.renderAdminAllOrders(this.showOverdueOnly ? this.adminOverdueOrders : this.adminOrders);
       }
     } catch (e) {
       console.error('Lỗi nạp đơn hàng admin:', e);
     }
+  }
+
+  updateOverdueBanner() {
+    const banner = document.getElementById('adm-overdue-banner');
+    const textEl = document.getElementById('adm-overdue-count-text');
+    const btnEl = document.getElementById('btn-adm-overdue-filter');
+    if (!banner || !textEl) return;
+
+    if (this.adminOverdueOrders.length > 0) {
+      banner.classList.remove('hidden');
+      const ids = this.adminOverdueOrders.slice(0, 5).map(o => o.maDonHang).join(', ');
+      const more = this.adminOverdueOrders.length > 5 ? ` (+${this.adminOverdueOrders.length - 5} đơn khác)` : '';
+      textEl.textContent = `Có ${this.adminOverdueOrders.length} đơn quá hạn giao dự kiến (${ids}${more}).`;
+      if (btnEl) {
+        btnEl.textContent = this.showOverdueOnly ? 'Xem Tất Cả Đơn Hàng' : 'Chỉ Xem Đơn Quá Hạn';
+      }
+    } else {
+      this.showOverdueOnly = false;
+      banner.classList.add('hidden');
+    }
+  }
+
+  toggleOverdueFilter() {
+    this.showOverdueOnly = !this.showOverdueOnly;
+    this.updateOverdueBanner();
+    this.renderAdminAllOrders(this.showOverdueOnly ? this.adminOverdueOrders : this.adminOrders);
   }
 
   renderAdminQueue(queue) {
@@ -1160,6 +1216,7 @@ class MeoLogiApp {
         <td><span class="tag-status tag-pending">${o.trangThai}</span></td>
         <td>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.openOrderDetailById('${o.maDonHang}')">Chi tiết</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="App.adminCancelOrder('${o.maDonHang}')">Hủy</button>
         </td>
       </tr>
     `).join('');
@@ -1181,6 +1238,7 @@ class MeoLogiApp {
         <td><em>Đang chờ nhập thêm hàng vào kho</em></td>
         <td>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.openOrderDetailById('${o.maDonHang}')">Chi tiết</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="App.adminCancelOrder('${o.maDonHang}')">Hủy</button>
         </td>
       </tr>
     `).join('');
@@ -1212,6 +1270,10 @@ class MeoLogiApp {
       if (o.trangThaiMa === 'DA_DUYET') {
         shipBtn = `<button type="button" class="btn btn-primary btn-sm" onclick="App.shipOrder('${o.maDonHang}')">Giao hàng</button>`;
       }
+      let cancelBtn = '';
+      if (o.trangThaiMa === 'CHO_DUYET' || o.trangThaiMa === 'DANG_CHO_HANG') {
+        cancelBtn = `<button type="button" class="btn btn-danger btn-sm" onclick="App.adminCancelOrder('${o.maDonHang}')">Hủy</button>`;
+      }
 
       return `
         <tr>
@@ -1224,10 +1286,34 @@ class MeoLogiApp {
           <td>
             <button type="button" class="btn btn-outline btn-sm" onclick="App.openOrderDetailById('${o.maDonHang}')">Xem</button>
             ${shipBtn}
+            ${cancelBtn}
           </td>
         </tr>
       `;
     }).join('');
+  }
+
+  async adminCancelOrder(orderId) {
+    if (!confirm(`Bạn có chắc muốn hủy đơn hàng ${orderId}?`)) return;
+    try {
+      const res = await fetch(`${this.apiBase}/api/admin/orders/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`
+        },
+        body: JSON.stringify({ orderId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        this.showToast(data.message);
+        this.loadAdminOrders();
+      } else {
+        this.showToast(data.message || 'Không thể hủy đơn hàng.', true);
+      }
+    } catch (e) {
+      this.showToast('Lỗi khi hủy đơn hàng.', true);
+    }
   }
 
   async approveNextOrder() {
@@ -1404,11 +1490,11 @@ class MeoLogiApp {
         <td>${p.maNCC}</td>
         <td>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.openEditProductModal('${p.maSP}')">Sửa</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')" style="${btnStockStyle}">+ Nhập Kho</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')">+ Nhập Kho</button>
           <button type="button" class="btn btn-outline btn-sm" onclick="App.deleteProduct('${p.maSP}')" style="color: var(--princeton-orange);">Xóa</button>
         </td>
       </tr>
-    `}).join('');
+    `).join('');
   }
 
   handleAdminProductSearch(e) {
@@ -2792,6 +2878,10 @@ class MeoLogiApp {
 
 // Khởi chạy App toàn cục
 window.App = new MeoLogiApp();
-window.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', () => {
+    window.App.init();
+  });
+} else {
   window.App.init();
-});
+}

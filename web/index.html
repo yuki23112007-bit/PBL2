@@ -51,7 +51,7 @@
         </button>
       </form>
 
-      <div class="form-group mt-16 text-center">
+      <div class="form-group mt-16 text-center" id="login-register-wrap">
         <button type="button" class="btn btn-outline btn-sm btn-block" onclick="App.openRegisterModal()">
           Chưa có tài khoản? Đăng ký ngay
         </button>
@@ -280,6 +280,19 @@
               </button>
               <button type="button" class="btn btn-outline" onclick="App.loadAdminOrders()">
                 Làm Mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Cảnh báo đơn quá hạn 3 ngày (/api/admin/orders/overdue) -->
+          <div id="adm-overdue-banner" class="glass-panel p-16 mb-20 hidden" style="border: 1px solid rgba(245, 130, 32, 0.45); background: rgba(255, 245, 235, 0.95);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong style="color: var(--princeton-orange);">⚠️ Cảnh báo đơn quá hạn 3 ngày:</strong>
+                <span id="adm-overdue-count-text" style="color: var(--space-indigo); font-size: 13.5px;"></span>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm" id="btn-adm-overdue-filter" onclick="App.toggleOverdueFilter()">
+                Chỉ Xem Đơn Quá Hạn
               </button>
             </div>
           </div>
@@ -973,6 +986,6 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Nhúng script chính (tuân thủ mục 2 README: web/app.js) -->
-  <script type="module" src="app.js"></script>
+  <script src="app.js?v=4" defer></script>
 </body>
 </html>
