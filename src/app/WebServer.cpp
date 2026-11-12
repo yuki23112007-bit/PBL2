@@ -333,6 +333,7 @@ void WebServer::napDuLieuHeThong() {
     napGiaoHang();
     duDoanXuHuong.ganDependencies(&qlDonHang, &danhSachTaiKhoan, &qlSanPham);
     duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
+    duDoanXuHuong.huanLuyen();
     cout << "[WebServer] Nap du lieu hoan tat!" << endl;
 }
 

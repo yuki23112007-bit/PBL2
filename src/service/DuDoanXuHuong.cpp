@@ -207,28 +207,38 @@ std::vector<KetQuaQuayLai> DuDoanXuHuong::duDoanTatCaQuayLai() {
             }
         }
 
-        // Tinh cac dac trung RFM
-        double recency = donCuoi > 0 ? (difftime(now, donCuoi) / 86400.0) : 45.0;
-        if (recency < 0.1) recency = 0.1;
-        int frequency = soDon;
-        double aov = soDon > 0 ? (tongTien / soDon) : 100000.0;
-        double satisfaction = demSao > 0 ? (tongSao / demSao) : (soDon > 0 ? 4.0 : 3.0);
-
-        std::vector<double> x = { recency, static_cast<double>(frequency), aov, satisfaction };
-        std::vector<double> probas = modelQuayLai.predictProba(x);
-
-        double pQuayLai = 50.0; // Fallback
-        if (probas.size() >= 2) {
-            pQuayLai = probas[1] * 100.0;
-        }
-
         KetQuaQuayLai kq;
         kq.idKhachHang = idND;
         kq.username = tk->getUsername();
         kq.hoTen = nd ? nd->getHoTen() : tk->getUsername();
+        kq.frequencyDon = soDon;
+
+        if (soDon == 0) {
+            kq.recencyNgay = 0.0;
+            kq.monetaryAOV = 0.0;
+            kq.satisfactionSao = 0.0;
+            kq.xacSuatQuayLai = 0.0;
+            kq.mucDo = "Chưa có đơn";
+            danhSach.push_back(kq);
+            continue;
+        }
+
+        // Tinh cac dac trung RFM thuc te
+        double recency = donCuoi > 0 ? (difftime(now, donCuoi) / 86400.0) : 0.0;
+        if (recency < 0.1) recency = 0.1;
+        double aov = tongTien / soDon;
+        double satisfaction = demSao > 0 ? (tongSao / demSao) : 4.0;
+
+        std::vector<double> x = { recency, static_cast<double>(soDon), aov, satisfaction };
+        std::vector<double> probas = modelQuayLai.predictProba(x);
+
+        double pQuayLai = 50.0;
+        if (probas.size() >= 2) {
+            pQuayLai = probas[1] * 100.0;
+        }
+
         kq.xacSuatQuayLai = std::round(pQuayLai * 10.0) / 10.0;
         kq.recencyNgay = std::round(recency * 10.0) / 10.0;
-        kq.frequencyDon = frequency;
         kq.monetaryAOV = std::round(aov);
         kq.satisfactionSao = std::round(satisfaction * 10.0) / 10.0;
 
@@ -284,18 +294,32 @@ std::vector<KetQuaNhomSP> DuDoanXuHuong::duDoanTatCaNhomSP() {
             }
         }
 
+        KetQuaNhomSP kq;
+        kq.idKhachHang = idND;
+        kq.username = tk->getUsername();
+        kq.hoTen = nd ? nd->getHoTen() : tk->getUsername();
+
         double tongTien = tienThucPham + tienCongNghe + tienGiaDung;
-        double r0 = tongTien > 0 ? (tienThucPham / tongTien) : 0.6;
-        double r1 = tongTien > 0 ? (tienCongNghe / tongTien) : 0.2;
-        double r2 = tongTien > 0 ? (tienGiaDung / tongTien) : 0.2;
-        double aov = tongDon > 0 ? (tongTien / tongDon) : 250000.0;
-        double freq = tongDon > 0 ? static_cast<double>(tongDon) : 2.0;
+
+        if (tongDon == 0 || tongTien <= 0.0) {
+            kq.nhomDuDoan = "Chưa có dữ liệu";
+            kq.xacSuatNhom = 0.0;
+            kq.xacSuatCacNhom = { 0.0, 0.0, 0.0 };
+            danhSach.push_back(kq);
+            continue;
+        }
+
+        double r0 = tienThucPham / tongTien;
+        double r1 = tienCongNghe / tongTien;
+        double r2 = tienGiaDung / tongTien;
+        double aov = tongTien / tongDon;
+        double freq = static_cast<double>(tongDon);
 
         std::vector<double> x = { r0, r1, r2, aov, freq };
         std::vector<double> probas = modelNhomSP.predictProba(x);
 
         if (probas.size() < 3) {
-            probas = { 0.5, 0.3, 0.2 };
+            probas = { 0.34, 0.33, 0.33 };
         }
 
         int maxIdx = 0;
@@ -306,10 +330,6 @@ std::vector<KetQuaNhomSP> DuDoanXuHuong::duDoanTatCaNhomSP() {
         if (maxIdx == 1) tenNhom = "Công nghệ";
         else if (maxIdx == 2) tenNhom = "Đồ gia dụng";
 
-        KetQuaNhomSP kq;
-        kq.idKhachHang = idND;
-        kq.username = tk->getUsername();
-        kq.hoTen = nd ? nd->getHoTen() : tk->getUsername();
         kq.nhomDuDoan = tenNhom;
         kq.xacSuatNhom = std::round(probas[maxIdx] * 1000.0) / 10.0;
         kq.xacSuatCacNhom = {
@@ -326,12 +346,19 @@ std::vector<KetQuaNhomSP> DuDoanXuHuong::duDoanTatCaNhomSP() {
 
 bool DuDoanXuHuong::duDoanChoKhachHang(const std::string& idKhachHang, KetQuaQuayLai& kqQuayLai, KetQuaNhomSP& kqNhom) {
     auto dsQuayLai = duDoanTatCaQuayLai();
+    bool timThay = false;
     for (const auto& item : dsQuayLai) {
         if (item.idKhachHang == idKhachHang) {
+            if (item.frequencyDon == 0) {
+                // Khach chua co don hang nao thi khong du doan
+                return false;
+            }
             kqQuayLai = item;
+            timThay = true;
             break;
         }
     }
+    if (!timThay) return false;
 
     auto dsNhom = duDoanTatCaNhomSP();
     for (const auto& item : dsNhom) {

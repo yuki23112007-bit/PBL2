@@ -2504,6 +2504,19 @@ class MeoLogiApp {
       return;
     }
     tbody.innerHTML = list.map(item => {
+      if (item.frequencyDon === 0) {
+        return `
+          <tr>
+            <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+            <td>-</td>
+            <td><strong>0</strong> đơn</td>
+            <td>0 đ</td>
+            <td>-</td>
+            <td><span class="tag-status tag-pending">Chưa có đơn</span></td>
+            <td><span style="color: var(--space-indigo-light); font-size: 12px;">Chưa đủ dữ liệu</span></td>
+          </tr>
+        `;
+      }
       let badgeClass = 'tag-success';
       if (item.mucDo === 'Trung bình') badgeClass = 'tag-pending';
       else if (item.mucDo === 'Thấp') badgeClass = 'tag-cancelled';
@@ -2536,18 +2549,30 @@ class MeoLogiApp {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--space-indigo-light);">Chưa có dữ liệu nhóm sản phẩm.</td></tr>`;
       return;
     }
-    tbody.innerHTML = list.map(item => `
-      <tr>
-        <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
-        <td><strong style="color: var(--princeton-orange); font-size: 14px;">🛍️ ${item.nhomDuDoan}</strong></td>
-        <td><span class="tag-status tag-success" style="font-weight: 700;">${item.xacSuatNhom}% tin cậy</span></td>
-        <td>
-          <div style="font-size: 12px; color: var(--space-indigo-light); line-height: 1.6;">
-            🥬 Thực phẩm: <strong>${item.xacSuatThucPham}%</strong> | 📱 Công nghệ: <strong>${item.xacSuatCongNghe}%</strong> | 🍳 Gia dụng: <strong>${item.xacSuatGiaDung}%</strong>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = list.map(item => {
+      if (item.xacSuatNhom === 0 || item.nhomDuDoan === "Chưa có dữ liệu") {
+        return `
+          <tr>
+            <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+            <td><span style="color: var(--space-indigo-light); font-size: 13px;">Chưa có lịch sử mua</span></td>
+            <td><span class="tag-status tag-pending">Chưa đủ dữ liệu</span></td>
+            <td><span style="font-size: 12px; color: var(--space-indigo-light);">-</span></td>
+          </tr>
+        `;
+      }
+      return `
+        <tr>
+          <td><strong>${item.hoTen}</strong><br/><span style="font-size: 11.5px; color: var(--space-indigo-light);">${item.username} (${item.idKhachHang})</span></td>
+          <td><strong style="color: var(--princeton-orange); font-size: 14px;">🛍️ ${item.nhomDuDoan}</strong></td>
+          <td><span class="tag-status tag-success" style="font-weight: 700;">${item.xacSuatNhom}% tin cậy</span></td>
+          <td>
+            <div style="font-size: 12px; color: var(--space-indigo-light); line-height: 1.6;">
+              🥬 Thực phẩm: <strong>${item.xacSuatThucPham}%</strong> | 📱 Công nghệ: <strong>${item.xacSuatCongNghe}%</strong> | 🍳 Gia dụng: <strong>${item.xacSuatGiaDung}%</strong>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   async retrainPredictions() {
@@ -2577,7 +2602,7 @@ class MeoLogiApp {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.success && data.quayLai && data.nhomSP) {
+        if (data.success && data.quayLai && data.nhomSP && data.quayLai.xacSuat > 0) {
           const titleEl = document.getElementById('cust-forecast-title');
           const descEl = document.getElementById('cust-forecast-desc');
           const badgeEl = document.getElementById('cust-forecast-suggestion-badge');
@@ -2589,14 +2614,21 @@ class MeoLogiApp {
           }
           if (badgeEl) {
             badgeEl.textContent = `Gợi ý cho bạn: ${data.nhomSP.nhomDuDoan} (${data.nhomSP.xacSuat}%)`;
+            badgeEl.style.display = 'inline-block';
           }
           if (catIconEl) {
             catIconEl.innerHTML = data.quayLai.xacSuat >= 60 ? '😻' : '😸';
           }
           card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
         }
+      } else {
+        card.style.display = 'none';
       }
-    } catch (e) {}
+    } catch (e) {
+      card.style.display = 'none';
+    }
   }
 
   // Tiện ích đóng mở Modal
