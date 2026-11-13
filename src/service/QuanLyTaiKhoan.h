@@ -26,8 +26,11 @@ public:
     bool dangKy(TaiKhoan* tk);                                              // false neu trung username (kiem tra bang Trie)
     TaiKhoan* dangNhap(const string& username, const string& passwordHash); // nullptr neu sai (tra cuu qua Trie O(L))
     TaiKhoan* timTheoUsername(const string& username) const;
+    TaiKhoan* timTheoId(const string& id) const;
     bool kiemTraUsernameTonTai(const string& username) const;               // Kiem tra bang cay Trie O(L)
     bool xoaTaiKhoan(const string& id);
+    void clear();
+    void napTuFile(const vector<TaiKhoan*>& ds);
     int soLuongTaiKhoan() const;
     Trie& getCayTienTo();
     const Trie& getCayTienTo() const;

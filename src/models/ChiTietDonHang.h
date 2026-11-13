@@ -27,10 +27,7 @@ class ChiTietDonHang {
         int getSoLuong() const;
         double getThanhTien() const;
 
-        // Setter
-        void setMaChiTiet(const string&);
-        void setMaDonHang(const string&);
-        void setMaSanPham(const string&);
+        // Setter (khong cho doi cac ma khoa bat bien)
         void setSoLuong(int);
         void setThanhTien(double);
 

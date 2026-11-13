@@ -13,9 +13,8 @@ public:
     Admin(const string& id, const string& username, const string& passwordHash);
     ~Admin() override = default;
 
-    // Getter & Setter theo tài liệu
+    // Getter theo tài liệu
     const string& getAdminId() const { return getId(); }
-    void setAdminId(const string& v) { setId(v); }
 
     void show() const override;
     void hienThiThongTin() const override { show(); }

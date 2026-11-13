@@ -1489,9 +1489,11 @@ class MeoLogiApp {
         <td><span class="tag-status tag-pending">${p.loaiSP}</span></td>
         <td>${p.maNCC}</td>
         <td>
-          <button type="button" class="btn btn-outline btn-sm" onclick="App.openEditProductModal('${p.maSP}')">Sửa</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')">+ Nhập Kho</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="App.deleteProduct('${p.maSP}')" style="color: var(--princeton-orange);">Xóa</button>
+          <div style="display: flex; flex-direction: column; gap: 6px; width: 112px;">
+            <button type="button" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center;" onclick="App.openEditProductModal('${p.maSP}')">Sửa</button>
+            <button type="button" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center;" onclick="App.openStockModal('${p.maSP}', '${p.tenSP}')">+ Nhập Kho</button>
+            <button type="button" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center; color: var(--princeton-orange);" onclick="App.deleteProduct('${p.maSP}')">Xóa</button>
+          </div>
         </td>
       </tr>
     `).join('');

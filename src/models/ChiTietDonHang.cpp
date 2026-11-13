@@ -40,18 +40,6 @@ double ChiTietDonHang::getThanhTien() const {
     return thanhTien;
 }
 
-void ChiTietDonHang::setMaChiTiet(const string& value) {
-    maChiTiet = value;
-}
-
-void ChiTietDonHang::setMaDonHang(const string& value) {
-    maDonHang = value;
-}
-
-void ChiTietDonHang::setMaSanPham(const string& value) {
-    maSanPham = value;
-}
-
 void ChiTietDonHang::setSoLuong(int value) {
     if (value >= 0) {
         soLuong = value;
@@ -91,9 +79,9 @@ istream& operator>>(istream& input, ChiTietDonHang& ct) {
     int sl;
     double tt;
     if (input >> maCT >> maDH >> maSP >> sl >> tt) {
-        ct.setMaChiTiet(maCT);
-        ct.setMaDonHang(maDH);
-        ct.setMaSanPham(maSP);
+        ct.maChiTiet = maCT;
+        ct.maDonHang = maDH;
+        ct.maSanPham = maSP;
         ct.setSoLuong(sl);
         ct.setThanhTien(tt);
     }

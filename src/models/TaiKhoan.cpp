@@ -25,10 +25,6 @@ const string& TaiKhoan::getVaiTro() const {
     return vaiTro;
 }
 
-void TaiKhoan::setId(const string& v) {
-    id = v;
-}
-
 void TaiKhoan::setUsername(const string& v) {
     username = v;
 }

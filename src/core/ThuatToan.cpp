@@ -28,15 +28,3 @@ void ThuatToan::quickSort(vector<double>& arr, int low, int high, bool tangDan) 
     }
 }
 
-int ThuatToan::timKiemNhiPhan(const vector<double>& arr, double giaTri) {
-    int low = 0;
-    int high = (int)arr.size() - 1;
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        if (arr[mid] == giaTri) return mid;
-        if (arr[mid] < giaTri) low = mid + 1;
-        else high = mid - 1;
-    }
-    return -1;
-}
-

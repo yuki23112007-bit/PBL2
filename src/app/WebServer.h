@@ -13,14 +13,13 @@
 #include "../data/FileManager.h"
 #include "../service/QuanLySanPham.h"
 #include "../service/QuanLyDonHang.h"
+#include "../service/QuanLyTaiKhoan.h"
+#include "../service/QuanLyKhoNCC.h"
+#include "../service/QuanLyDoanhThu.h"
 #include "../service/DuDoanXuHuong.h"
-#include "../core/Trie.h"
 #include "../models/TaiKhoan.h"
 #include "../models/Admin.h"
 #include "../models/NguoiDung.h"
-#include "../models/KhoHang.h"
-#include "../models/NhaCungCap.h"
-#include "../models/DoanhThuNgay.h"
 #include "../models/DanhGiaDonHang.h"
 
 using namespace std;
@@ -40,15 +39,13 @@ private:
     atomic<bool> isRunning;
     mutex dataMutex; // Cac luong xu ly request dung chung du lieu nghiep vu
 
-    // Du lieu nghiep vu cot loi cua PBL 2
+    // Du lieu nghiep vu cot loi cua PBL 2 (goi qua tang service/)
     FileManager fileManager;
     QuanLySanPham qlSanPham;
     QuanLyDonHang qlDonHang;
-    Trie cayTrieTaiKhoan;                        // Cay tien to Trie luu tru username phuc vu tra cuu va chan trung lap O(L)
-    vector<TaiKhoan*> danhSachTaiKhoan;
-    vector<KhoHang> danhSachKho;
-    vector<NhaCungCap> danhSachNCC;
-    vector<DoanhThuNgay> danhSachDoanhThu;
+    QuanLyTaiKhoan qlTaiKhoan;
+    QuanLyKhoNCC qlKhoNCC;
+    QuanLyDoanhThu qlDoanhThu;
 
     // Du lieu bo sung cua lop web (file moi trong thu muc du lieu, khong dong vao file cu)
     vector<DanhGiaDonHang> danhSachDanhGia;      // danhgia.txt

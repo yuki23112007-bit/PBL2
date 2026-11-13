@@ -47,10 +47,6 @@ time_t DonHang::getThoiGianTao() const {
     return thoiGianTao;
 }
 
-void DonHang::setMaDonHang(const string& value) {
-    maDonHang = value;
-}
-
 void DonHang::setTenKhachHang(const string& value) {
     tenKhachHang = value;
 }
@@ -69,10 +65,6 @@ void DonHang::setTrangThaiDonHang(const string& value) {
 
 void DonHang::setNgayDatHang(const string& value) {
     ngayDatHang = value;
-}
-
-void DonHang::setMaNguoiDung(const string& value) {
-    maNguoiDung = value;
 }
 
 void DonHang::setThoiGianTao(time_t value) {
@@ -113,14 +105,14 @@ istream& operator>>(istream& input, DonHang& dh) {
     string maDH, tenKH, diaChi, sdt, trangThai, ngayDat, maND;
     long long tg;
     if (input >> maDH >> tenKH >> diaChi >> sdt >> trangThai >> ngayDat >> maND >> tg) {
-        dh.setMaDonHang(maDH);
-        dh.setTenKhachHang(tenKH);
-        dh.setDiaChiKhachHang(diaChi);
-        dh.setSoDienThoaiKhachHang(sdt);
-        dh.setTrangThaiDonHang(trangThai);
-        dh.setNgayDatHang(ngayDat);
-        dh.setMaNguoiDung(maND);
-        dh.setThoiGianTao(static_cast<time_t>(tg));
+        dh.maDonHang = maDH;
+        dh.tenKhachHang = tenKH;
+        dh.diaChiKhachHang = diaChi;
+        dh.soDienThoaiKhachHang = sdt;
+        dh.trangThaiDonHang = trangThai;
+        dh.ngayDatHang = ngayDat;
+        dh.maNguoiDung = maND;
+        dh.thoiGianTao = static_cast<time_t>(tg);
     }
     return input;
 }

@@ -36,14 +36,12 @@ class DonHang {
         const string& getMaNguoiDung() const;
         time_t getThoiGianTao() const;
 
-        // Setter
-        void setMaDonHang(const string&);
+        // Setter (khong cho doi maDonHang, maNguoiDung bat bien)
         void setTenKhachHang(const string&);
         void setDiaChiKhachHang(const string&);
         void setSoDienThoaiKhachHang(const string&);
         void setTrangThaiDonHang(const string&);
         void setNgayDatHang(const string&);
-        void setMaNguoiDung(const string&);
         void setThoiGianTao(time_t);
 
         bool daQuaHan5Phut(time_t thoiGianHienTai) const;

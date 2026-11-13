@@ -18,6 +18,8 @@
 #include "../models/ThucPhamThuong.h"
 #include "../models/ThucPhamTuoiSong.h"
 #include "../models/CongNghe.h"
+#include "../models/PhuongTien.h"
+#include "../models/VanChuyen.h"
 #include "../models/DoGiaDung.h"
 #include "../service/ThongKeDoanhThu.h"
 
@@ -275,11 +277,8 @@ WebServer::WebServer(int port, const string& webRoot, const string& dataDir)
 WebServer::~WebServer() {
     stop();
     luuDuLieuHeThong();
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
-        delete tk;
-    }
-    danhSachTaiKhoan.clear();
-    cayTrieTaiKhoan.clear();
+    qlTaiKhoan.clear();
+    qlKhoNCC.clear();
 }
 
 // -------------------------------------------------------------
@@ -294,23 +293,17 @@ void WebServer::napDuLieuHeThong() {
     }
     cout << "  - Da nap " << dsSP.size() << " san pham." << endl;
 
-    danhSachKho = fileManager.docKhoHang();
-    cout << "  - Da nap " << danhSachKho.size() << " kho hang." << endl;
+    qlKhoNCC.napKho(fileManager.docKhoHang());
+    cout << "  - Da nap " << qlKhoNCC.soLuongKho() << " kho hang." << endl;
 
-    danhSachNCC = fileManager.docNhaCungCap();
-    cout << "  - Da nap " << danhSachNCC.size() << " nha cung cap." << endl;
+    qlKhoNCC.napNCC(fileManager.docNhaCungCap());
+    cout << "  - Da nap " << qlKhoNCC.soLuongNCC() << " nha cung cap." << endl;
 
-    danhSachTaiKhoan = fileManager.docTaiKhoan();
-    cayTrieTaiKhoan.clear();
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
-        if (tk) {
-            cayTrieTaiKhoan.chen(tk->getUsername(), tk->getVaiTro() + "|" + tk->getId());
-        }
-    }
-    cout << "  - Da nap " << danhSachTaiKhoan.size() << " tai khoan (dong bo vao cay Trie)." << endl;
+    qlTaiKhoan.napTuFile(fileManager.docTaiKhoan());
+    cout << "  - Da nap " << qlTaiKhoan.soLuongTaiKhoan() << " tai khoan (dong bo vao cay Trie)." << endl;
 
-    danhSachDoanhThu = fileManager.docDoanhThu();
-    cout << "  - Da nap " << danhSachDoanhThu.size() << " ban ghi doanh thu." << endl;
+    qlDoanhThu.napDuLieu(fileManager.docDoanhThu());
+    cout << "  - Da nap " << qlDoanhThu.soNgayCoDoanhThu() << " ban ghi doanh thu." << endl;
 
     vector<DonHang> dsDH = fileManager.docDonHang();
     vector<ChiTietDonHang> dsCTDH = fileManager.docChiTietDonHang();
@@ -331,7 +324,7 @@ void WebServer::napDuLieuHeThong() {
 
     napDanhGia();
     napGiaoHang();
-    duDoanXuHuong.ganDependencies(&qlDonHang, &danhSachTaiKhoan, &qlSanPham);
+    duDoanXuHuong.ganDependencies(&qlDonHang, &qlTaiKhoan.getDanhSachTaiKhoan(), &qlSanPham);
     duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
     duDoanXuHuong.huanLuyen();
     cout << "[WebServer] Nap du lieu hoan tat!" << endl;
@@ -339,10 +332,10 @@ void WebServer::napDuLieuHeThong() {
 
 void WebServer::luuDuLieuHeThong() {
     fileManager.ghiSanPham(qlSanPham.layDanhSachSanPham(0));
-    fileManager.ghiKhoHang(danhSachKho);
-    fileManager.ghiNhaCungCap(danhSachNCC);
-    fileManager.ghiTaiKhoan(danhSachTaiKhoan);
-    fileManager.ghiDoanhThu(danhSachDoanhThu);
+    fileManager.ghiKhoHang(qlKhoNCC.xuatDanhSachKho());
+    fileManager.ghiNhaCungCap(qlKhoNCC.xuatDanhSachNCC());
+    fileManager.ghiTaiKhoan(qlTaiKhoan.getDanhSachTaiKhoan());
+    fileManager.ghiDoanhThu(qlDoanhThu.getDanhSach());
 
     const vector<DonHang*>& dsDH = qlDonHang.getDanhSachDonHang();
     vector<DonHang> dsDHLuu;
@@ -459,10 +452,7 @@ bool WebServer::xacThuc(const map<string, string>& headers, PhienDangNhap& phien
 }
 
 TaiKhoan* WebServer::timTaiKhoanTheoId(const string& id) const {
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
-        if (tk && tk->getId() == id) return tk;
-    }
-    return nullptr;
+    return qlTaiKhoan.timTheoId(id);
 }
 
 // -------------------------------------------------------------
@@ -850,19 +840,22 @@ bool WebServer::coKhieuNaiDangMo(const string& maDH) const {
 void WebServer::ghiNhanDoanhThu(const DonHang* dh) {
     string ngay = ngayIso(time(nullptr));
     double tong = tongTienDon(dh->getMaDonHang());
-    for (DoanhThuNgay& d : danhSachDoanhThu) {
-        if (d.getNgayThongKe() == ngay) {
-            d.congDonDoanhThu(tong);
-            return;
-        }
-    }
-    danhSachDoanhThu.push_back(DoanhThuNgay(ngay, tong, 1));
+    qlDoanhThu.ghiNhanDonHang(ngay, tong);
 }
 
-// Don "Dang giao" qua 3 ngay so voi thoi gian giao du kien ma khach khong phan hoi (va khong khieu nai) -> tu dong "Da hoan thanh"
+// 1) Don "Cho duyet" qua 5 phut: neu du ton kho -> tu dong duyet va chuyen "Dang giao" (thieu kho -> Pending List, khong bao loi)
+// 2) Don "Dang giao" qua 3 ngay so voi thoi gian giao du kien ma khach khong phan hoi (va khong khieu nai) -> tu dong "Da hoan thanh"
 void WebServer::kiemTraDonQuaHan() {
     time_t now = time(nullptr);
     bool coThayDoi = false;
+
+    vector<DonHang*> tuDongDuyet = qlDonHang.tuDongDuyetDonQuaHan5Phut(qlSanPham, now, coThayDoi);
+    for (DonHang* dh : tuDongDuyet) {
+        if (!dh) continue;
+        dh->setTrangThaiDonHang(chuoiNoiBo("DANG_GIAO"));
+        thoiGianGiaoHang[dh->getMaDonHang()] = now;
+    }
+
     for (DonHang* dh : qlDonHang.getDanhSachDonHang()) {
         if (!dh) continue;
         if (maTrangThai(dh->getTrangThaiDonHang()) != "DANG_GIAO") continue;
@@ -982,36 +975,13 @@ string WebServer::apiLogin(const string& body) {
         return loiJson("Vui lòng nhập tên đăng nhập và mật khẩu!");
     }
 
-    // Tra cuu nhanh su ton tai cua username qua cay tien to Trie O(L) truoc khi xac thuc
-    if (!cayTrieTaiKhoan.tonTai(username)) {
-        return loiJson("Tên đăng nhập hoặc mật khẩu không chính xác!");
-    }
-
-    TaiKhoan* matched = nullptr;
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
-        if (tk && tk->getUsername() == username) {
-            matched = tk;
-            break;
-        }
-    }
-
+    // Tra cuu nhanh su ton tai cua username qua QuanLyTaiKhoan (cay tien to Trie O(L))
+    TaiKhoan* matched = qlTaiKhoan.timTheoUsername(username);
     if (!matched) {
         return loiJson("Tên đăng nhập hoặc mật khẩu không chính xác!");
     }
 
     bool matKhauHopLe = matched->kiemTraMatKhau(md5impl::hex(password));
-    if (!matKhauHopLe) {
-        if (matched->isAdmin()) {
-            if (password == "admin123" || password == "password" || password == "admin") {
-                matKhauHopLe = true;
-            }
-        } else {
-            if (password == "123" || password == "123456") {
-                matKhauHopLe = true;
-            }
-        }
-    }
-
     if (!matKhauHopLe) {
         return loiJson("Tên đăng nhập hoặc mật khẩu không chính xác!");
     }
@@ -1062,7 +1032,7 @@ string WebServer::apiCheckUsername(const map<string, string>& params) {
     username = lamSachTruongFile(username);
     bool tonTai = false;
     if (!username.empty()) {
-        tonTai = cayTrieTaiKhoan.tonTai(username);
+        tonTai = qlTaiKhoan.kiemTraUsernameTonTai(username);
     }
     ostringstream j;
     j << "{\"success\":true,\"username\":\"" << escapeJson(username)
@@ -1092,13 +1062,13 @@ string WebServer::apiRegister(const string& body) {
         return loiJson("Số điện thoại phải gồm 9 đến 11 chữ số.");
     }
 
-    // Tra cuu bang Cay tien to Trie (O(L)) de chan trung lap ten dang nhap
-    if (cayTrieTaiKhoan.tonTai(username)) {
+    // Tra cuu bang QuanLyTaiKhoan (Cay tien to Trie O(L)) de chan trung lap ten dang nhap
+    if (qlTaiKhoan.kiemTraUsernameTonTai(username)) {
         return loiJson("Tên đăng nhập đã được sử dụng!");
     }
 
     int maxId = 222000;
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
+    for (TaiKhoan* tk : qlTaiKhoan.getDanhSachTaiKhoan()) {
         if (tk && tk->isCustomer()) {
             try { maxId = max(maxId, stoi(tk->getId())); } catch (...) {}
         }
@@ -1106,9 +1076,11 @@ string WebServer::apiRegister(const string& body) {
     string newId = to_string(maxId + 1);
 
     NguoiDung* ndMoi = new NguoiDung(newId, username, md5impl::hex(password), hoTen, sdt, diaChi);
-    danhSachTaiKhoan.push_back(ndMoi);
-    cayTrieTaiKhoan.chen(username, "CUSTOMER|" + newId);
-    fileManager.ghiTaiKhoan(danhSachTaiKhoan);
+    if (!qlTaiKhoan.dangKy(ndMoi)) {
+        delete ndMoi;
+        return loiJson("Tên đăng nhập đã được sử dụng!");
+    }
+    fileManager.ghiTaiKhoan(qlTaiKhoan.getDanhSachTaiKhoan());
 
     return "{\"success\":true,\"message\":\"Đăng ký tài khoản thành công! Hãy đăng nhập để mua hàng.\",\"userId\":\"" + newId + "\"}";
 }
@@ -1403,10 +1375,7 @@ string WebServer::apiConfirmReceived(const string& body, const PhienDangNhap& ph
         bool daCo = false;
         for (DanhGiaDonHang& dg : danhSachDanhGia) {
             if (dg.getMaDonHang() == maDH) {
-                dg.setSoSao(sao);
-                dg.setNoiDung(noiDung);
-                dg.setLaKhieuNai(false);
-                dg.setThoiGianDanhGia(time(nullptr));
+                dg.capNhatDanhGia(sao, noiDung);
                 daCo = true;
             }
         }
@@ -1444,10 +1413,7 @@ string WebServer::apiComplainOrder(const string& body, const PhienDangNhap& phie
     bool daCo = false;
     for (DanhGiaDonHang& dg : danhSachDanhGia) {
         if (dg.getMaDonHang() == maDH) {
-            dg.setSoSao(1);
-            dg.setNoiDung(noiDung);
-            dg.setLaKhieuNai(true);
-            dg.setThoiGianDanhGia(time(nullptr));
+            dg.baoCaoKhieuNai(noiDung);
             daCo = true;
         }
     }
@@ -1571,10 +1537,51 @@ string WebServer::apiShipOrder(const string& body) {
         return loiJson("Chỉ chuyển giao hàng cho đơn đã được duyệt kho (Đã duyệt)!");
     }
 
+    // Dieu phoi phuong tien & tinh cuoc van chuyen da hinh qua VanChuyen / PhuongTien
+    bool coHangTuoiSong = false;
+    for (const ChiTietDonHang& ct : qlDonHang.getDanhSachCTDH()) {
+        if (ct.getMaDonHang() == maDH) {
+            SanPham* sp = qlSanPham.timSanPhamTheoMa(ct.getMaSanPham());
+            if (sp && sp->getLoaiSP() == "TUOI_SONG") {
+                coHangTuoiSong = true;
+                break;
+            }
+        }
+    }
+    double quangDuongKm = 5.0;
+    if (data.count("quangDuongKm")) {
+        try {
+            double km = stod(data["quangDuongKm"]);
+            if (km > 0.0) quangDuongKm = km;
+        } catch (...) {}
+    }
+
+    PhuongTien* pt = nullptr;
+    if (coHangTuoiSong) {
+        pt = new XeTaiLanh("43C-88888", "Hino", 2.5, -18.0);
+    } else if (tongTienDon(maDH) >= 1000000.0) {
+        pt = new XeTai("43C-66666", "Isuzu", 1.5);
+    } else {
+        pt = new XeMay("43D1-12345", "Honda", 125);
+    }
+
+    VanChuyen vanChuyen("VC-" + maDH, maDH, time(nullptr), "Đang giao", 0.0, "", 0, pt);
+    double phiShip = vanChuyen.tinhChiPhiVanChuyen(quangDuongKm);
+    string loaiXe = pt->getLoaiPhuongTien();
+    delete pt;
+
     dh->setTrangThaiDonHang(chuoiNoiBo("DANG_GIAO"));
     thoiGianGiaoHang[maDH] = time(nullptr);
     luuDuLieuHeThong();
-    return "{\"success\":true,\"message\":\"Đơn hàng " + maDH + " đã bắt đầu giao hàng (Đang giao)!\"}";
+
+    ostringstream msg;
+    msg << "Đơn hàng " << maDH << " đã bắt đầu giao bằng " << loaiXe
+        << " (Phí vận chuyển: " << fixed << setprecision(0) << phiShip << " đ)!";
+    ostringstream res;
+    res << "{\"success\":true,\"message\":\"" << escapeJson(msg.str()) << "\","
+        << "\"loaiXe\":\"" << escapeJson(loaiXe) << "\","
+        << "\"phiVanChuyen\":" << fixed << setprecision(0) << phiShip << "}";
+    return res.str();
 }
 
 string WebServer::apiGetReviews() {
@@ -1641,14 +1648,16 @@ string WebServer::apiGetWarehouseAlerts() {
 string WebServer::apiGetWarehouses() {
     ostringstream json;
     json << "[";
-    for (size_t i = 0; i < danhSachKho.size(); ++i) {
+    const auto& dsKho = qlKhoNCC.getDanhSachKho();
+    for (size_t i = 0; i < dsKho.size(); ++i) {
+        if (!dsKho[i]) continue;
         if (i > 0) json << ",";
-        SanPham* sp = qlSanPham.timSanPhamTheoMa(danhSachKho[i].getMaSanPham());
+        SanPham* sp = qlSanPham.timSanPhamTheoMa(dsKho[i]->getMaSanPham());
         json << "{"
-             << "\"maKho\":\"" << escapeJson(danhSachKho[i].getMaKho()) << "\","
-             << "\"viTri\":\"" << escapeJson(danhSachKho[i].getViTri()) << "\","
-             << "\"sucChua\":" << danhSachKho[i].getSucChuaToiDa() << ","
-             << "\"maSanPham\":\"" << escapeJson(danhSachKho[i].getMaSanPham()) << "\","
+             << "\"maKho\":\"" << escapeJson(dsKho[i]->getMaKho()) << "\","
+             << "\"viTri\":\"" << escapeJson(dsKho[i]->getViTri()) << "\","
+             << "\"sucChua\":" << dsKho[i]->getSucChuaToiDa() << ","
+             << "\"maSanPham\":\"" << escapeJson(dsKho[i]->getMaSanPham()) << "\","
              << "\"tenSanPham\":\"" << escapeJson(sp ? sp->getTenSP() : "Chưa gắn") << "\","
              << "\"tonKho\":" << (sp ? sp->getSoLuongTonKho() : 0)
              << "}";
@@ -1668,19 +1677,7 @@ string WebServer::apiSaveWarehouse(const string& body) {
     if (maKho.empty() || viTri.empty()) return loiJson("Mã kho và vị trí không được để trống!");
     if (sucChua <= 0) return loiJson("Sức chứa phải lớn hơn 0!");
 
-    bool daCo = false;
-    for (KhoHang& k : danhSachKho) {
-        if (k.getMaKho() == maKho) {
-            k.setViTri(viTri);
-            k.setSucChuaToiDa(sucChua);
-            k.setMaSanPham(maSP);
-            daCo = true;
-            break;
-        }
-    }
-    if (!daCo) {
-        danhSachKho.push_back(KhoHang(maKho, viTri, sucChua, maSP));
-    }
+    qlKhoNCC.luuHoacCapNhatKho(maKho, viTri, sucChua, maSP);
     luuDuLieuHeThong();
     return "{\"success\":true,\"message\":\"Đã lưu thông tin kho " + maKho + " thành công!\"}";
 }
@@ -1688,12 +1685,9 @@ string WebServer::apiSaveWarehouse(const string& body) {
 string WebServer::apiDeleteWarehouse(const string& body) {
     auto data = parseSimpleJson(body);
     string maKho = data["maKho"];
-    for (auto it = danhSachKho.begin(); it != danhSachKho.end(); ++it) {
-        if (it->getMaKho() == maKho) {
-            danhSachKho.erase(it);
-            luuDuLieuHeThong();
-            return "{\"success\":true,\"message\":\"Đã xóa kho " + maKho + " thành công!\"}";
-        }
+    if (qlKhoNCC.xoaKho(maKho)) {
+        luuDuLieuHeThong();
+        return "{\"success\":true,\"message\":\"Đã xóa kho " + maKho + " thành công!\"}";
     }
     return loiJson("Không tìm thấy kho: " + maKho);
 }
@@ -1701,14 +1695,16 @@ string WebServer::apiDeleteWarehouse(const string& body) {
 string WebServer::apiGetSuppliers() {
     ostringstream json;
     json << "[";
-    for (size_t i = 0; i < danhSachNCC.size(); ++i) {
+    const auto& dsNCC = qlKhoNCC.getDanhSachNCC();
+    for (size_t i = 0; i < dsNCC.size(); ++i) {
+        if (!dsNCC[i]) continue;
         if (i > 0) json << ",";
         json << "{"
-             << "\"maNCC\":\"" << escapeJson(danhSachNCC[i].getMaNhaCungCap()) << "\","
-             << "\"tenCongTy\":\"" << escapeJson(danhSachNCC[i].getTenCongTy()) << "\","
-             << "\"diaChi\":\"" << escapeJson(danhSachNCC[i].getDiaChi()) << "\","
-             << "\"sdt\":\"" << escapeJson(danhSachNCC[i].getSoDienThoai()) << "\","
-             << "\"danhMuc\":\"" << escapeJson(danhSachNCC[i].getDanhMucCungCap()) << "\""
+             << "\"maNCC\":\"" << escapeJson(dsNCC[i]->getMaNhaCungCap()) << "\","
+             << "\"tenCongTy\":\"" << escapeJson(dsNCC[i]->getTenCongTy()) << "\","
+             << "\"diaChi\":\"" << escapeJson(dsNCC[i]->getDiaChi()) << "\","
+             << "\"sdt\":\"" << escapeJson(dsNCC[i]->getSoDienThoai()) << "\","
+             << "\"danhMuc\":\"" << escapeJson(dsNCC[i]->getDanhMucCungCap()) << "\""
              << "}";
     }
     json << "]";
@@ -1725,20 +1721,7 @@ string WebServer::apiSaveSupplier(const string& body) {
 
     if (maNCC.empty() || tenCT.empty()) return loiJson("Mã và tên nhà cung cấp không được để trống!");
 
-    bool daCo = false;
-    for (NhaCungCap& n : danhSachNCC) {
-        if (n.getMaNhaCungCap() == maNCC) {
-            n.setTenCongTy(tenCT);
-            n.setDiaChi(diaChi);
-            n.setSoDienThoai(sdt);
-            n.setDanhMucCungCap(danhMuc);
-            daCo = true;
-            break;
-        }
-    }
-    if (!daCo) {
-        danhSachNCC.push_back(NhaCungCap(maNCC, tenCT, diaChi, sdt, danhMuc));
-    }
+    qlKhoNCC.luuHoacCapNhatNCC(maNCC, tenCT, diaChi, sdt, danhMuc);
     luuDuLieuHeThong();
     return "{\"success\":true,\"message\":\"Đã lưu nhà cung cấp " + maNCC + " thành công!\"}";
 }
@@ -1746,12 +1729,9 @@ string WebServer::apiSaveSupplier(const string& body) {
 string WebServer::apiDeleteSupplier(const string& body) {
     auto data = parseSimpleJson(body);
     string maNCC = data["maNCC"];
-    for (auto it = danhSachNCC.begin(); it != danhSachNCC.end(); ++it) {
-        if (it->getMaNhaCungCap() == maNCC) {
-            danhSachNCC.erase(it);
-            luuDuLieuHeThong();
-            return "{\"success\":true,\"message\":\"Đã xóa nhà cung cấp " + maNCC + " thành công!\"}";
-        }
+    if (qlKhoNCC.xoaNCC(maNCC)) {
+        luuDuLieuHeThong();
+        return "{\"success\":true,\"message\":\"Đã xóa nhà cung cấp " + maNCC + " thành công!\"}";
     }
     return loiJson("Không tìm thấy nhà cung cấp: " + maNCC);
 }
@@ -1763,14 +1743,8 @@ string WebServer::apiGetRevenues(const map<string, string>& params) {
     string startDate = params.count("startDate") ? params.at("startDate") : "";
     string endDate = params.count("endDate") ? params.at("endDate") : "";
 
-    // 1. Loc ban ghi theo khoang thoi gian
-    vector<DoanhThuNgay> filtered;
-    for (const DoanhThuNgay& dt : danhSachDoanhThu) {
-        string ngay = dt.getNgayThongKe();
-        if (!startDate.empty() && ngay < startDate) continue;
-        if (!endDate.empty() && ngay > endDate) continue;
-        filtered.push_back(dt);
-    }
+    // 1. Loc ban ghi theo khoang thoi gian qua QuanLyDoanhThu
+    vector<DoanhThuNgay> filtered = qlDoanhThu.locTheoKhoangNgay(startDate, endDate);
 
     // 2. Ap dung thuat toan tu class ThongKeDoanhThu (Thong ke mo ta + QuickSort + Hoi quy tuyen tinh OLS)
     ThongKeDoanhThu thongKe(filtered);
@@ -1986,7 +1960,7 @@ string WebServer::apiGetUsers() {
     ostringstream json;
     json << "[";
     bool dau = true;
-    for (TaiKhoan* tk : danhSachTaiKhoan) {
+    for (TaiKhoan* tk : qlTaiKhoan.getDanhSachTaiKhoan()) {
         if (!tk) continue;
         if (!dau) json << ",";
         dau = false;
@@ -2025,15 +1999,13 @@ string WebServer::apiSaveUser(const string& body, const PhienDangNhap& phien) {
         TaiKhoan* tk = timTaiKhoanTheoId(id);
         if (!tk) return loiJson("Không tìm thấy tài khoản ID: " + id);
         if (NguoiDung* nd = dynamic_cast<NguoiDung*>(tk)) {
-            if (!hoTen.empty()) nd->setHoTen(hoTen);
-            if (!sdt.empty()) nd->setSoDienThoai(sdt);
-            if (!diaChi.empty()) nd->setDiaChi(diaChi);
+            nd->capNhatHoSo(hoTen, sdt, diaChi);
         }
         if (!password.empty()) {
             if (password.size() < 6) return loiJson("Mật khẩu mới phải từ 6 ký tự trở lên!");
             tk->setPasswordHash(md5impl::hex(password));
         }
-        fileManager.ghiTaiKhoan(danhSachTaiKhoan);
+        fileManager.ghiTaiKhoan(qlTaiKhoan.getDanhSachTaiKhoan());
         return "{\"success\":true,\"message\":\"Cập nhật thông tin tài khoản thành công!\"}";
     }
 
@@ -2041,13 +2013,13 @@ string WebServer::apiSaveUser(const string& body, const PhienDangNhap& phien) {
     if (username.size() < 3) return loiJson("Tên đăng nhập phải từ 3 ký tự trở lên!");
     if (password.size() < 6) return loiJson("Mật khẩu phải từ 6 ký tự trở lên!");
     
-    // Kiem tra chan trung lap ten dang nhap bang cay tien to Trie (O(L))
-    if (cayTrieTaiKhoan.tonTai(username)) {
+    // Kiem tra chan trung lap ten dang nhap bang QuanLyTaiKhoan (cay tien to Trie O(L))
+    if (qlTaiKhoan.kiemTraUsernameTonTai(username)) {
         return loiJson("Tên đăng nhập đã tồn tại!");
     }
 
     int maxId = (role == "ADMIN") ? 111000 : 222000;
-    for (TaiKhoan* t : danhSachTaiKhoan) {
+    for (TaiKhoan* t : qlTaiKhoan.getDanhSachTaiKhoan()) {
         if (!t) continue;
         if ((role == "ADMIN" && t->isAdmin()) || (role != "ADMIN" && t->isCustomer())) {
             try { maxId = max(maxId, stoi(t->getId())); } catch (...) {}
@@ -2062,9 +2034,11 @@ string WebServer::apiSaveUser(const string& body, const PhienDangNhap& phien) {
         tkMoi = new NguoiDung(newId, username, md5impl::hex(password),
                               hoTen.empty() ? username : hoTen, sdt, diaChi);
     }
-    danhSachTaiKhoan.push_back(tkMoi);
-    cayTrieTaiKhoan.chen(username, role + "|" + newId);
-    fileManager.ghiTaiKhoan(danhSachTaiKhoan);
+    if (!qlTaiKhoan.dangKy(tkMoi)) {
+        delete tkMoi;
+        return loiJson("Tên đăng nhập đã tồn tại!");
+    }
+    fileManager.ghiTaiKhoan(qlTaiKhoan.getDanhSachTaiKhoan());
     return "{\"success\":true,\"message\":\"Tạo tài khoản " + username + " thành công!\",\"id\":\"" + newId + "\"}";
 }
 
@@ -2074,14 +2048,9 @@ string WebServer::apiDeleteUser(const string& body, const PhienDangNhap& phien) 
     if (id == phien.idNguoiDung) {
         return loiJson("Không thể tự xóa tài khoản của chính mình!");
     }
-    for (auto it = danhSachTaiKhoan.begin(); it != danhSachTaiKhoan.end(); ++it) {
-        if (*it && (*it)->getId() == id) {
-            cayTrieTaiKhoan.xoa((*it)->getUsername());
-            delete *it;
-            danhSachTaiKhoan.erase(it);
-            fileManager.ghiTaiKhoan(danhSachTaiKhoan);
-            return "{\"success\":true,\"message\":\"Đã xóa tài khoản ID: " + id + " thành công!\"}";
-        }
+    if (qlTaiKhoan.xoaTaiKhoan(id)) {
+        fileManager.ghiTaiKhoan(qlTaiKhoan.getDanhSachTaiKhoan());
+        return "{\"success\":true,\"message\":\"Đã xóa tài khoản ID: " + id + " thành công!\"}";
     }
     return loiJson("Không tìm thấy tài khoản ID: " + id);
 }
@@ -2095,7 +2064,7 @@ string WebServer::apiResetPassword(const string& body) {
     TaiKhoan* tk = timTaiKhoanTheoId(userId);
     if (!tk) return loiJson("Không tìm thấy tài khoản ID: " + userId);
     tk->setPasswordHash(md5impl::hex(newPass));
-    fileManager.ghiTaiKhoan(danhSachTaiKhoan);
+    fileManager.ghiTaiKhoan(qlTaiKhoan.getDanhSachTaiKhoan());
     return "{\"success\":true,\"message\":\"Đã đặt lại mật khẩu cho tài khoản " + tk->getUsername() + " thành công!\"}";
 }
 

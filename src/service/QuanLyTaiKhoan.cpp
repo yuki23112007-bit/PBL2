@@ -3,9 +3,24 @@
 using namespace std;
 
 QuanLyTaiKhoan::~QuanLyTaiKhoan() {
+    clear();
+}
+
+void QuanLyTaiKhoan::clear() {
     for (size_t i = 0; i < danhSachTaiKhoan.size(); i++) delete danhSachTaiKhoan[i];
     danhSachTaiKhoan.clear();
     cayTienToTaiKhoan.clear();
+}
+
+void QuanLyTaiKhoan::napTuFile(const vector<TaiKhoan*>& ds) {
+    clear();
+    for (TaiKhoan* tk : ds) {
+        if (!tk) continue;
+        danhSachTaiKhoan.push_back(tk);
+        if (!tk->getUsername().empty()) {
+            cayTienToTaiKhoan.chen(tk->getUsername(), tk->getVaiTro() + "|" + tk->getId());
+        }
+    }
 }
 
 bool QuanLyTaiKhoan::dangKy(TaiKhoan* tk) {
@@ -35,6 +50,13 @@ TaiKhoan* QuanLyTaiKhoan::timTheoUsername(const string& username) const {
     if (!cayTienToTaiKhoan.tonTai(username)) return nullptr;
     for (size_t i = 0; i < danhSachTaiKhoan.size(); i++) {
         if (danhSachTaiKhoan[i]->getUsername() == username) return danhSachTaiKhoan[i];
+    }
+    return nullptr;
+}
+
+TaiKhoan* QuanLyTaiKhoan::timTheoId(const string& id) const {
+    for (size_t i = 0; i < danhSachTaiKhoan.size(); i++) {
+        if (danhSachTaiKhoan[i] && danhSachTaiKhoan[i]->getId() == id) return danhSachTaiKhoan[i];
     }
     return nullptr;
 }

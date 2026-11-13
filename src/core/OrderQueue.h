@@ -56,6 +56,7 @@ class OrderQueue {
 
         // Thao tac tren Pending List (Chong nghen Head-of-Line Blocking)
         void themVaoPending(DonHang* dh, time_t tg = 0);
+        bool xoaKhoiHangDoi(const string& maDH, DonHang*& dhOutput);
         bool tachSangDanhSachCho(const string& maDH);
         bool phucHoiDonCho(const string& maDH, DonHang*& dhOutput);
         vector<DonHang*> kiemTraVaHuyDonQuaHan5Phut(time_t thoiGianHienTai);

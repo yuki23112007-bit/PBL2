@@ -40,18 +40,6 @@ bool DanhGiaDonHang::getLaKhieuNai() const {
     return laKhieuNai;
 }
 
-void DanhGiaDonHang::setMaDanhGia(const string& ma) {
-    maDanhGia = ma;
-}
-
-void DanhGiaDonHang::setMaDonHang(const string& maDH) {
-    maDonHang = maDH;
-}
-
-void DanhGiaDonHang::setMaNguoiDung(const string& maND) {
-    maNguoiDung = maND;
-}
-
 void DanhGiaDonHang::setSoSao(int sao) {
     soSao = sao;
 }
@@ -66,6 +54,20 @@ void DanhGiaDonHang::setThoiGianDanhGia(time_t tg) {
 
 void DanhGiaDonHang::setLaKhieuNai(bool khieuNai) {
     laKhieuNai = khieuNai;
+}
+
+void DanhGiaDonHang::capNhatDanhGia(int sao, const string& nd, time_t tg) {
+    soSao = sao;
+    noiDung = nd;
+    laKhieuNai = false;
+    thoiGianDanhGia = tg;
+}
+
+void DanhGiaDonHang::baoCaoKhieuNai(const string& nd, time_t tg) {
+    soSao = 1;
+    noiDung = nd;
+    laKhieuNai = true;
+    thoiGianDanhGia = tg;
 }
 
 bool DanhGiaDonHang::isKhieuNai() const {
@@ -107,13 +109,13 @@ istream& operator>>(istream& is, DanhGiaDonHang& dg) {
     int sao;
     long long tg;
     if (is >> maDG >> maDH >> maND >> sao >> nd >> tg >> khieuNaiStr) {
-        dg.setMaDanhGia(maDG);
-        dg.setMaDonHang(maDH);
-        dg.setMaNguoiDung(maND);
-        dg.setSoSao(sao);
-        dg.setNoiDung(nd);
-        dg.setThoiGianDanhGia(static_cast<time_t>(tg));
-        dg.setLaKhieuNai(khieuNaiStr == "1" || khieuNaiStr == "true");
+        dg.maDanhGia = maDG;
+        dg.maDonHang = maDH;
+        dg.maNguoiDung = maND;
+        dg.soSao = sao;
+        dg.noiDung = nd;
+        dg.thoiGianDanhGia = static_cast<time_t>(tg);
+        dg.laKhieuNai = (khieuNaiStr == "1" || khieuNaiStr == "true");
     }
     return is;
 }

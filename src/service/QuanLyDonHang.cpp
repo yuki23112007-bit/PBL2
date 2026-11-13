@@ -112,6 +112,48 @@ bool QuanLyDonHang::duyetDonHangTiepTheo(QuanLySanPham& qlSP, string& thongBao) 
     }
 }
 
+vector<DonHang*> QuanLyDonHang::tuDongDuyetDonQuaHan5Phut(QuanLySanPham& qlSP, time_t now, bool& coThayDoi) {
+    vector<DonHang*> daDuyet;
+    vector<DonHang*> dsQueue = hangDoiDonHang.layTatCaDonTrongQueue();
+
+    for (DonHang* dh : dsQueue) {
+        if (!dh) continue;
+        const string& tt = dh->getTrangThaiDonHang();
+        if (tt != "Cho Duyet" && tt != "Chờ duyệt") continue;
+        if (!dh->daQuaHan5Phut(now)) continue;
+
+        bool duTonKho = true;
+        vector<ChiTietDonHang*> cacCTDH;
+        for (ChiTietDonHang& ct : danhSachCTDH) {
+            if (ct.getMaDonHang() == dh->getMaDonHang()) {
+                cacCTDH.push_back(&ct);
+                SanPham* sp = qlSP.timSanPhamTheoMa(ct.getMaSanPham());
+                if (sp == nullptr || sp->getSoLuongTonKho() < ct.getSoLuong()) {
+                    duTonKho = false;
+                }
+            }
+        }
+
+        if (duTonKho) {
+            DonHang* removed = nullptr;
+            hangDoiDonHang.xoaKhoiHangDoi(dh->getMaDonHang(), removed);
+            for (ChiTietDonHang* ct : cacCTDH) {
+                qlSP.capNhatSoLuongKho(ct->getMaSanPham(), -ct->getSoLuong());
+            }
+            dh->setTrangThaiDonHang("Da Duyet");
+            daDuyet.push_back(dh);
+            coThayDoi = true;
+        } else {
+            // Het hang: khong bao loi, chuyen sang Pending List de khong nghen hang doi
+            if (hangDoiDonHang.tachSangDanhSachCho(dh->getMaDonHang())) {
+                coThayDoi = true;
+            }
+        }
+    }
+
+    return daDuyet;
+}
+
 void QuanLyDonHang::kiemTraVaHuyDonTimeout() {
     time_t now = time(nullptr);
     vector<DonHang*> biHuy = hangDoiDonHang.kiemTraVaHuyDonQuaHan5Phut(now);

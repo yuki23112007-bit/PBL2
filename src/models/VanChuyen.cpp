@@ -49,14 +49,6 @@ PhuongTien* VanChuyen::getPhuongTien() const {
     return phuongTien;
 }
 
-void VanChuyen::setMaVanChuyen(const string& maVC) {
-    maVanChuyen = maVC;
-}
-
-void VanChuyen::setMaDonHang(const string& maDH) {
-    maDonHang = maDH;
-}
-
 void VanChuyen::setNgayTao(time_t tao) {
     ngayTao = tao;
 }

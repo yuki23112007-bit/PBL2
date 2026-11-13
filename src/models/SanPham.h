@@ -44,8 +44,7 @@ class SanPham {
         const string  getMaNCC() const;
         time_t        getNgaySX() const;
 
-        // Setter
-        void setMaSP(const string&);
+        // Setter (khong cho doi MaSP bat bien sau khi khoi tao)
         void setTenSP(const string&);
         void setDanhMuc(const string&);
         void setDonGia(const double&);

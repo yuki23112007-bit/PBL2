@@ -40,9 +40,7 @@ public:
     time_t getThoiGianGiaoDuKien() const;
     PhuongTien* getPhuongTien() const;
 
-    // Setter
-    void setMaVanChuyen(const string& maVC);
-    void setMaDonHang(const string& maDH);
+    // Setter (khong cho doi maVanChuyen, maDonHang bat bien)
     void setNgayTao(time_t tao);
     void setTrangThaiGiao(const string& trangThai);
     void setChiPhiVanChuyen(double chiPhi);

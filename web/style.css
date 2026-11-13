@@ -1031,6 +1031,10 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .admin-brand {
@@ -1045,6 +1049,28 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
 .admin-brand span {
   font-family: var(--font-heading);
   letter-spacing: 0.3px;
+}
+
+.admin-brand .panel-section-title,
+.admin-brand .text-white {
+  color: var(--floral-white);
+}
+
+.admin-brand .text-jasmine,
+.admin-brand .text-sub {
+  color: var(--jasmine);
+}
+
+.admin-sidebar .btn-outline {
+  color: var(--floral-white);
+  border-color: rgba(254, 250, 246, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-sidebar .btn-outline:hover {
+  background: rgba(254, 250, 246, 0.16);
+  border-color: var(--jasmine);
+  color: var(--jasmine);
 }
 
 .admin-nav {
@@ -1294,6 +1320,8 @@ h1, h2, h3, h4, .brand-text h1, .brand-title, .login-title,
   }
   .admin-sidebar {
     width: 100%;
+    height: auto;
+    position: static;
     flex-direction: row;
     overflow-x: auto;
     padding: 12px;

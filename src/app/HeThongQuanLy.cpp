@@ -1,13 +1,22 @@
 #include "HeThongQuanLy.h"
+#include "../data/FileManager.h"
 
 using namespace std;
 
 void HeThongQuanLy::khoiDong() {
-    // TODO: nap du lieu tu FileManager
+    FileManager fm("data");
+    quanLyTaiKhoan.napTuFile(fm.docTaiKhoan());
+    quanLyKhoNCC.napKho(fm.docKhoHang());
+    quanLyKhoNCC.napNCC(fm.docNhaCungCap());
+    quanLyDoanhThu.napDuLieu(fm.docDoanhThu());
 }
 
 void HeThongQuanLy::thoat() {
-    // TODO: luu du lieu qua FileManager
+    FileManager fm("data");
+    fm.ghiTaiKhoan(quanLyTaiKhoan.getDanhSachTaiKhoan());
+    fm.ghiKhoHang(quanLyKhoNCC.xuatDanhSachKho());
+    fm.ghiNhaCungCap(quanLyKhoNCC.xuatDanhSachNCC());
+    fm.ghiDoanhThu(quanLyDoanhThu.getDanhSach());
 }
 
 QuanLyTaiKhoan& HeThongQuanLy::getQuanLyTaiKhoan() {

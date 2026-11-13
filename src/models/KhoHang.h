@@ -27,10 +27,12 @@ class KhoHang {
         const string& getMaSanPham() const;
 
         // Setter
-        void setMaKho(const string&);
         void setViTri(const string&);
         void setSucChuaToiDa(int);
         void setMaSanPham(const string&);
+
+        // Nghiep vu
+        void capNhatThongTin(const string& viTriMoi, int sucChuaMoi, const string& maSPMoi);
 
         void hienThiThongTin() const;
         void show() const { hienThiThongTin(); }

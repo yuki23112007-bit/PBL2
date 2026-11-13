@@ -31,10 +31,6 @@ const string& NhaCungCap::getDanhMucCungCap() const {
     return danhMucCungCap;
 }
 
-void NhaCungCap::setMaNhaCungCap(const string& ma) {
-    maNhaCungCap = ma;
-}
-
 void NhaCungCap::setTenCongTy(const string& ten) {
     tenCongTy = ten;
 }
@@ -48,6 +44,13 @@ void NhaCungCap::setSoDienThoai(const string& sdt) {
 }
 
 void NhaCungCap::setDanhMucCungCap(const string& dm) {
+    danhMucCungCap = dm;
+}
+
+void NhaCungCap::capNhatThongTin(const string& ten, const string& dc, const string& sdt, const string& dm) {
+    tenCongTy = ten;
+    diaChi = dc;
+    soDienThoai = sdt;
     danhMucCungCap = dm;
 }
 

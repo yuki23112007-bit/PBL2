@@ -18,6 +18,10 @@ public:
     QuanLyDoanhThu() = default;
     ~QuanLyDoanhThu() = default;
 
+    void napDuLieu(const vector<DoanhThuNgay>& ds);
+    const vector<DoanhThuNgay>& getDanhSach() const;
+    vector<DoanhThuNgay> locTheoKhoangNgay(const string& startDate, const string& endDate) const;
+
     // Ghi nhan 1 don hang hoan thanh vao ngay (YYYY-MM-DD)
     void ghiNhanDonHang(const string& ngay, double giaTriDonHang);
 

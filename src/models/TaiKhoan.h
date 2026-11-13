@@ -26,7 +26,6 @@ public:
     const string& getVaiTro() const;
 
     // Setter
-    void setId(const string& v);
     void setUsername(const string& v);
     void setPasswordHash(const string& v);
     void setVaiTro(const string& v);

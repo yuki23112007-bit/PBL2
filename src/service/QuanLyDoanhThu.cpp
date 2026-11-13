@@ -3,6 +3,25 @@
 
 using namespace std;
 
+void QuanLyDoanhThu::napDuLieu(const vector<DoanhThuNgay>& ds) {
+    danhSachDoanhThu = ds;
+}
+
+const vector<DoanhThuNgay>& QuanLyDoanhThu::getDanhSach() const {
+    return danhSachDoanhThu;
+}
+
+vector<DoanhThuNgay> QuanLyDoanhThu::locTheoKhoangNgay(const string& startDate, const string& endDate) const {
+    vector<DoanhThuNgay> filtered;
+    for (const DoanhThuNgay& dt : danhSachDoanhThu) {
+        string ngay = dt.getNgayThongKe();
+        if (!startDate.empty() && ngay < startDate) continue;
+        if (!endDate.empty() && ngay > endDate) continue;
+        filtered.push_back(dt);
+    }
+    return filtered;
+}
+
 int QuanLyDoanhThu::timViTriTheoNgay(const string& ngay) const {
     for (size_t i = 0; i < danhSachDoanhThu.size(); i++) {
         if (danhSachDoanhThu[i].getNgayThongKe() == ngay) return (int)i;

@@ -37,16 +37,15 @@ public:
     time_t getThoiGianDanhGia() const;
     bool getLaKhieuNai() const;
 
-    // Setter
-    void setMaDanhGia(const string& ma);
-    void setMaDonHang(const string& maDH);
-    void setMaNguoiDung(const string& maND);
+    // Setter (chi giu cac thuoc tinh co the thay doi sau khoi tao)
     void setSoSao(int sao);
     void setNoiDung(const string& nd);
     void setThoiGianDanhGia(time_t tg);
     void setLaKhieuNai(bool khieuNai);
 
     // Nghiệp vụ
+    void capNhatDanhGia(int sao, const string& nd, time_t tg = time(nullptr));
+    void baoCaoKhieuNai(const string& nd, time_t tg = time(nullptr));
     bool isKhieuNai() const;
     bool isHaiLong() const;
     bool coYKien() const;

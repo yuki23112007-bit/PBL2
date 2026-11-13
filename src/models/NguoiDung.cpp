@@ -39,6 +39,12 @@ void NguoiDung::setDiaChi(const string& v) {
     diaChi = v;
 }
 
+void NguoiDung::capNhatHoSo(const string& hoTenMoi, const string& sdtMoi, const string& diaChiMoi) {
+    if (!hoTenMoi.empty()) hoTen = hoTenMoi;
+    if (!sdtMoi.empty()) soDienThoai = sdtMoi;
+    if (!diaChiMoi.empty()) diaChi = diaChiMoi;
+}
+
 void NguoiDung::themDonHang(DonHang* dh) {
     if (dh != nullptr) {
         danhSachDonHangCaNhan.push_back(dh);

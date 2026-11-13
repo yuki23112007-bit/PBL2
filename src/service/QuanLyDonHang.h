@@ -36,6 +36,7 @@ class QuanLyDonHang {
                      const string& sdt, string& maDHMoi);
 
         bool duyetDonHangTiepTheo(QuanLySanPham& qlSP, string& thongBao);
+        vector<DonHang*> tuDongDuyetDonQuaHan5Phut(QuanLySanPham& qlSP, time_t now, bool& coThayDoi);
         void kiemTraVaHuyDonTimeout();
         bool huyDonHang(const string& maDH, const string& maND = "");
 

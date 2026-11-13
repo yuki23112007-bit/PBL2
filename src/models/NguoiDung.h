@@ -32,7 +32,6 @@ public:
 
     // Bí danh theo tài liệu
     const string& getMaNguoiDung() const { return getId(); }
-    void setMaNguoiDung(const string& v) { setId(v); }
 
     // Setter
     void setHoTen(const string& v);
@@ -40,6 +39,7 @@ public:
     void setDiaChi(const string& v);
 
     // Nghiệp vụ theo mục 5.1 README
+    void capNhatHoSo(const string& hoTenMoi, const string& sdtMoi, const string& diaChiMoi);
     void themDonHang(DonHang* dh);
 
     void show() const override;

@@ -32,11 +32,13 @@ public:
     const string& getMaNCC() const { return getMaNhaCungCap(); }
 
     // Setter
-    void setMaNhaCungCap(const string& ma);
     void setTenCongTy(const string& ten);
     void setDiaChi(const string& dc);
     void setSoDienThoai(const string& sdt);
     void setDanhMucCungCap(const string& dm);
+
+    // Nghiệp vụ
+    void capNhatThongTin(const string& ten, const string& dc, const string& sdt, const string& dm);
 
     // Hiển thị & xuất chuỗi file
     virtual void hienThiThongTin() const;

@@ -23,10 +23,6 @@ const string& KhoHang::getMaSanPham() const {
     return maSanPham;
 }
 
-void KhoHang::setMaKho(const string& value) {
-    maKho = value;
-}
-
 void KhoHang::setViTri(const string& value) {
     viTri = value;
 }
@@ -39,6 +35,12 @@ void KhoHang::setSucChuaToiDa(int value) {
 
 void KhoHang::setMaSanPham(const string& value) {
     maSanPham = value;
+}
+
+void KhoHang::capNhatThongTin(const string& viTriMoi, int sucChuaMoi, const string& maSPMoi) {
+    viTri = viTriMoi;
+    if (sucChuaMoi >= 0) sucChuaToiDa = sucChuaMoi;
+    maSanPham = maSPMoi;
 }
 
 void KhoHang::hienThiThongTin() const {
@@ -61,10 +63,8 @@ istream& operator>>(istream& input, KhoHang& kho) {
     string maKho, viTri, maSP;
     int sucChua;
     if (input >> maKho >> viTri >> sucChua >> maSP) {
-        kho.setMaKho(maKho);
-        kho.setViTri(viTri);
-        kho.setSucChuaToiDa(sucChua);
-        kho.setMaSanPham(maSP);
+        kho.maKho = maKho;
+        kho.capNhatThongTin(viTri, sucChua, maSP);
     }
     return input;
 }

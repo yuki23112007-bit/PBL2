@@ -97,19 +97,14 @@ void OrderQueue::xoaPendingNode(PendingNode* node) {
     pendingCount--;
 }
 
-bool OrderQueue::tachSangDanhSachCho(const string& maDH) {
+bool OrderQueue::xoaKhoiHangDoi(const string& maDH, DonHang*& dhOutput) {
+    dhOutput = nullptr;
     if (maDH.empty() || head == nullptr) return false;
 
-    // Neu don nam o dau Queue
     if (head->data->getMaDonHang() == maDH) {
-        DonHang* dh = nullptr;
-        dequeue(dh);
-        dh->setTrangThaiDonHang("Dang Cho Hang");
-        themVaoPending(dh);
-        return true;
+        return dequeue(dhOutput);
     }
 
-    // Neu don nam o giua Queue
     QueueNode* prev = head;
     QueueNode* curr = head->next;
     while (curr != nullptr) {
@@ -118,12 +113,9 @@ bool OrderQueue::tachSangDanhSachCho(const string& maDH) {
             if (curr == tail) {
                 tail = prev;
             }
-            DonHang* dh = curr->data;
+            dhOutput = curr->data;
             delete curr;
             count--;
-
-            dh->setTrangThaiDonHang("Dang Cho Hang");
-            themVaoPending(dh);
             return true;
         }
         prev = curr;
@@ -131,6 +123,14 @@ bool OrderQueue::tachSangDanhSachCho(const string& maDH) {
     }
 
     return false;
+}
+
+bool OrderQueue::tachSangDanhSachCho(const string& maDH) {
+    DonHang* dh = nullptr;
+    if (!xoaKhoiHangDoi(maDH, dh) || dh == nullptr) return false;
+    dh->setTrangThaiDonHang("Dang Cho Hang");
+    themVaoPending(dh);
+    return true;
 }
 
 bool OrderQueue::phucHoiDonCho(const string& maDH, DonHang*& dhOutput) {

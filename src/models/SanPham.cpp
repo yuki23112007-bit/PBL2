@@ -34,7 +34,6 @@ const string SanPham::getLoaiSP() const { return LoaiSP; }
 const string SanPham::getMaNCC() const { return MaNCC; }
 time_t SanPham::getNgaySX() const { return NgaySX; }
 
-void SanPham::setMaSP(const string& value) { MaSP = value; }
 void SanPham::setTenSP(const string& value) { TenSP = value; }
 void SanPham::setDanhMuc(const string& value) { DandMuc = value; }
 void SanPham::setDonGia(const double& value) { DonGia = value; }
