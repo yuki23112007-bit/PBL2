@@ -39,4 +39,3 @@ DH038|Phan Huyền Trang|72 Nguyễn Văn Linh, Cần Thơ|0912345618|Đã hoàn
 DH039|Phan Huyền Trang|72 Nguyễn Văn Linh, Cần Thơ|0912345618|Đã hoàn thành|1790343028|222018
 DH040|Lý Thành Long|11 Bạch Đằng, Đà Nẵng|0912345619|Đã hoàn thành|1788269428|222019
 DH041|Trương Yến Nhi|90 Hai Bà Trưng, TP.HCM|0912345620|Đã hoàn thành|1786714228|222020
-DH042|Nguyễn Test E2E|14 Lê Lợi, Huế|0999888777|Chờ duyệt|1795673974|222021
