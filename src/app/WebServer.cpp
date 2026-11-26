@@ -18,10 +18,9 @@
 #include "../models/ThucPhamThuong.h"
 #include "../models/ThucPhamTuoiSong.h"
 #include "../models/CongNghe.h"
-#include "../models/PhuongTien.h"
-#include "../models/VanChuyen.h"
 #include "../models/DoGiaDung.h"
 #include "../service/ThongKeDoanhThu.h"
+#include "../service/TinhKhoangCachDiaLy.h"
 
 using namespace std;
 
@@ -324,6 +323,9 @@ void WebServer::napDuLieuHeThong() {
 
     napDanhGia();
     napGiaoHang();
+    if (TinhKhoangCachDiaLy::napTuFile(dataDir + "/cities.txt")) {
+        cout << "  - Da nap " << TinhKhoangCachDiaLy::danhSachThanhPho().size() << " toa do tinh/thanh tu cities.txt." << endl;
+    }
     duDoanXuHuong.setDataDir(dataDir);
     duDoanXuHuong.ganDependencies(&qlDonHang, &qlTaiKhoan.getDanhSachTaiKhoan(), &qlSanPham);
     duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
@@ -684,6 +686,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
     if (path == "/api/products/search" && laGet) { responseBody = apiSearchProducts(q); return; }
     if (path == "/api/products/autocomplete" && laGet) { responseBody = apiAutocompleteProducts(q); return; }
     if (path == "/api/products/detail" && laGet) { responseBody = apiGetProductDetail(q); return; }
+    if (path == "/api/shipping/estimate" && laPost) { responseBody = apiEstimateShipping(body); return; }
 
     // ---- Can dang nhap ----
     PhienDangNhap phien;
@@ -766,7 +769,7 @@ void WebServer::routeRequest(const string& method, const string& path, const str
 }
 
 // -------------------------------------------------------------
-// Nghiep vu bo sung tren don hang
+// Nghiep vu bo sung tren don hang (uy quyen qua tang Service)
 // -------------------------------------------------------------
 double WebServer::tongTienDon(const string& maDH) const {
     double tong = 0;
@@ -774,6 +777,20 @@ double WebServer::tongTienDon(const string& maDH) const {
         if (ct.getMaDonHang() == maDH) tong += ct.getThanhTien();
     }
     return tong;
+}
+
+UocTinhVanChuyen WebServer::uocTinhVanChuyenDon(const DonHang* dh) const {
+    return QuanLyVanChuyen::uocTinhChoDonHang(
+        dh,
+        qlDonHang.getDanhSachCTDH(),
+        const_cast<QuanLySanPham&>(qlSanPham),
+        qlKhoNCC
+    );
+}
+
+double WebServer::tongTienDonCoShip(const DonHang* dh) const {
+    if (!dh) return 0.0;
+    return tongTienDon(dh->getMaDonHang()) + uocTinhVanChuyenDon(dh).phiVanChuyen;
 }
 
 // Moc tinh han: don dang giao tinh tu luc giao, cac don khac tinh tu luc dat
@@ -785,10 +802,9 @@ time_t WebServer::mocTinhHan(const DonHang* dh) const {
     return dh->getThoiGianTao();
 }
 
-// Thoi gian giao du kien: 2 ngay sau khi bat dau giao (theo dung model VanChuyen)
+// Thoi gian giao du kien: uy quyen tinh theo vung/khoang cach qua QuanLyVanChuyen
 time_t WebServer::thoiGianGiaoDuKien(const DonHang* dh) const {
-    time_t tGiao = mocTinhHan(dh);
-    return tGiao + 2LL * 86400;
+    return mocTinhHan(dh) + uocTinhVanChuyenDon(dh).soGiayGiaoDuKien;
 }
 
 // Han chot khach phan hoi / danh gia: 3 ngay sau thoi gian giao du kien
@@ -815,7 +831,7 @@ bool WebServer::coKhieuNaiDangMo(const string& maDH) const {
 
 void WebServer::ghiNhanDoanhThu(const DonHang* dh) {
     string ngay = ngayIso(time(nullptr));
-    double tong = tongTienDon(dh->getMaDonHang());
+    double tong = tongTienDonCoShip(dh);
     qlDoanhThu.ghiNhanDonHang(ngay, tong);
 }
 
@@ -888,9 +904,12 @@ string WebServer::sanPhamJson(SanPham* sp) const {
 string WebServer::donHangJson(const DonHang* dh, bool kemChiTiet) const {
     string ma = maTrangThai(dh->getTrangThaiDonHang());
     time_t now = time(nullptr);
-    time_t duKien = thoiGianGiaoDuKien(dh);
-    time_t hanChot = hanChotPhanHoi(dh);
-    bool quaHan = !laTrangThaiKetThuc(ma) && daQuaHan3NgaySoVoiGiaoDuKien(dh, now);
+    UocTinhVanChuyen vc = uocTinhVanChuyenDon(dh);
+    double tienHang = tongTienDon(dh->getMaDonHang());
+    double tongCoShip = tienHang + vc.phiVanChuyen;
+    time_t duKien = mocTinhHan(dh) + vc.soGiayGiaoDuKien;
+    time_t hanChot = duKien + 3LL * 86400;
+    bool quaHan = !laTrangThaiKetThuc(ma) && (now >= hanChot);
 
     ostringstream j;
     j << "{"
@@ -902,9 +921,15 @@ string WebServer::donHangJson(const DonHang* dh, bool kemChiTiet) const {
       << "\"trangThai\":\"" << nhanTrangThai(ma) << "\","
       << "\"ngayDat\":\"" << ngayGioHienThi(dh->getThoiGianTao()) << "\","
       << "\"thoiGianGiaoDuKien\":\"" << ngayGioHienThi(duKien) << "\","
+      << "\"nhanThoiGianGiao\":\"" << escapeJson(vc.nhanThoiGianGiao) << "\","
       << "\"hanChotHoanThanh\":\"" << ngayGioHienThi(hanChot) << "\","
       << "\"maNguoiDung\":\"" << escapeJson(dh->getMaNguoiDung()) << "\","
-      << "\"tongTien\":" << fixed << setprecision(0) << tongTienDon(dh->getMaDonHang()) << ","
+      << "\"tienHang\":" << fixed << setprecision(0) << tienHang << ","
+      << "\"phiVanChuyen\":" << fixed << setprecision(0) << vc.phiVanChuyen << ","
+      << "\"tongTien\":" << fixed << setprecision(0) << tongCoShip << ","
+      << "\"khoXuat\":\"" << escapeJson(vc.maKho + " (" + vc.thanhPhoKho + ")") << "\","
+      << "\"quangDuongKm\":" << fixed << setprecision(1) << vc.quangDuongKm << setprecision(0) << ","
+      << "\"loaiXe\":\"" << escapeJson(vc.loaiXe) << "\","
       << "\"quaHan3Ngay\":" << (quaHan ? "true" : "false") << ","
       << "\"coKhieuNai\":" << (coKhieuNaiDangMo(dh->getMaDonHang()) ? "true" : "false") << ",";
 
@@ -1215,6 +1240,74 @@ string WebServer::apiGetProductDetail(const map<string, string>& params) {
     return sanPhamJson(sp);
 }
 
+// Uoc tinh phi van chuyen & ngay giao du kien truoc khi dat hang (items dang "SP01:2,SP12:1")
+string WebServer::apiEstimateShipping(const string& body) {
+    auto data = parseSimpleJson(body);
+    string itemsStr = data["items"];
+    string diaChi = data["address"];
+
+    double tongTienHang = 0.0;
+    double tongPhiShip = 0.0;
+    long long maxGiayGiao = 0;
+    string nhanGiaoMax;
+    time_t now = time(nullptr);
+
+    ostringstream itemsJson;
+    itemsJson << "[";
+    bool dau = true;
+
+    stringstream ss(itemsStr);
+    string token;
+    while (getline(ss, token, ',')) {
+        if (token.empty()) continue;
+        size_t colon = token.find(':');
+        string maSP = (colon == string::npos) ? token : token.substr(0, colon);
+        int qty = 1;
+        if (colon != string::npos) {
+            try { qty = stoi(token.substr(colon + 1)); } catch (...) { qty = 1; }
+        }
+        if (qty < 1) qty = 1;
+
+        SanPham* sp = qlSanPham.timSanPhamTheoMa(maSP);
+        if (!sp) continue;
+
+        double tienHang = sp->getDonGia() * qty;
+        UocTinhVanChuyen vc = QuanLyVanChuyen::uocTinhChoSanPham(maSP, tienHang, diaChi, qlSanPham, qlKhoNCC);
+        tongTienHang += tienHang;
+        tongPhiShip += vc.phiVanChuyen;
+        if (vc.soGiayGiaoDuKien >= maxGiayGiao) {
+            maxGiayGiao = vc.soGiayGiaoDuKien;
+            nhanGiaoMax = vc.nhanThoiGianGiao;
+        }
+
+        if (!dau) itemsJson << ",";
+        dau = false;
+        itemsJson << "{"
+                  << "\"maSP\":\"" << escapeJson(maSP) << "\","
+                  << "\"tenSP\":\"" << escapeJson(sp->getTenSP()) << "\","
+                  << "\"khoXuat\":\"" << escapeJson(vc.maKho + " (" + vc.thanhPhoKho + ")") << "\","
+                  << "\"thanhPhoKho\":\"" << escapeJson(vc.thanhPhoKho) << "\","
+                  << "\"thanhPhoKhach\":\"" << escapeJson(vc.thanhPhoKhach) << "\","
+                  << "\"quangDuongKm\":" << fixed << setprecision(1) << vc.quangDuongKm << setprecision(0) << ","
+                  << "\"loaiXe\":\"" << escapeJson(vc.loaiXe) << "\","
+                  << "\"phiVanChuyen\":" << fixed << setprecision(0) << vc.phiVanChuyen << ","
+                  << "\"ngayGiaoDuKien\":\"" << ngayGioHienThi(now + vc.soGiayGiaoDuKien) << "\","
+                  << "\"nhanThoiGianGiao\":\"" << escapeJson(vc.nhanThoiGianGiao) << "\""
+                  << "}";
+    }
+    itemsJson << "]";
+
+    ostringstream res;
+    res << "{\"success\":true,"
+        << "\"tienHang\":" << fixed << setprecision(0) << tongTienHang << ","
+        << "\"phiVanChuyen\":" << fixed << setprecision(0) << tongPhiShip << ","
+        << "\"tongThanhToan\":" << fixed << setprecision(0) << (tongTienHang + tongPhiShip) << ","
+        << "\"ngayGiaoDuKien\":\"" << (maxGiayGiao > 0 ? ngayGioHienThi(now + maxGiayGiao) : "") << "\","
+        << "\"nhanThoiGianGiao\":\"" << escapeJson(nhanGiaoMax) << "\","
+        << "\"chiTiet\":" << itemsJson.str() << "}";
+    return res.str();
+}
+
 // -------------------------------------------------------------
 // API: don hang (khach hang)
 // -------------------------------------------------------------
@@ -1513,49 +1606,35 @@ string WebServer::apiShipOrder(const string& body) {
         return loiJson("Chỉ chuyển giao hàng cho đơn đã được duyệt kho (Đã duyệt)!");
     }
 
-    // Dieu phoi phuong tien & tinh cuoc van chuyen da hinh qua VanChuyen / PhuongTien
-    bool coHangTuoiSong = false;
-    for (const ChiTietDonHang& ct : qlDonHang.getDanhSachCTDH()) {
-        if (ct.getMaDonHang() == maDH) {
-            SanPham* sp = qlSanPham.timSanPhamTheoMa(ct.getMaSanPham());
-            if (sp && sp->getLoaiSP() == "TUOI_SONG") {
-                coHangTuoiSong = true;
-                break;
-            }
-        }
-    }
-    double quangDuongKm = 5.0;
+    // Dieu phoi phuong tien & tinh cuoc van chuyen theo vung/khoang cach qua VanChuyen / PhuongTien
+    UocTinhVanChuyen vc = uocTinhVanChuyenDon(dh);
+    double quangDuongKm = vc.quangDuongKm;
+    double phiShip = vc.phiVanChuyen;
+    string loaiXe = vc.loaiXe;
+
     if (data.count("quangDuongKm")) {
         try {
             double km = stod(data["quangDuongKm"]);
-            if (km > 0.0) quangDuongKm = km;
+            if (km > 0.0) {
+                quangDuongKm = km;
+                bool coHangTuoiSong = (loaiXe.find("Lanh") != string::npos);
+                phiShip = QuanLyVanChuyen::tinhPhiVanChuyenTheoXe(quangDuongKm, tongTienDon(maDH), coHangTuoiSong, loaiXe);
+            }
         } catch (...) {}
     }
-
-    PhuongTien* pt = nullptr;
-    if (coHangTuoiSong) {
-        pt = new XeTaiLanh("43C-88888", "Hino", 2.5, -18.0);
-    } else if (tongTienDon(maDH) >= 1000000.0) {
-        pt = new XeTai("43C-66666", "Isuzu", 1.5);
-    } else {
-        pt = new XeMay("43D1-12345", "Honda", 125);
-    }
-
-    VanChuyen vanChuyen("VC-" + maDH, maDH, time(nullptr), "Đang giao", 0.0, "", 0, pt);
-    double phiShip = vanChuyen.tinhChiPhiVanChuyen(quangDuongKm);
-    string loaiXe = pt->getLoaiPhuongTien();
-    delete pt;
 
     dh->setTrangThaiDonHang(chuoiNoiBo("DANG_GIAO"));
     thoiGianGiaoHang[maDH] = time(nullptr);
     luuDuLieuHeThong();
 
     ostringstream msg;
-    msg << "Đơn hàng " << maDH << " đã bắt đầu giao bằng " << loaiXe
-        << " (Phí vận chuyển: " << fixed << setprecision(0) << phiShip << " đ)!";
+    msg << "Đơn hàng " << maDH << " xuất từ " << vc.maKho << " (" << vc.thanhPhoKho << ") → " << vc.thanhPhoKhach
+        << " (~" << fixed << setprecision(1) << quangDuongKm << " km) bằng " << loaiXe
+        << " (Phí ship: " << fixed << setprecision(0) << phiShip << " đ)!";
     ostringstream res;
     res << "{\"success\":true,\"message\":\"" << escapeJson(msg.str()) << "\","
         << "\"loaiXe\":\"" << escapeJson(loaiXe) << "\","
+        << "\"quangDuongKm\":" << fixed << setprecision(1) << quangDuongKm << setprecision(0) << ","
         << "\"phiVanChuyen\":" << fixed << setprecision(0) << phiShip << "}";
     return res.str();
 }

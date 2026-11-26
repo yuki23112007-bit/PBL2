@@ -1,5 +1,6 @@
 #include "PhuongTien.h"
 #include <iomanip>
+#include <cmath>
 
 using namespace std;
 
@@ -59,9 +60,13 @@ void XeTai::setTrongTaiToiDa(double trongTai) {
 }
 
 double XeTai::tinhChiPhiVanChuyen(double quangDuongKm) const {
-    // 15.000đ/km theo tài liệu
+    // Nội thành (<= 15km): 15.000đ/km; Liên tỉnh (> 15km, ghép hàng, không phí mở cửa): 250đ/km (tối thiểu 40.000đ)
     if (quangDuongKm <= 0) quangDuongKm = 1.0;
-    return quangDuongKm * 15000.0;
+    if (quangDuongKm <= 15.0) {
+        return round((quangDuongKm * 15000.0) / 1000.0) * 1000.0;
+    }
+    double phi = round((quangDuongKm * 250.0) / 1000.0) * 1000.0;
+    return phi < 40000.0 ? 40000.0 : phi;
 }
 
 void XeTai::hienThiThongTin() const {
@@ -101,9 +106,13 @@ void XeTaiLanh::setNhietDoThungXe(double nhietDo) {
 }
 
 double XeTaiLanh::tinhChiPhiVanChuyen(double quangDuongKm) const {
-    // Ghi đè: 25.000đ/km theo tài liệu do tốn tiền chạy máy lạnh bảo quản đồ tươi sống
+    // Nội thành (<= 15km): 25.000đ/km; Liên tỉnh (> 15km, ghép hàng lạnh, không phí mở cửa): 350đ/km (tối thiểu 55.000đ)
     if (quangDuongKm <= 0) quangDuongKm = 1.0;
-    return quangDuongKm * 25000.0;
+    if (quangDuongKm <= 15.0) {
+        return round((quangDuongKm * 25000.0) / 1000.0) * 1000.0;
+    }
+    double phi = round((quangDuongKm * 350.0) / 1000.0) * 1000.0;
+    return phi < 55000.0 ? 55000.0 : phi;
 }
 
 void XeTaiLanh::hienThiThongTin() const {
@@ -132,11 +141,16 @@ void XeMay::setDungTichXiLanh(int dungTich) {
 }
 
 double XeMay::tinhChiPhiVanChuyen(double quangDuongKm) const {
-    // Giá cố định nội thành 25.000đ, hoặc 10.000đ/km nếu đường xa
+    // Nội thành (<= 15km): <= 2.5km cố định 25.000đ, xa hơn 10.000đ/km; Liên tỉnh (> 15km, không phí mở cửa): 200đ/km (tối thiểu 30.000đ)
+    if (quangDuongKm <= 0) quangDuongKm = 1.0;
     if (quangDuongKm <= 2.5) {
         return 25000.0;
     }
-    return quangDuongKm * 10000.0;
+    if (quangDuongKm <= 15.0) {
+        return round((quangDuongKm * 10000.0) / 1000.0) * 1000.0;
+    }
+    double phi = round((quangDuongKm * 200.0) / 1000.0) * 1000.0;
+    return phi < 30000.0 ? 30000.0 : phi;
 }
 
 void XeMay::hienThiThongTin() const {

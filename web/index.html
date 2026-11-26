@@ -718,7 +718,19 @@
         </div>
         <div class="form-group">
           <label class="form-label">Địa chỉ giao hàng:</label>
-          <input type="text" id="ship-address" class="form-input" required />
+          <input type="text" id="ship-address" class="form-input" placeholder="VD: 15 Quang Trung, Đà Nẵng" required />
+        </div>
+        <div id="cart-shipping-estimate" style="background: rgba(255,255,255,0.6); border: 1px dashed var(--pearl-aqua-dark, #64b5a6); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; line-height: 1.5; display: none;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Tiền hàng:</span>
+            <strong id="cart-subtotal-amount">0 đ</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Phí vận chuyển (ước tính):</span>
+            <strong id="cart-shipping-fee" style="color: var(--princeton-orange);">0 đ</strong>
+          </div>
+          <div id="cart-shipping-route" style="font-size: 12px; color: var(--space-indigo-light); margin-top: 4px;"></div>
+          <div id="cart-delivery-eta" style="font-size: 12px; color: var(--pearl-aqua-dark, #2a7f6f); font-weight: 600; margin-top: 2px;"></div>
         </div>
         <div class="cart-total-row">
           <span>Tổng thanh toán:</span>

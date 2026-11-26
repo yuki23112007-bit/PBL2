@@ -1,0 +1,21 @@
+# Dinh dang: tenChuan|lat|lon|tuKhoa1,tuKhoa2,...
+Hà Nội|21.0285|105.8542|hà nội,ha noi,hanoi
+Hải Phòng|20.8449|106.6881|hải phòng,hai phong,haiphong
+Quảng Ninh|20.9599|107.0425|quảng ninh,quang ninh,hạ long,ha long
+Thái Nguyên|21.5942|105.8482|thái nguyên,thai nguyen
+Thanh Hóa|19.8067|105.7852|thanh hóa,thanh hoa
+Nghệ An|18.6796|105.6813|nghệ an,nghe an,vinh
+Huế|16.4637|107.5909|huế,hue,thừa thiên huế,thua thien hue
+Đà Nẵng|16.0544|108.2022|đà nẵng,da nang,danang
+Quảng Nam|15.8801|108.3380|quảng nam,quang nam,hội an,hoi an,tam kỳ,tam ky
+Quảng Ngãi|15.1214|108.8044|quảng ngãi,quang ngai
+Quy Nhơn|13.7830|109.2197|quy nhơn,quy nhon,bình định,binh dinh
+Phú Yên|13.0955|109.3209|phú yên,phu yen,tuy hòa,tuy hoa
+Nha Trang|12.2388|109.1967|nha trang,khánh hòa,khanh hoa
+Đà Lạt|11.9404|108.4583|đà lạt,da lat,lâm đồng,lam dong
+Đắk Lắk|12.6667|108.0500|đắk lắk,dak lak,buôn ma thuột,buon ma thuot
+Vũng Tàu|10.4114|107.1362|vũng tàu,vung tau,bà rịa,ba ria
+Bình Dương|11.1603|106.6667|bình dương,binh duong,thủ dầu một,thu dau mot
+Đồng Nai|10.9574|106.8427|đồng nai,dong nai,biên hòa,bien hoa
+TP. Hồ Chí Minh|10.8231|106.6297|tp. hồ chí minh,tp hồ chí minh,hồ chí minh,ho chi minh,tp.hcm,tphcm,hcm,sài gòn,sai gon
+Cần Thơ|10.0452|105.7469|cần thơ,can tho,cantho

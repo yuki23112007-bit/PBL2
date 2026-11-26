@@ -17,6 +17,7 @@
 #include "../service/QuanLyKhoNCC.h"
 #include "../service/QuanLyDoanhThu.h"
 #include "../service/DuDoanXuHuong.h"
+#include "../service/QuanLyVanChuyen.h"
 #include "../models/TaiKhoan.h"
 #include "../models/Admin.h"
 #include "../models/NguoiDung.h"
@@ -101,6 +102,8 @@ private:
     void ghiNhanDoanhThu(const DonHang* dh);
     void kiemTraDonQuaHan();
     double tongTienDon(const string& maDH) const;
+    UocTinhVanChuyen uocTinhVanChuyenDon(const DonHang* dh) const;
+    double tongTienDonCoShip(const DonHang* dh) const;
     string donHangJson(const DonHang* dh, bool kemChiTiet) const;
     string sanPhamJson(SanPham* sp) const;
     void thuHoiDonPending();
@@ -114,6 +117,7 @@ private:
     string apiSearchProducts(const map<string, string>& params);
     string apiAutocompleteProducts(const map<string, string>& params);
     string apiGetProductDetail(const map<string, string>& params);
+    string apiEstimateShipping(const string& body);
     string apiCreateOrder(const string& body, const PhienDangNhap& phien);
     string apiGetOrders(const PhienDangNhap& phien);
     string apiLookupOrder(const map<string, string>& params, const PhienDangNhap& phien, int& status);

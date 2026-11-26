@@ -96,6 +96,18 @@ class MeoLogiApp {
       });
     }
 
+    // Lắng nghe thay đổi địa chỉ giao hàng trong giỏ để cập nhật phí ship & ngày giao dự kiến
+    const shipAddrInput = document.getElementById('ship-address');
+    if (shipAddrInput) {
+      let shipTimer = null;
+      shipAddrInput.addEventListener('input', () => {
+        clearTimeout(shipTimer);
+        shipTimer = setTimeout(() => {
+          this.updateCartShippingEstimate();
+        }, 350);
+      });
+    }
+
     // Kiểm tra phiên đăng nhập đã lưu
     if (this.token && this.currentUser) {
       const ok = await this.verifySession();
@@ -392,6 +404,12 @@ class MeoLogiApp {
     this.currentUser = null;
     sessionStorage.removeItem('meologi_token');
     sessionStorage.removeItem('meologi_user');
+    const nameInput = document.getElementById('ship-name');
+    const phoneInput = document.getElementById('ship-phone');
+    const addrInput = document.getElementById('ship-address');
+    if (nameInput) nameInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+    if (addrInput) addrInput.value = '';
   }
 
   async handleLogin(e) {
@@ -788,6 +806,14 @@ class MeoLogiApp {
   }
 
   openCartModal() {
+    if (this.currentUser) {
+      const nameInput = document.getElementById('ship-name');
+      const phoneInput = document.getElementById('ship-phone');
+      const addrInput = document.getElementById('ship-address');
+      if (nameInput) nameInput.value = this.currentUser.hoTen || '';
+      if (phoneInput) phoneInput.value = this.currentUser.soDienThoai || '';
+      if (addrInput) addrInput.value = this.currentUser.diaChi || '';
+    }
     this.renderCartModal();
     this.openModal('modal-cart');
   }
@@ -806,6 +832,8 @@ class MeoLogiApp {
         </div>
       `;
       if (totalEl) totalEl.textContent = '0 đ';
+      const box = document.getElementById('cart-shipping-estimate');
+      if (box) box.style.display = 'none';
       return;
     }
 
@@ -845,6 +873,56 @@ class MeoLogiApp {
       if (phoneInput && !phoneInput.value) phoneInput.value = this.currentUser.soDienThoai || '';
       if (addrInput && !addrInput.value) addrInput.value = this.currentUser.diaChi || '';
     }
+    this.updateCartShippingEstimate();
+  }
+
+  async updateCartShippingEstimate() {
+    const box = document.getElementById('cart-shipping-estimate');
+    const subEl = document.getElementById('cart-subtotal-amount');
+    const feeEl = document.getElementById('cart-shipping-fee');
+    const routeEl = document.getElementById('cart-shipping-route');
+    const etaEl = document.getElementById('cart-delivery-eta');
+    const totalEl = document.getElementById('cart-total-amount');
+    if (!box) return;
+
+    if (!this.cart || this.cart.length === 0) {
+      box.style.display = 'none';
+      if (totalEl) totalEl.textContent = '0 đ';
+      return;
+    }
+
+    const address = (document.getElementById('ship-address')?.value || '').trim();
+    const items = this.cart.map(c => `${c.productId}:${c.quantity}`).join(',');
+
+    try {
+      const res = await fetch(`${this.apiBase}/api/shipping/estimate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, address })
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.success) return;
+
+      box.style.display = 'block';
+      if (subEl) subEl.textContent = this.formatCurrency(data.tienHang || 0);
+      if (feeEl) feeEl.textContent = this.formatCurrency(data.phiVanChuyen || 0);
+      if (totalEl) totalEl.textContent = this.formatCurrency(data.tongThanhToan || 0);
+
+      if (routeEl && Array.isArray(data.chiTiet) && data.chiTiet.length > 0) {
+        if (data.chiTiet.length === 1) {
+          const it = data.chiTiet[0];
+          routeEl.innerHTML = `📍 Tuyến: <strong>${it.khoXuat}</strong> → <strong>${it.thanhPhoKhach}</strong> (~${it.quangDuongKm} km) • ${it.loaiXe}`;
+        } else {
+          routeEl.innerHTML = data.chiTiet.map(it =>
+            `<div>📍 ${it.maSP}: ${it.khoXuat} → ${it.thanhPhoKhach} (~${it.quangDuongKm} km, ${it.loaiXe}, ${this.formatCurrency(it.phiVanChuyen)})</div>`
+          ).join('');
+        }
+      }
+      if (etaEl && data.ngayGiaoDuKien) {
+        etaEl.innerHTML = `🚚 Dự kiến giao: <strong>${data.ngayGiaoDuKien}</strong> (${data.nhanThoiGianGiao})`;
+      }
+    } catch (e) {}
   }
 
   removeCartItem(productId) {
@@ -891,6 +969,12 @@ class MeoLogiApp {
       this.cart = [];
       localStorage.removeItem('meologi_cart');
       this.updateCartBadge();
+      const nameInput = document.getElementById('ship-name');
+      const phoneInput = document.getElementById('ship-phone');
+      const addrInput = document.getElementById('ship-address');
+      if (nameInput) nameInput.value = '';
+      if (phoneInput) phoneInput.value = '';
+      if (addrInput) addrInput.value = '';
       this.closeModal('modal-cart');
       this.showToast(`Đã tạo thành công ${successCount} đơn hàng vào hàng đợi!`);
       this.showCustTab('orders');
@@ -1006,7 +1090,10 @@ class MeoLogiApp {
           <td><strong>${o.maDonHang}</strong></td>
           <td>${o.ngayDat}</td>
           <td>${o.tenKhachHang}<br/><span style="font-size: 12px; color: var(--space-indigo-light);">${o.diaChi}</span></td>
-          <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(o.tongTien)}</strong></td>
+          <td>
+            <strong style="color: var(--princeton-orange);">${this.formatCurrency(o.tongTien)}</strong>
+            ${o.phiVanChuyen ? `<br/><span style="font-size: 11px; color: var(--space-indigo-light);">(Ship: ${this.formatCurrency(o.phiVanChuyen)}${o.quangDuongKm ? ` • ~${o.quangDuongKm} km` : ''})</span>` : ''}
+          </td>
           <td>${statusTag}${deliveryInfo}</td>
           <td>${overdueBadge}</td>
           <td>${actionBtns}</td>
@@ -1280,7 +1367,10 @@ class MeoLogiApp {
           <td><strong>${o.maDonHang}</strong></td>
           <td>${o.ngayDat}</td>
           <td>${o.tenKhachHang}</td>
-          <td><strong style="color: var(--princeton-orange);">${this.formatCurrency(o.tongTien)}</strong></td>
+          <td>
+            <strong style="color: var(--princeton-orange);">${this.formatCurrency(o.tongTien)}</strong>
+            ${o.phiVanChuyen ? `<br/><span style="font-size: 11px; color: var(--space-indigo-light);">(Ship: ${this.formatCurrency(o.phiVanChuyen)}${o.quangDuongKm ? ` • ~${o.quangDuongKm} km` : ''})</span>` : ''}
+          </td>
           <td>${statusTag}</td>
           <td>${overdueBadge} ${complainBadge}</td>
           <td>
@@ -2608,6 +2698,9 @@ class MeoLogiApp {
         <p><strong>Ngày đặt:</strong> ${order.ngayDat}</p>
         <p><strong>Người nhận:</strong> ${order.tenKhachHang} (${order.sdt})</p>
         <p><strong>Địa chỉ:</strong> ${order.diaChi}</p>
+        ${order.khoXuat ? `<p><strong>Tuyến vận chuyển:</strong> ${order.khoXuat} (~${order.quangDuongKm || 0} km) • ${order.loaiXe || ''}</p>` : ''}
+        ${order.thoiGianGiaoDuKien ? `<p><strong>Dự kiến giao:</strong> ${order.thoiGianGiaoDuKien}${order.nhanThoiGianGiao ? ` (${order.nhanThoiGianGiao})` : ''}</p>` : ''}
+        ${order.phiVanChuyen ? `<p><strong>Tiền hàng:</strong> ${this.formatCurrency(order.tienHang || 0)} &nbsp;|&nbsp; <strong>Phí ship:</strong> ${this.formatCurrency(order.phiVanChuyen)} &nbsp;|&nbsp; <strong>Tổng cộng:</strong> <span style="color: var(--princeton-orange); font-weight: 700;">${this.formatCurrency(order.tongTien)}</span></p>` : ''}
         <p><strong>Trạng thái:</strong> <span class="tag-status tag-pending">${order.trangThai}</span></p>
       </div>
       <h4 style="font-size: 14px; margin-bottom: 8px;">Danh Sách Mặt Hàng (ChiTietDonHang):</h4>
