@@ -64,6 +64,11 @@ private:
     std::map<std::string, double> diemDanhGiaMap; // maDonHang -> soSao (1..5)
     int soLuongMauHuanLuyen;
     time_t thoiGianHuanLuyen;
+    std::string dataDir;
+
+    // Doc tap mau mam huan luyen tu data/seed_quaylai.txt va data/seed_xuhuong_sp.txt
+    bool napMauMamQuayLai(std::vector<std::vector<double>>& X, std::vector<int>& y);
+    bool napMauMamXuHuongSP(std::vector<std::vector<double>>& X, std::vector<int>& y);
 
     // QuickSort sap xep giam dan theo xac suat quay lai
     void quickSortKetQua(std::vector<KetQuaQuayLai>& arr, int low, int high);
@@ -94,6 +99,8 @@ public:
 
     int getSoLuongMau() const { return soLuongMauHuanLuyen; }
     time_t getThoiGianHuanLuyen() const { return thoiGianHuanLuyen; }
+    void setDataDir(const std::string& dir) { dataDir = dir.empty() ? "data" : dir; }
+    const std::string& getDataDir() const { return dataDir; }
 };
 
 #endif // DU_DOAN_XU_HUONG_H

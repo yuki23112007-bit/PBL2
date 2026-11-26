@@ -324,6 +324,7 @@ void WebServer::napDuLieuHeThong() {
 
     napDanhGia();
     napGiaoHang();
+    duDoanXuHuong.setDataDir(dataDir);
     duDoanXuHuong.ganDependencies(&qlDonHang, &qlTaiKhoan.getDanhSachTaiKhoan(), &qlSanPham);
     duDoanXuHuong.dongBoDanhGia(danhSachDanhGia);
     duDoanXuHuong.huanLuyen();

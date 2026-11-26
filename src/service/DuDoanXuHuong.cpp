@@ -4,14 +4,16 @@
 #include <cmath>
 #include <algorithm>
 #include <set>
+#include <fstream>
+#include <sstream>
 
 DuDoanXuHuong::DuDoanXuHuong()
     : qlDonHang(nullptr), danhSachTaiKhoan(nullptr), qlSanPham(nullptr),
-      soLuongMauHuanLuyen(0), thoiGianHuanLuyen(0) {}
+      soLuongMauHuanLuyen(0), thoiGianHuanLuyen(0), dataDir("data") {}
 
 DuDoanXuHuong::DuDoanXuHuong(QuanLyDonHang* qlDH, const std::vector<TaiKhoan*>* dsTK, QuanLySanPham* qlSP)
     : qlDonHang(qlDH), danhSachTaiKhoan(dsTK), qlSanPham(qlSP),
-      soLuongMauHuanLuyen(0), thoiGianHuanLuyen(0) {
+      soLuongMauHuanLuyen(0), thoiGianHuanLuyen(0), dataDir("data") {
     huanLuyen();
 }
 
@@ -88,62 +90,123 @@ void DuDoanXuHuong::quickSortXuHuongSP(std::vector<KetQuaXuHuongSP>& arr, int lo
     quickSortXuHuongSP(arr, p + 1, high);
 }
 
+bool DuDoanXuHuong::napMauMamQuayLai(std::vector<std::vector<double>>& X, std::vector<int>& y) {
+    X.clear();
+    y.clear();
+    std::string path = (dataDir.empty() ? "data" : dataDir) + "/seed_quaylai.txt";
+    std::ifstream f(path);
+    if (!f.is_open()) return false;
+
+    std::string line;
+    while (std::getline(f, line)) {
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+        if (line.empty() || line[0] == '#') continue;
+
+        std::vector<std::string> tokens;
+        std::string cur;
+        for (char c : line) {
+            if (c == '|') { tokens.push_back(cur); cur.clear(); }
+            else cur += c;
+        }
+        tokens.push_back(cur);
+
+        if (tokens.size() >= 5) {
+            try {
+                double rec = std::stod(tokens[0]);
+                double freq = std::stod(tokens[1]);
+                double aov = std::stod(tokens[2]);
+                double sat = std::stod(tokens[3]);
+                int label = std::stoi(tokens[4]);
+                X.push_back({ rec, freq, aov, sat });
+                y.push_back(label);
+            } catch (...) {}
+        }
+    }
+    return !X.empty();
+}
+
+bool DuDoanXuHuong::napMauMamXuHuongSP(std::vector<std::vector<double>>& X, std::vector<int>& y) {
+    X.clear();
+    y.clear();
+    std::string path = (dataDir.empty() ? "data" : dataDir) + "/seed_xuhuong_sp.txt";
+    std::ifstream f(path);
+    if (!f.is_open()) return false;
+
+    std::string line;
+    while (std::getline(f, line)) {
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+        if (line.empty() || line[0] == '#') continue;
+
+        std::vector<std::string> tokens;
+        std::string cur;
+        for (char c : line) {
+            if (c == '|') { tokens.push_back(cur); cur.clear(); }
+            else cur += c;
+        }
+        tokens.push_back(cur);
+
+        if (tokens.size() >= 6) {
+            try {
+                double tongSL = std::stod(tokens[0]);
+                double soKhach = std::stod(tokens[1]);
+                double soDon = std::stod(tokens[2]);
+                double sl30 = std::stod(tokens[3]);
+                double saoTB = std::stod(tokens[4]);
+                int label = std::stoi(tokens[5]);
+                X.push_back({ tongSL, soKhach, soDon, sl30, saoTB });
+                y.push_back(label);
+            } catch (...) {}
+        }
+    }
+    return !X.empty();
+}
+
 bool DuDoanXuHuong::huanLuyen() {
     thoiGianHuanLuyen = time(nullptr);
 
     // -------------------------------------------------------------
-    // Tap mau Huan luyen chuan (Baseline Standard RFM Distributions)
+    // Tap mau Huan luyen chuan (Doc tu data/seed_quaylai.txt)
     // Dac trung [Recency(ngay), Frequency(don), Monetary(VND), Satisfaction(sao)]
     // Nhan y: 1 = Quay lai mua tiep, 0 = Khong quay lai (churn)
     // -------------------------------------------------------------
-    std::vector<std::vector<double>> X1 = {
-        // Nhom khach hang than thiet, hai long cao -> Chac chan quay lai (y = 1)
-        { 2.0,  8.0, 450000.0, 5.0 },
-        { 5.0,  6.0, 320000.0, 4.5 },
-        { 7.0,  5.0, 680000.0, 5.0 },
-        { 4.0, 10.0, 510000.0, 4.8 },
-        { 10.0, 4.0, 290000.0, 4.2 },
-        { 3.0,  7.0, 410000.0, 4.7 },
-        { 8.0,  5.0, 380000.0, 4.0 },
-        { 12.0, 3.0, 250000.0, 4.0 },
-        // Nhom khach hang it mua, lau khong mua, danh gia thap -> Khong quay lai (y = 0)
-        { 45.0, 1.0,  80000.0, 2.0 },
-        { 60.0, 1.0, 120000.0, 1.0 },
-        { 75.0, 2.0, 150000.0, 2.5 },
-        { 90.0, 1.0,  50000.0, 2.0 },
-        { 40.0, 2.0, 110000.0, 3.0 },
-        { 80.0, 1.0,  95000.0, 1.5 },
-        { 55.0, 1.0, 140000.0, 2.2 },
-        { 100.0, 1.0, 70000.0, 1.0 }
-    };
-    std::vector<int> y1 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+    std::vector<std::vector<double>> X1;
+    std::vector<int> y1;
+    if (!napMauMamQuayLai(X1, y1)) {
+        // Fallback du phong neu file bi thieu hoac loi doc
+        X1 = {
+            { 2.0,  8.0, 450000.0, 5.0 }, { 5.0,  6.0, 320000.0, 4.5 },
+            { 7.0,  5.0, 680000.0, 5.0 }, { 4.0, 10.0, 510000.0, 4.8 },
+            { 10.0, 4.0, 290000.0, 4.2 }, { 3.0,  7.0, 410000.0, 4.7 },
+            { 8.0,  5.0, 380000.0, 4.0 }, { 12.0, 3.0, 250000.0, 4.0 },
+            { 45.0, 1.0,  80000.0, 2.0 }, { 60.0, 1.0, 120000.0, 1.0 },
+            { 75.0, 2.0, 150000.0, 2.5 }, { 90.0, 1.0,  50000.0, 2.0 },
+            { 40.0, 2.0, 110000.0, 3.0 }, { 80.0, 1.0,  95000.0, 1.5 },
+            { 55.0, 1.0, 140000.0, 2.2 }, { 100.0, 1.0, 70000.0, 1.0 }
+        };
+        y1 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+    }
 
     // -------------------------------------------------------------
-    // Tap mau Huan luyen Xu huong San pham Thang sau (Phuong an 2 - Toan bo KH)
+    // Tap mau Huan luyen Xu huong San pham Thang sau (Doc tu data/seed_xuhuong_sp.txt)
     // Dac trung: [TongSoLuongBan, SoKhachHangMua, SoDonHang, SoLuong30Ngay, DiemDanhGiaTB]
     // Nhan y: 1 = San pham xu huong (mua nhieu thang sau), 0 = Nhu cau thuong/thap
     // -------------------------------------------------------------
-    std::vector<std::vector<double>> X2 = {
-        // Nhom san pham xu huong, nhieu khach mua, tan suat cao -> y = 1
-        { 12.0, 5.0, 5.0, 8.0, 4.8 },
-        {  8.0, 4.0, 4.0, 6.0, 4.5 },
-        { 15.0, 6.0, 6.0, 10.0, 4.7 },
-        {  6.0, 3.0, 3.0, 4.0, 4.3 },
-        {  5.0, 3.0, 3.0, 3.0, 4.2 },
-        { 10.0, 4.0, 4.0, 7.0, 4.6 },
-        {  4.0, 2.0, 3.0, 3.0, 4.4 },
-        {  7.0, 3.0, 4.0, 5.0, 4.5 },
-        // Nhom san pham it nguoi mua, khong on dinh -> y = 0
-        {  1.0, 1.0, 1.0, 0.0, 3.0 },
-        {  1.0, 1.0, 1.0, 1.0, 2.5 },
-        {  2.0, 1.0, 1.0, 0.0, 3.2 },
-        {  0.0, 0.0, 0.0, 0.0, 3.5 },
-        {  2.0, 1.0, 1.0, 1.0, 2.8 },
-        {  1.0, 1.0, 1.0, 0.0, 2.0 },
-        {  3.0, 1.0, 1.0, 1.0, 3.0 },
-        {  0.0, 0.0, 0.0, 0.0, 3.0 }
-    };
-    std::vector<int> y2 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+    std::vector<std::vector<double>> X2;
+    std::vector<int> y2;
+    if (!napMauMamXuHuongSP(X2, y2)) {
+        // Fallback du phong neu file bi thieu hoac loi doc
+        X2 = {
+            { 12.0, 5.0, 5.0, 8.0, 4.8 }, {  8.0, 4.0, 4.0, 6.0, 4.5 },
+            { 15.0, 6.0, 6.0, 10.0, 4.7 }, {  6.0, 3.0, 3.0, 4.0, 4.3 },
+            {  5.0, 3.0, 3.0, 3.0, 4.2 }, { 10.0, 4.0, 4.0, 7.0, 4.6 },
+            {  4.0, 2.0, 3.0, 3.0, 4.4 }, {  7.0, 3.0, 4.0, 5.0, 4.5 },
+            {  1.0, 1.0, 1.0, 0.0, 3.0 }, {  1.0, 1.0, 1.0, 1.0, 2.5 },
+            {  2.0, 1.0, 1.0, 0.0, 3.2 }, {  0.0, 0.0, 0.0, 0.0, 3.5 },
+            {  2.0, 1.0, 1.0, 1.0, 2.8 }, {  1.0, 1.0, 1.0, 0.0, 2.0 },
+            {  3.0, 1.0, 1.0, 1.0, 3.0 }, {  0.0, 0.0, 0.0, 0.0, 3.0 }
+        };
+        y2 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+    }
 
     // Tich hop them du lieu tu don hang thuc te neu co he thong
     if (qlDonHang && danhSachTaiKhoan) {
