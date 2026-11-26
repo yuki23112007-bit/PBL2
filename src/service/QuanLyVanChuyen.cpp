@@ -1,6 +1,9 @@
 #include "QuanLyVanChuyen.h"
 #include "TinhKhoangCachDiaLy.h"
 #include "../models/PhuongTien.h"
+#include "../models/XeTai.h"
+#include "../models/XeTaiLanh.h"
+#include "../models/XeMay.h"
 #include "../models/VanChuyen.h"
 
 using namespace std;
