@@ -25,6 +25,8 @@ Thư mục này chứa 9 file `.txt` làm nơi lưu trữ dữ liệu của hệ
 | `revenues.txt` | `ngayThongKe\|tongDoanhThu\|tongSoDonHang` | Lược đồ mục I, bảng DoanhThuNgay |
 | `danhgia.txt` | `maDanhGia\|maDonHang\|maNguoiDung\|soSao\|noiDung\|thoiGian\|laKhieuNai` | Đánh giá và khiếu nại của khách |
 | `giaohang.txt` | `maDonHang\|thoiGianChuyenSangDangGiao` | Mốc bắt đầu giao để tính hạn 3 ngày |
+| `seed_quaylai.txt` | `recency\|frequency\|monetary\|satisfaction\|label` | Mẫu mầm chuẩn huấn luyện Naive Bayes khách quay lại |
+| `seed_xuhuong_sp.txt` | `tongSL\|soKhach\|soDon\|sl30Ngay\|saoTB\|label` | Mẫu mầm chuẩn huấn luyện Naive Bayes xu hướng SP |
 
 ## 3. Chi tiết và ví dụ
 
