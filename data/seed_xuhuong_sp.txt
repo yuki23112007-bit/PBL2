@@ -1,15 +1,33 @@
 # Du lieu mam huan luyen mo hinh du doan xu huong san pham thang sau (Gaussian Naive Bayes)
 # Dinh dang: tongSoLuongBan|soKhachHangMua|soDonHang|soLuong30Ngay|diemDanhGiaTB|label(0 hoac 1)
-# Nhom san pham xu huong, nhieu khach mua, tan suat cao -> y = 1
+
+# === NHOM 1: SAN PHAM XU HUONG HOT / BAN CHAY THANG SAU (y = 1) ===
+# 1.1. San pham Best-seller / Ban chay toan dien
 12.0|5.0|5.0|8.0|4.8|1
 8.0|4.0|4.0|6.0|4.5|1
 15.0|6.0|6.0|10.0|4.7|1
+18.0|7.0|8.0|12.0|4.9|1
+22.0|9.0|10.0|14.0|4.8|1
+25.0|10.0|12.0|16.0|5.0|1
+30.0|12.0|15.0|20.0|4.9|1
+10.0|4.0|4.0|7.0|4.6|1
+14.0|6.0|7.0|9.0|4.7|1
+16.0|7.0|7.0|11.0|4.8|1
+
+# 1.2. San pham dang len (Trending / Tang truong manh 30 ngay qua)
 6.0|3.0|3.0|4.0|4.3|1
 5.0|3.0|3.0|3.0|4.2|1
-10.0|4.0|4.0|7.0|4.6|1
-4.0|2.0|3.0|3.0|4.4|1
 7.0|3.0|4.0|5.0|4.5|1
-# Nhom san pham it nguoi mua, khong on dinh -> y = 0
+9.0|4.0|5.0|6.0|4.6|1
+11.0|5.0|5.0|8.0|4.7|1
+8.0|4.0|5.0|5.0|4.4|1
+13.0|6.0|6.0|9.0|4.8|1
+7.0|4.0|4.0|5.0|4.5|1
+10.0|5.0|6.0|7.0|4.6|1
+12.0|5.0|6.0|8.0|4.7|1
+
+# === NHOM 2: SAN PHAM NHU CAU THUONG / BAN CHAM / TON KHO (y = 0) ===
+# 2.1. San pham it nguoi quan tam, gan nhu khong phat sinh don moi
 1.0|1.0|1.0|0.0|3.0|0
 1.0|1.0|1.0|1.0|2.5|0
 2.0|1.0|1.0|0.0|3.2|0
@@ -18,3 +36,17 @@
 1.0|1.0|1.0|0.0|2.0|0
 3.0|1.0|1.0|1.0|3.0|0
 0.0|0.0|0.0|0.0|3.0|0
+2.0|2.0|2.0|0.0|3.4|0
+1.0|1.0|1.0|0.0|2.8|0
+
+# 2.2. San pham ton kho lau / Bi ngung mua trong 30 ngay qua hoac danh gia kem
+3.0|2.0|2.0|0.0|3.1|0
+4.0|2.0|2.0|0.0|2.9|0
+2.0|1.0|2.0|0.0|2.2|0
+1.0|1.0|1.0|0.0|1.8|0
+3.0|1.0|2.0|0.0|2.6|0
+2.0|1.0|1.0|0.0|2.5|0
+0.0|0.0|0.0|0.0|2.0|0
+4.0|2.0|3.0|1.0|2.7|0
+2.0|1.0|1.0|0.0|3.0|0
+1.0|1.0|1.0|0.0|2.4|0
