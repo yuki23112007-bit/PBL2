@@ -352,38 +352,13 @@ void WebServer::luuDuLieuHeThong() {
     luuGiaoHang();
 }
 
-// danhgia.txt: maDanhGia|maDonHang|maNguoiDung|soSao|noiDung|thoiGian|laKhieuNai (DanhGiaDonHang::xuatChuoiFile)
+// danhgia.txt: maDanhGia|maDonHang|maNguoiDung|soSao|noiDung|thoiGian|laKhieuNai (doc/ghi qua FileManager)
 void WebServer::napDanhGia() {
-    danhSachDanhGia.clear();
-    ifstream f(dataDir + "/danhgia.txt");
-    if (!f.is_open()) return;
-    string dong;
-    while (getline(f, dong)) {
-        if (!dong.empty() && dong.back() == '\r') dong.pop_back();
-        vector<string> t;
-        string cur;
-        for (char c : dong) {
-            if (c == '|') { t.push_back(cur); cur.clear(); }
-            else cur += c;
-        }
-        t.push_back(cur);
-        if (t.size() < 7) continue;
-        try {
-            danhSachDanhGia.push_back(DanhGiaDonHang(t[0], t[1], t[2], stoi(t[3]), t[4],
-                                                    t[6] == "1", (time_t)stoll(t[5])));
-        } catch (...) {}
-    }
+    danhSachDanhGia = fileManager.docDanhGia();
 }
 
 void WebServer::luuDanhGia() {
-    string tam = dataDir + "/danhgia.txt.tmp";
-    {
-        ofstream f(tam, ios::trunc);
-        if (!f.is_open()) return;
-        for (const DanhGiaDonHang& dg : danhSachDanhGia) f << dg.xuatChuoiFile() << "\n";
-    }
-    remove((dataDir + "/danhgia.txt").c_str());
-    rename(tam.c_str(), (dataDir + "/danhgia.txt").c_str());
+    fileManager.ghiDanhGia(danhSachDanhGia);
 }
 
 // giaohang.txt: maDonHang|thoiGianChuyenSangDangGiao

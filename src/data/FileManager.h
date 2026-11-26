@@ -24,6 +24,7 @@ class NguoiDung;
 class DoanhThuNgay;
 class VanChuyen;
 class PhuongTien;
+class DanhGiaDonHang;
 
 // Bí danh để tương thích ngược nếu có module cũ gọi tên SanPhamThuong / SanPhamTuoiSong
 using SanPhamThuong = ThucPhamThuong;
@@ -112,7 +113,10 @@ public:
     // revenues.txt
     vector<DoanhThuRecord> docDoanhThu();
 
-    // ================= 2. GHI DỮ LIỆU VÀO 7 FILE (AN TOÀN QUA FILE TẠM) =================
+    // danhgia.txt
+    vector<DanhGiaDonHang> docDanhGia();
+
+    // ================= 2. GHI DỮ LIỆU VÀO CÁC FILE (AN TOÀN QUA FILE TẠM) =================
     bool ghiSanPham(const vector<SanPham*>& danhSach);
     bool ghiKhoHang(const vector<KhoHang>& danhSach);
     bool ghiDonHang(const vector<DonHang>& danhSach);
@@ -121,6 +125,7 @@ public:
     bool ghiTaiKhoan(const vector<TaiKhoan*>& danhSach);
     bool ghiNguoiDung(const vector<TaiKhoan*>& danhSach) { return ghiTaiKhoan(danhSach); }
     bool ghiDoanhThu(const vector<DoanhThuRecord>& danhSach);
+    bool ghiDanhGia(const vector<DanhGiaDonHang>& danhSach);
 
     // ================= 3. THÊM BẢN GHI MỚI VÀO CUỐI FILE (APPEND) =================
     bool themSanPham(const SanPham* sp);
@@ -131,6 +136,7 @@ public:
     bool themTaiKhoan(const TaiKhoan* tk);
     bool themNguoiDung(const TaiKhoan* tk) { return themTaiKhoan(tk); }
     bool themDoanhThu(const DoanhThuRecord& dt);
+    bool themDanhGia(const DanhGiaDonHang& dg);
 
     // ================= 4. LIÊN KẾT ĐƠN HÀNG VÀO TÀI KHOẢN KHÁCH HÀNG (Mục 5.1 README) =================
     static void lienKetDonHangVaoNguoiDung(const vector<TaiKhoan*>& danhSachTaiKhoan, vector<DonHang>& danhSachDonHang);

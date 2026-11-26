@@ -1,4 +1,4 @@
-#include "FileManager.h"
+﻿#include "FileManager.h"
 
 #include "../models/SanPham.h"
 #include "../models/ThucPham.h"
@@ -16,6 +16,7 @@
 #include "../models/VanChuyen.h"
 #include "../models/PhuongTien.h"
 #include "../models/NhaCungCap.h"
+#include "../models/DanhGiaDonHang.h"
 
 #include <cstdio>
 #include <filesystem>
@@ -392,8 +393,44 @@ vector<DoanhThuRecord> FileManager::docDoanhThu() {
     return danhSach;
 }
 
+vector<DanhGiaDonHang> FileManager::docDanhGia() {
+    vector<DanhGiaDonHang> danhSach;
+    string duongDan = layDuongDan("danhgia.txt");
+    ifstream file(duongDan);
+    if (!file.is_open()) {
+        cerr << "[FileManager] Khong the mo file: " << duongDan << "\n";
+        return danhSach;
+    }
+
+    string dong;
+    while (getline(file, dong)) {
+        if (!dong.empty() && dong.back() == '\r') dong.pop_back();
+        vector<string> tokens = tachChuoi(dong);
+        if (tokens.size() < 7) {
+            continue;
+        }
+
+        try {
+            // Định dạng: maDanhGia|maDonHang|maNguoiDung|soSao|noiDung|thoiGian|laKhieuNai
+            danhSach.push_back(DanhGiaDonHang(
+                tokens[0],
+                tokens[1],
+                tokens[2],
+                stoi(tokens[3]),
+                tokens[4],
+                tokens[6] == "1" || tokens[6] == "true",
+                static_cast<time_t>(stoll(tokens[5]))
+            ));
+        } catch (const exception& e) {
+            cerr << "[FileManager] Loi phan tich danh gia: " << dong << "\n";
+        }
+    }
+    file.close();
+    return danhSach;
+}
+
 // =========================================================================
-// 2. CÁC HÀM GHI DỮ LIỆU VÀO 7 FILE (AN TOÀN QUA FILE TẠM .tmp)
+// 2. CÁC HÀM GHI DỮ LIỆU VÀO CÁC FILE (AN TOÀN QUA FILE TẠM .tmp)
 // =========================================================================
 
 bool FileManager::ghiSanPham(const vector<SanPham*>& danhSach) {
@@ -463,6 +500,15 @@ bool FileManager::ghiDoanhThu(const vector<DoanhThuRecord>& danhSach) {
     return ghiFileAnToan("revenues.txt", cacDong);
 }
 
+bool FileManager::ghiDanhGia(const vector<DanhGiaDonHang>& danhSach) {
+    vector<string> cacDong;
+    cacDong.reserve(danhSach.size());
+    for (const auto& dg : danhSach) {
+        cacDong.push_back(dg.xuatChuoiFile());
+    }
+    return ghiFileAnToan("danhgia.txt", cacDong);
+}
+
 // =========================================================================
 // 3. CÁC HÀM THÊM BẢN GHI MỚI VÀO CUỐI FILE (APPEND)
 // =========================================================================
@@ -495,6 +541,10 @@ bool FileManager::themTaiKhoan(const TaiKhoan* tk) {
 
 bool FileManager::themDoanhThu(const DoanhThuRecord& dt) {
     return themDongVaoFile("revenues.txt", dt.xuatChuoiFile());
+}
+
+bool FileManager::themDanhGia(const DanhGiaDonHang& dg) {
+    return themDongVaoFile("danhgia.txt", dg.xuatChuoiFile());
 }
 
 // =========================================================================
