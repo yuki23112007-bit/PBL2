@@ -2248,7 +2248,6 @@ class MeoLogiApp {
       <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; font-size:12.5px; color:var(--space-indigo); padding:6px 12px; background:var(--jasmine-light); border-radius:var(--radius-sm);">
         <div>📈 <strong>Xu hướng:</strong> <span style="color:var(--princeton-orange); font-weight:700;">${data.nhanXuHuong}</span> (${data.heSoGoc > 0 ? '+' : ''}${Math.round(data.heSoGoc || 0).toLocaleString('vi-VN')} đ/ngày)</div>
         <div>🎯 <strong>Dự báo ngày kế:</strong> <strong>${this.formatCurrency(data.duBaoNgayKe || 0)}</strong></div>
-        <div style="font-size:11.5px; color:var(--space-indigo-light);">📐 Thuật toán: Hồi quy tuyến tính (OLS) & QuickSort</div>
       </div>
     ` : '';
 
