@@ -1,7 +1,6 @@
 #ifndef VANCHUYEN_H
 #define VANCHUYEN_H
 
-#include <iostream>
 #include <string>
 #include <ctime>
 
@@ -11,13 +10,14 @@ using namespace std;
 class DonHang;
 class PhuongTien;
 
+// Lop thuc the van don (SRP): chi quan ly trang thai van don va tinh cuoc da hinh qua PhuongTien*
 class VanChuyen {
 private:
     string maVanChuyen;        // Khóa chính (PK, ví dụ: "VC001")
     string maDonHang;          // Khóa ngoại (FK, liên kết với DonHang)
     time_t ngayTao;            // Thời điểm tạo vận đơn
     string trangThaiGiao;      // Trạng thái: "Dang Giao", "Giao Thanh Cong", "Hoan tat tu dong"
-    double chiPhiVanChuyen;    // Phí ship: 25.000đ (xe máy) hoặc 45.000đ (xe tải lạnh)
+    double chiPhiVanChuyen;    // Phí vận chuyển tính theo phương tiện & quãng đường
     string loaiXe;             // "Xe May Giao Nhanh", "Xe Tai", "Xe Tai Lanh Chuyen Dung"
     time_t thoiGianGiaoDuKien; // Mốc thời gian dự kiến giao xong
     PhuongTien* phuongTien;    // Con trỏ phương tiện điều phối thực tế (Đa hình OOP)
@@ -48,20 +48,10 @@ public:
     void setThoiGianGiaoDuKien(time_t duKien);
     void ganPhuongTien(PhuongTien* pt);
 
-    // Nghiệp vụ (Phân hệ 1.5, 2.2, 2.6 & Phân hệ Phương tiện)
+    // Nghiệp vụ trạng thái vận đơn & tính cước đa hình
     void capNhatTrangThaiGiao(const string& trangThaiMoi);
     bool daQuaHan3Ngay(time_t thoiGianHienTai) const;
-    void dieuPhoiPhuongTien(bool canBaoQuanLanh);
     virtual double tinhChiPhiVanChuyen(double quangDuongKm = 1.0);
-
-    // Hiển thị & xuất dữ liệu
-    virtual void hienThiThongTin() const;
-    void show() const { hienThiThongTin(); }
-    string xuatChuoiFile() const;
-
-    // Toán tử luồng
-    friend ostream& operator<<(ostream& os, const VanChuyen& vc);
-    friend istream& operator>>(istream& is, VanChuyen& vc);
 };
 
 #endif // VANCHUYEN_H

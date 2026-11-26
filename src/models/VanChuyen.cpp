@@ -1,6 +1,5 @@
 #include "VanChuyen.h"
 #include "PhuongTien.h"
-#include <iomanip>
 
 using namespace std;
 
@@ -85,50 +84,9 @@ bool VanChuyen::daQuaHan3Ngay(time_t thoiGianHienTai) const {
     return thoiGianHienTai > (thoiGianGiaoDuKien + 3 * 86400);
 }
 
-void VanChuyen::dieuPhoiPhuongTien(bool canBaoQuanLanh) {
-    if (canBaoQuanLanh) {
-        loaiXe = "Xe Tai Lanh Chuyen Dung";
-        chiPhiVanChuyen = 45000.0; // Phí ship xe tải lạnh theo tài liệu
-    } else {
-        loaiXe = "Xe May Giao Nhanh";
-        chiPhiVanChuyen = 25000.0; // Phí ship xe máy giao nhanh theo tài liệu
-    }
-}
-
 double VanChuyen::tinhChiPhiVanChuyen(double quangDuongKm) {
     if (phuongTien != nullptr) {
         chiPhiVanChuyen = phuongTien->tinhChiPhiVanChuyen(quangDuongKm);
     }
     return chiPhiVanChuyen;
-}
-
-void VanChuyen::hienThiThongTin() const {
-    cout << "[VAN DON: " << maVanChuyen << "]\n";
-    cout << "  - Ma don hang     : " << maDonHang << "\n";
-    cout << "  - Ngay tao        : " << ngayTao << "\n";
-    cout << "  - Loai xe         : " << loaiXe << "\n";
-    cout << "  - Phi ship        : " << fixed << setprecision(0) << chiPhiVanChuyen << " VND\n";
-    cout << "  - Trang thai      : " << trangThaiGiao << "\n";
-    cout << "  - Giao du kien    : " << thoiGianGiaoDuKien << "\n";
-    if (phuongTien != nullptr) {
-        cout << "  - Phuong tien     : ";
-        phuongTien->hienThiThongTin();
-    }
-}
-
-string VanChuyen::xuatChuoiFile() const {
-    return maVanChuyen + "|" + maDonHang + "|" + to_string(ngayTao) + "|" +
-           trangThaiGiao + "|" + to_string(static_cast<long long>(chiPhiVanChuyen)) + "|" +
-           loaiXe + "|" + to_string(thoiGianGiaoDuKien);
-}
-
-ostream& operator<<(ostream& os, const VanChuyen& vc) {
-    os << vc.xuatChuoiFile();
-    return os;
-}
-
-istream& operator>>(istream& is, VanChuyen& vc) {
-    is >> vc.maVanChuyen >> vc.maDonHang >> vc.ngayTao >> vc.trangThaiGiao
-       >> vc.chiPhiVanChuyen >> vc.loaiXe >> vc.thoiGianGiaoDuKien;
-    return is;
 }
