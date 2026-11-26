@@ -20,3 +20,4 @@ CUSTOMER|222017|duc|e10adc3949ba59abbe56e057f20f883e|Ngô Minh Đức|0912345617
 CUSTOMER|222018|trang|e10adc3949ba59abbe56e057f20f883e|Phan Huyền Trang|0912345618|72 Nguyễn Văn Linh, Cần Thơ
 CUSTOMER|222019|long|e10adc3949ba59abbe56e057f20f883e|Lý Thành Long|0912345619|11 Bạch Đằng, Đà Nẵng
 CUSTOMER|222020|nhi|e10adc3949ba59abbe56e057f20f883e|Trương Yến Nhi|0912345620|90 Hai Bà Trưng, TP.HCM
+CUSTOMER|222021|test_e2e_user|e10adc3949ba59abbe56e057f20f883e|Nguyễn Test E2E|0999888777|14 Lê Lợi, Huế
