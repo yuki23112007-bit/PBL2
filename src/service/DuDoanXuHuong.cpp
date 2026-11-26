@@ -187,26 +187,12 @@ bool DuDoanXuHuong::huanLuyen() {
     }
 
     // -------------------------------------------------------------
-    // Tap mau Huan luyen Xu huong San pham Thang sau (Doc tu data/seed_xuhuong_sp.txt)
-    // Dac trung: [TongSoLuongBan, SoKhachHangMua, SoDonHang, SoLuong30Ngay, DiemDanhGiaTB]
-    // Nhan y: 1 = San pham xu huong (mua nhieu thang sau), 0 = Nhu cau thuong/thap
+    // Tap mau Huan luyen Xu huong San pham (Temporal Split - Khong Data Leakage)
+    // Dac trung X (qua khu <= mocCat): [TongSL, SoKhach, SoDon, SL30NgayTruocMoc, SaoTB]
+    // Nhan y (tuong lai > mocCat): 1 = Thuc te co phat sinh mua tiep sau mocCat, 0 = Khong phat sinh
     // -------------------------------------------------------------
     std::vector<std::vector<double>> X2;
     std::vector<int> y2;
-    if (!napMauMamXuHuongSP(X2, y2)) {
-        // Fallback du phong neu file bi thieu hoac loi doc
-        X2 = {
-            { 12.0, 5.0, 5.0, 8.0, 4.8 }, {  8.0, 4.0, 4.0, 6.0, 4.5 },
-            { 15.0, 6.0, 6.0, 10.0, 4.7 }, {  6.0, 3.0, 3.0, 4.0, 4.3 },
-            {  5.0, 3.0, 3.0, 3.0, 4.2 }, { 10.0, 4.0, 4.0, 7.0, 4.6 },
-            {  4.0, 2.0, 3.0, 3.0, 4.4 }, {  7.0, 3.0, 4.0, 5.0, 4.5 },
-            {  1.0, 1.0, 1.0, 0.0, 3.0 }, {  1.0, 1.0, 1.0, 1.0, 2.5 },
-            {  2.0, 1.0, 1.0, 0.0, 3.2 }, {  0.0, 0.0, 0.0, 0.0, 3.5 },
-            {  2.0, 1.0, 1.0, 1.0, 2.8 }, {  1.0, 1.0, 1.0, 0.0, 2.0 },
-            {  3.0, 1.0, 1.0, 1.0, 3.0 }, {  0.0, 0.0, 0.0, 0.0, 3.0 }
-        };
-        y2 = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
-    }
 
     // Tich hop them du lieu tu don hang thuc te neu co he thong
     if (qlDonHang && danhSachTaiKhoan) {
@@ -258,68 +244,114 @@ bool DuDoanXuHuong::huanLuyen() {
             }
         }
 
-        // 2. Du lieu tong hop san pham tu tat ca khach hang cho Model 2 (Xu huong SP thang sau)
+        // 2. Du lieu Temporal Split cho Model 2 (Xu huong SP thang sau)
         if (qlSanPham) {
             std::map<std::string, DonHang*> donHopLeMap;
+            std::vector<time_t> mocThoiGian;
             for (DonHang* dh : dsDon) {
                 if (!dh) continue;
                 std::string tt = dh->getTrangThaiDonHang();
                 if (tt == "Đã hủy" || tt == "DA_HUY") continue;
                 donHopLeMap[dh->getMaDonHang()] = dh;
+                if (dh->getThoiGianTao() > 0) mocThoiGian.push_back(dh->getThoiGianTao());
             }
 
-            struct ThongKeSP {
-                int tongSL = 0;
-                int sl30Ngay = 0;
-                std::set<std::string> khachSet;
-                std::set<std::string> donSet;
-                double tongSao = 0.0;
-                int demSao = 0;
-            };
-            std::map<std::string, ThongKeSP> tkSP;
+            if (mocThoiGian.size() >= 6) {
+                std::sort(mocThoiGian.begin(), mocThoiGian.end());
+                // Chon moc cat theo phan vi 65% lich su don hang:
+                // - Truoc/bang mocCat -> tinh dac trung X (qua khu)
+                // - Sau mocCat -> xac dinh nhan y (thuc te ban duoc trong tuong lai)
+                time_t mocCat = mocThoiGian[static_cast<size_t>(mocThoiGian.size() * 0.65)];
 
-            for (const ChiTietDonHang& ct : dsCTDH) {
-                auto itDH = donHopLeMap.find(ct.getMaDonHang());
-                if (itDH == donHopLeMap.end()) continue;
-                DonHang* dh = itDH->second;
+                struct ThongKeQuaKhuSP {
+                    int tongSL = 0;
+                    int sl30Ngay = 0;
+                    std::set<std::string> khachSet;
+                    std::set<std::string> donSet;
+                    double tongSao = 0.0;
+                    int demSao = 0;
+                };
+                std::map<std::string, ThongKeQuaKhuSP> tkPast;
+                std::map<std::string, int> slFuture;
 
-                auto& item = tkSP[ct.getMaSanPham()];
-                item.tongSL += ct.getSoLuong();
-                double tuoiNgay = difftime(now, dh->getThoiGianTao()) / 86400.0;
-                if (tuoiNgay <= 30.0) {
-                    item.sl30Ngay += ct.getSoLuong();
-                }
-                if (!dh->getMaNguoiDung().empty()) {
-                    item.khachSet.insert(dh->getMaNguoiDung());
-                }
-                if (item.donSet.insert(dh->getMaDonHang()).second) {
-                    if (diemDanhGiaMap.count(dh->getMaDonHang())) {
-                        item.tongSao += diemDanhGiaMap[dh->getMaDonHang()];
-                        item.demSao++;
+                for (const ChiTietDonHang& ct : dsCTDH) {
+                    auto itDH = donHopLeMap.find(ct.getMaDonHang());
+                    if (itDH == donHopLeMap.end()) continue;
+                    DonHang* dh = itDH->second;
+                    time_t tDon = dh->getThoiGianTao();
+
+                    if (tDon <= mocCat) {
+                        auto& item = tkPast[ct.getMaSanPham()];
+                        item.tongSL += ct.getSoLuong();
+                        double cachMoc = difftime(mocCat, tDon) / 86400.0;
+                        if (cachMoc >= 0.0 && cachMoc <= 30.0) {
+                            item.sl30Ngay += ct.getSoLuong();
+                        }
+                        if (!dh->getMaNguoiDung().empty()) {
+                            item.khachSet.insert(dh->getMaNguoiDung());
+                        }
+                        if (item.donSet.insert(dh->getMaDonHang()).second) {
+                            if (diemDanhGiaMap.count(dh->getMaDonHang())) {
+                                item.tongSao += diemDanhGiaMap[dh->getMaDonHang()];
+                                item.demSao++;
+                            }
+                        }
+                    } else {
+                        // Cua so tuong lai: chi dung de gan nhan ground-truth, khong dua vao X
+                        slFuture[ct.getMaSanPham()] += ct.getSoLuong();
                     }
                 }
-            }
 
-            auto dsSP = qlSanPham->layDanhSachSanPham(0);
-            for (SanPham* sp : dsSP) {
-                if (!sp) continue;
-                const auto& st = tkSP[sp->getMaSP()];
-                int soKhach = static_cast<int>(st.khachSet.size());
-                int soDon = static_cast<int>(st.donSet.size());
-                double saoTB = st.demSao > 0 ? (st.tongSao / st.demSao) : 4.0;
+                auto dsSP = qlSanPham->layDanhSachSanPham(0);
+                for (SanPham* sp : dsSP) {
+                    if (!sp) continue;
+                    const auto& st = tkPast[sp->getMaSP()];
+                    int soDonPast = static_cast<int>(st.donSet.size());
+                    if (soDonPast < 1) continue;
 
-                if (soDon >= 1) {
-                    int nhanSP = (((soKhach >= 2 && st.tongSL >= 3) || st.sl30Ngay >= 3) && saoTB >= 3.5) ? 1 : 0;
+                    int soKhachPast = static_cast<int>(st.khachSet.size());
+                    double saoTBPast = st.demSao > 0 ? (st.tongSao / st.demSao) : 4.0;
+                    int nhanTuongLai = (slFuture[sp->getMaSP()] >= 1) ? 1 : 0;
+
                     X2.push_back({
                         static_cast<double>(st.tongSL),
-                        static_cast<double>(soKhach),
-                        static_cast<double>(soDon),
+                        static_cast<double>(soKhachPast),
+                        static_cast<double>(soDonPast),
                         static_cast<double>(st.sl30Ngay),
-                        saoTB
+                        saoTBPast
                     });
-                    y2.push_back(nhanSP);
+                    y2.push_back(nhanTuongLai);
                 }
             }
+        }
+    }
+
+    // Chi dung seed_xuhuong_sp.txt lam fallback cold-start khi du lieu thuc chua du 2 lop hoac < 10 mau
+    int demLop1 = 0, demLop0 = 0;
+    for (int lbl : y2) {
+        if (lbl == 1) demLop1++;
+        else demLop0++;
+    }
+    if (X2.size() < 10 || demLop1 < 2 || demLop0 < 2) {
+        std::vector<std::vector<double>> XSeed;
+        std::vector<int> ySeed;
+        if (napMauMamXuHuongSP(XSeed, ySeed)) {
+            X2.insert(X2.end(), XSeed.begin(), XSeed.end());
+            y2.insert(y2.end(), ySeed.begin(), ySeed.end());
+        } else {
+            std::vector<std::vector<double>> X2Fallback = {
+                { 12.0, 5.0, 5.0, 8.0, 4.8 }, {  8.0, 4.0, 4.0, 6.0, 4.5 },
+                { 15.0, 6.0, 6.0, 10.0, 4.7 }, {  6.0, 3.0, 3.0, 4.0, 4.3 },
+                {  5.0, 3.0, 3.0, 3.0, 4.2 }, { 10.0, 4.0, 4.0, 7.0, 4.6 },
+                {  4.0, 2.0, 3.0, 3.0, 4.4 }, {  7.0, 3.0, 4.0, 5.0, 4.5 },
+                {  1.0, 1.0, 1.0, 0.0, 3.0 }, {  1.0, 1.0, 1.0, 1.0, 2.5 },
+                {  2.0, 1.0, 1.0, 0.0, 3.2 }, {  0.0, 0.0, 0.0, 0.0, 3.5 },
+                {  2.0, 1.0, 1.0, 1.0, 2.8 }, {  1.0, 1.0, 1.0, 0.0, 2.0 },
+                {  3.0, 1.0, 1.0, 1.0, 3.0 }, {  0.0, 0.0, 0.0, 0.0, 3.0 }
+            };
+            std::vector<int> y2Fallback = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+            X2.insert(X2.end(), X2Fallback.begin(), X2Fallback.end());
+            y2.insert(y2.end(), y2Fallback.begin(), y2Fallback.end());
         }
     }
 
